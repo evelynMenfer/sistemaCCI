@@ -32,28 +32,13 @@ if (isset($_GET['id'])) {
         <form action="" id="po-form">
             <input type="hidden" name="id" value="<?php echo isset($id) ? $id : '' ?>">
             <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-2">
+            <div class="row">
+                    <div class="col-md-3">
                         <label class="control-label text-info">Cotización</label>
                         <input type="text" class="form-control rounded-0"
                             value="<?php echo isset($po_code) ? $po_code : '' ?>" readonly>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="oc" class="control-label text-info">OC</label>
-                            <input name="oc" id="oc" class="form-control rounded-0"
-                                value="<?php echo isset($oc) ? $oc : ''; ?>">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="date_exp" class="control-label text-info">Fecha de Expedición</label>
-                            <input type="date" name="date_exp" id="date_exp" step="any"
-                                class="form-control rounded-0 text-end"
-                                value="<?php echo isset($date_exp) ? $date_exp : ''; ?>">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
+                    <div class="col-md-5">
                         <div class="form-group">
                             <label for="id_company" class="control-label text-info">Empresa</label>
                             <select name="id_company" id="id_company" class="custom-select select2">
@@ -67,26 +52,46 @@ if (isset($_GET['id'])) {
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="date_exp" class="control-label text-info">Fecha de Expedición</label>
+                            <input type="date" name="date_exp" id="date_exp" step="any"
+                                class="form-control rounded-0 text-end"
+                                value="<?php echo isset($date_exp) ? $date_exp : ''; ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="cliente_cotizacion" class="text-info control-label">Cliente</label>
+                            <textarea name="cliente_cotizacion" id="cliente_cotizacion" rows="1"
+                                class="form-control rounded-0"><?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?></textarea>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="cliente_email" class="control-label text-info">Email cliente</label>
+                            <input name="cliente_email" id="cliente_email" class="form-control rounded-0"
+                                value="<?php echo isset($cliente_email) ? $cliente_email : ''; ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="trabajo" class="text-info control-label">Trabajo*</label>
+                            <textarea name="trabajo" id="trabajo" rows="1"
+                                class="form-control rounded-0"><?php echo isset($trabajo) ? $trabajo : '' ?></textarea>
+                        </div>
+                    </div>
                 </div>
                 <hr>
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label for="num_factura" class="control-label text-info">No. Factura</label>
-                            <input name="num_factura" id="num_factura" class="form-control rounded-0"
-                                value="<?php echo isset($num_factura) ? $num_factura : ''; ?>">
+                            <label for="metodo_pago" class="control-label text-info">Método de pago</label>
+                            <input name="metodo_pago" id="metodo_pago" class="form-control rounded-0"
+                                value="<?php echo isset($metodo_pago) ? $metodo_pago : ''; ?>">
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="date_carga_portal" class="control-label text-info">Fecha de carga al
-                                portal</label>
-                            <input type="date" name="date_carga_portal" id="date_carga_portal" step="any"
-                                class="form-control rounded-0 text-end"
-                                value="<?php echo isset($date_carga_portal) ? $date_carga_portal : ''; ?>">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="date_pago" class="control-label text-info">Fecha de pago</label>
                             <input type="date" name="date_pago" id="date_pago" step="any"
@@ -96,60 +101,61 @@ if (isset($_GET['id'])) {
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label for="folio_fiscal" class="control-label text-info">Folio Fiscal</label>
-                            <input name="folio_fiscal" id="folio_fiscal" class="form-control rounded-0"
-                                value="<?php echo isset($folio_fiscal) ? $folio_fiscal : ''; ?>">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="folio_comprobante_pago" class="control-label text-info">Folio Comprobante de pago</label>
-                            <input name="folio_comprobante_pago" id="folio_comprobante_pago"
-                                class="form-control rounded-0"
-                                value="<?php echo isset($folio_comprobante_pago) ? $folio_comprobante_pago : ''; ?>">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
                             <label for="pago_efectivo" class="control-label text-info">Pago en efectivo</label>
                             <input type="date" name="pago_efectivo" id="pago_efectivo" step="any"
                                 class="form-control rounded-0 text-end"
                                 value="<?php echo isset($pago_efectivo) ? $pago_efectivo : ''; ?>">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label for="cliente_cotizacion" class="text-info control-label">Cliente</label>
-                            <textarea name="cliente_cotizacion" id="cliente_cotizacion" rows="3"
-                                class="form-control rounded-0"><?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?></textarea>
+                            <label for="oc" class="control-label text-info">OC</label>
+                            <input name="oc" id="oc" class="form-control rounded-0"
+                                value="<?php echo isset($oc) ? $oc : ''; ?>">
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group">
-                            <label for="metodo_pago" class="control-label text-info">Método de pago</label>
-                            <input name="metodo_pago" id="metodo_pago" class="form-control rounded-0"
-                                value="<?php echo isset($metodo_pago) ? $metodo_pago : ''; ?>">
+                            <label for="num_factura" class="control-label text-info">No. Factura</label>
+                            <input name="num_factura" id="num_factura" class="form-control rounded-0"
+                                value="<?php echo isset($num_factura) ? $num_factura : ''; ?>">
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="date_carga_portal" class="control-label text-info">Fecha de carga al
+                                portal</label>
+                            <input type="date" name="date_carga_portal" id="date_carga_portal" step="any"
+                                class="form-control rounded-0 text-end"
+                                value="<?php echo isset($date_carga_portal) ? $date_carga_portal : ''; ?>">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="folio_fiscal" class="control-label text-info">Folio Fiscal</label>
+                            <input name="folio_fiscal" id="folio_fiscal" class="form-control rounded-0"
+                                value="<?php echo isset($folio_fiscal) ? $folio_fiscal : ''; ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="folio_comprobante_pago" class="control-label text-info">Folio Comprobante de
+                                pago</label>
+                            <input name="folio_comprobante_pago" id="folio_comprobante_pago"
+                                class="form-control rounded-0"
+                                value="<?php echo isset($folio_comprobante_pago) ? $folio_comprobante_pago : ''; ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label for="num_cheque" class="control-label text-info">No. de cheque</label>
                             <input name="num_cheque" id="num_cheque" step="any" class="form-control rounded-0 text-end"
                                 value="<?php echo isset($num_cheque) ? $num_cheque : ''; ?>">
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="trabajo" class="text-info control-label">Trabajo</label>
-                            <textarea name="trabajo" id="trabajo" rows="3"
-                                class="form-control rounded-0"><?php echo isset($trabajo) ? $trabajo : '' ?></textarea>
-                        </div>
-                    </div>
                 </div>
+                <hr>
                 <hr>
                 <fieldset>
                     <legend class="text-info">Producto</legend>
@@ -157,7 +163,7 @@ if (isset($_GET['id'])) {
                         <?php
                         $item_arr = array();
                         $cost_arr = array();
-                        $item = $conn->query("SELECT * FROM `item_list` where status = 1 order by `name` asc");
+                        $item = $conn->query("SELECT * FROM `item_list` where status = 1 order by `description` asc");
                         while ($row = $item->fetch_assoc()):
                             $item_arr[$row['supplier_id']][$row['id']] = $row;
                             $cost_arr[$row['id']] = $row['cost'];
@@ -181,7 +187,7 @@ if (isset($_GET['id'])) {
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="item_id" class="control-label">Producto</label>
+                                <label for="item_id" class="control-label text-info">Producto</label>
                                 <select id="item_id" class="custom-select ">
                                     <option disabled selected></option>
                                 </select>
@@ -269,13 +275,13 @@ if (isset($_GET['id'])) {
                                         <?php echo $row['description']; ?>
                                     </td>
                                     <td class="py-1 px-2 text-right cost">
-                                        <?php echo number_format($row['price']); ?>
+                                        $<?php echo number_format($row['price'], 2); ?>
                                     </td>
                                     <td class="py-1 px-2 text-right descuento">
-                                        <?php echo number_format($row['descuento']); ?>
+                                        $<?php echo number_format($row['descuento'], 2); ?>
                                     </td>
                                     <td class="py-1 px-2 text-right total">
-                                        <?php echo number_format($row['total']); ?>
+                                        $<?php echo number_format($row['total']); ?>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -385,7 +391,7 @@ if (isset($_GET['id'])) {
                         var row = items[supplier_id][k]
                         var opt = $('<option>')
                         opt.attr('value', row.id)
-                        opt.text(row.name)
+                        opt.text(row.description)
                         $('#item_id').append(opt)
                     })
                     resolve()

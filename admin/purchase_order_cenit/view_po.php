@@ -1,6 +1,6 @@
 <?php
 //$qry = $conn->query("SELECT p.*,s.name as supplier FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id  where p.id = '{$_GET['id']}'");
-$qry = $conn->query("SELECT p.*,s.name as supplier, c.logo as logo_empresa, c.name as name_empresa FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id left join company_list c on p.id_company = c.id where p.id = '{$_GET['id']}'");
+$qry = $conn->query("SELECT p.*,s.name as supplier, c.logo as logo_empresa, c.name as name_empresa, c.email, c.contact, c.address FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id left join company_list c on p.id_company = c.id where p.id = '{$_GET['id']}'");
 
 if ($qry->num_rows > 0) {
     foreach ($qry->fetch_array() as $k => $v) {
@@ -11,7 +11,7 @@ if ($qry->num_rows > 0) {
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h4 class="card-title">Información de la Cotización :
-            <?php echo $po_code ?>
+            <?php echo $po_code ?>  -  <?php echo $name_empresa ?>
         </h4>
         <br><br>
         <div class="row">
@@ -93,8 +93,8 @@ if ($qry->num_rows > 0) {
             <?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?>
         </div>
     </div>
-    <div class="card-body" id="print_out">
-        <div class="container-fluid">
+    <div class="card-body" id="print_out"> 
+        <div class="container-fluid" >
             <br>
             <table class="table table-striped table-bordered" id="list">
                 <colgroup>
@@ -124,7 +124,7 @@ if ($qry->num_rows > 0) {
                             ?>
                         <tr>
                             <td class="py-1 px-2 text-center">
-                                <?php echo number_format($row['quantity'], 2) ?>
+                                <?php echo number_format($row['quantity']) ?>
                             </td>
                             <td class="py-1 px-2 text-center">
                                 <?php echo ($row['unit']) ?>
@@ -134,13 +134,13 @@ if ($qry->num_rows > 0) {
                                 <?php echo $row['description'] ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['price']) ?>
+                                $<?php echo number_format($row['price'], 2) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
                                 <!--<php echo number_format($row['price'] * 0.16) ?>-->
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['total']) ?>
+                                $<?php echo number_format($row['total'], 2) ?>
                             </td>
                         </tr>
 
@@ -151,15 +151,15 @@ if ($qry->num_rows > 0) {
                     <tr>
                         <th class="text-right py-1 px-2" colspan="5">Sub Total</th>
                         <th class="text-right py-1 px-2 sub-total">
-                            <?php echo number_format($total, 2) ?>
+                            $<?php echo number_format($total, 2) ?>
                         </th>
                     </tr>
                     <tr>
                         <th class="text-right py-1 px-2" colspan="5">Descuento
-                            <?php echo isset($discount_perc) ? $discount_perc : 0 ?>%
+                            $<?php echo isset($discount_perc) ? $discount_perc : 0 ?>%
                         </th>
                         <th class="text-right py-1 px-2 discount">
-                            <?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
+                            $<?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
                         </th>
                     </tr>
                     <tr>
@@ -167,19 +167,19 @@ if ($qry->num_rows > 0) {
                             <?php echo isset($tax_perc) ? $tax_perc : 0 ?>%
                         </th>
                         <th class="text-right py-1 px-2 tax">
-                            <?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
+                            $<?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
                         </th>
                     </tr>
                     <tr>
                         <th class="text-right py-1 px-2" colspan="5">Total</th>
                         <th class="text-right py-1 px-2 grand-total">
-                            <?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
+                            $<?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
                         </th>
                     </tr>
                 </tfoot>
             </table>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="form-group">
                         <label for="remarks" class="text-info control-label">Observaciones</label>
                         <p>
@@ -187,6 +187,16 @@ if ($qry->num_rows > 0) {
                         </p>
                     </div>
                 </div>
+
+                <div class="col-md-12" style="color: #0B779E;">
+                    <br><br>
+                    <p  style="text-align: center;" >Gracias por su confianza.
+                        <br><?php echo isset($address) ? $address : '' ?>
+                        <br>Teléfono: <?php echo isset($contact) ? $contact : '' ?>.
+                        <br>E-mail: <?php echo isset($email) ? $email : '' ?>
+                    </p>
+                </div>
+
                 <?php if ($status > 0): ?>
                     <div class="col-md-6">
                         <span class="text-info">

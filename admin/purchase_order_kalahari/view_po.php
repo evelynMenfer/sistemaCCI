@@ -10,7 +10,8 @@ if ($qry->num_rows > 0) {
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h4 class="card-title">Información de la Cotización :
-            <?php echo $po_code ?>
+            <?php echo $po_code ?> -
+            <?php echo $name_empresa ?>
         </h4>
         <br><br>
         <div class="row">
@@ -86,14 +87,11 @@ if ($qry->num_rows > 0) {
 
         <br>
     </div>
-    <div class="card-body" id="print_encabezado" >
-        <div class="col-md-6"><!--class="control-label text-info"-->
-            <label class="control-label" style="color: #9552BD;">Atención:</label> 
-            <?php echo isset($cperson) ? $cperson : '' ?>
-        </div>
+    <div class="card-body" id="print_encabezado">
         <div class="col-md-6">
-            <label class="control-label" style="color: #9552BD;">E-mail:</label> 
-            <?php echo isset($email) ? $email : '' ?>
+            <!--class="control-label text-info"-->
+            <label class="control-label" style="color: #9552BD;">Tiempo de entrega:</label>
+            <!--<?php echo isset($cperson) ? $cperson : '' ?>-->
         </div>
     </div>
     <div class="card-body" id="print_out">
@@ -101,21 +99,26 @@ if ($qry->num_rows > 0) {
             <br>
             <table class="table table-striped table-bordered" id="list">
                 <colgroup>
+                    <col width="5%">
                     <col width="10%">
-                    <col width="10%">
+                    <col width="15%">
                     <col width="30%">
-                    <col width="15%">
-                    <col width="15%">
-                    <col width="20%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
                 </colgroup>
-                <thead><!--class="text-light bg-navy"-->
+                <thead>
+                    <!--class="text-light bg-navy"-->
                     <tr class="text-light" style="background-color: #9552BD;">
-                            <th class="text-center py-1 px-2">Cantidad</th>
-                            <th class="text-center py-1 px-2">Unidad</th>
-                            <th class="text-center py-1 px-2">Descripción</th>
-                            <th class="text-center py-1 px-2">P.U.</th>
-                            <th class="text-center py-1 px-2">Imagen</th>
-                            <th class="text-center py-1 px-2">Importe</th>
+                        <th class="text-center py-1 px-2">ART.</th>
+                        <th class="text-center py-1 px-2">MARCA</th>
+                        <th class="text-center py-1 px-2">MODELO</th>
+                        <th class="text-center py-1 px-2">DESCRIPCION</th>
+                        <th class="text-center py-1 px-2">UNIDAD</th>
+                        <th class="text-center py-1 px-2">CANTIDAD</th>
+                        <th class="text-center py-1 px-2">P.U.</th>
+                        <th class="text-center py-1 px-2">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,23 +130,30 @@ if ($qry->num_rows > 0) {
                             ?>
                         <tr>
                             <td class="py-1 px-2 text-center">
-                                <?php echo number_format($row['quantity'], 2) ?>
+
                             </td>
                             <td class="py-1 px-2 text-center">
-                                <?php echo ($row['unit']) ?>
+
+                            </td>
+                            <td class="py-1 px-2 text-center">
+
                             </td>
                             <td class="py-1 px-2">
-                                <?php echo $row['name'] ?> <br>
                                 <?php echo $row['description'] ?>
                             </td>
-                            <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['price']) ?>
+                            <td class="py-1 px-2">
+                                <?php echo ($row['unit']) ?>
+                            </td>
+                            <td class="py-1 px-2 text-center">
+                                <?php echo number_format($row['quantity']) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <!--<php echo number_format($row['price'] * 0.16) ?>-->
+                                $
+                                <?php echo number_format($row['price'], 2) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['total']) ?>
+                                $
+                                <?php echo number_format($row['total'], 2) ?>
                             </td>
                         </tr>
 
@@ -152,34 +162,30 @@ if ($qry->num_rows > 0) {
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Sub Total</th>
+                        <th class="text-right py-1 px-2" colspan="7">SUBTOTAL</th>
                         <th class="text-right py-1 px-2 sub-total">
+                            $
                             <?php echo number_format($total, 2) ?>
                         </th>
                     </tr>
+
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Descuento
-                            <?php echo isset($discount_perc) ? $discount_perc : 0 ?>%
-                        </th>
-                        <th class="text-right py-1 px-2 discount">
-                            <?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Impuesto
-                            <?php echo isset($tax_perc) ? $tax_perc : 0 ?>%
+                        <th class="text-right py-1 px-2" colspan="7">I.V.A.16%
+                            <!--<?php echo isset($tax_perc) ? $tax_perc : 0 ?>%-->
                         </th>
                         <th class="text-right py-1 px-2 tax">
+                            $
                             <?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
                         </th>
                     </tr>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Total</th>
+                        <th class="text-right py-1 px-2" colspan="7">Total</th>
                         <th class="text-right py-1 px-2 grand-total">
+                            $
                             <?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
                         </th>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <th class="text-left py-1 px-1" colspan="6">
                             <label for="remarks" style="color: #9552BD;">Forma de Pago:</label>
                             <?php echo isset($metodo_pago) ? $metodo_pago : ''; ?>
@@ -190,28 +196,21 @@ if ($qry->num_rows > 0) {
                             <label for="remarks" style="color: #9552BD;">Notas:</label>
                             <?php echo isset($remarks) ? $remarks : '' ?>
                         </th>
-                    </tr>
+                    </tr>-->
                 </tfoot>
             </table>
-            <div class="row">
-                <div class="col-md-6">
-                    <br><br>
-                    <p>Horario de atención a clientes: Lunes - Sábado 08:00 A 20:00
-                        <br>Teléfono directo: (01951) 2152725
-                        <br>5A Privada de Vicente Guerrrero #112 Colonia Candiani. Oaxaca de Juárez, Oaxaca. C.P. 68130
+
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="remarks" style="color: #9552BD;">.</label>
+                    <p>
+                        <php echo isset($remarks) ? $remarks : '' ?>
                     </p>
                 </div>
             </div>
-            <!--<div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="remarks" style="color: #9552BD;">Notas:</label>
-                        <p>
-                            <php echo isset($remarks) ? $remarks : '' ?>
-                        </p>
-                    </div>
-                </div>
-                <php if ($status > 0): ?>
+            <!--   <php if ($status > 0): ?>
                     <div class="col-md-6">
                         <span class="text-info">
                             <php echo ($status == 2) ? "Recibido" : "Recibido Parcialmente" ?>
@@ -220,120 +219,119 @@ if ($qry->num_rows > 0) {
                 <php endif; ?>
             </div>-->
         </div>
+        <div class="col-md-12" style="color: #9552BD;">
+                    <br><br>
+                    <p  style="text-align: center;" >LA DISPONIBILIDAD DE LOS PRODUCTOS ES SALVO PREVIA VENTA, 
+                    <br>PRECIOS SUJETOS A CAMBIO SIN PREVIO AVISO POR PARTE DEL FABRICANTE, 
+                    <br>VIGENCIA DE COTIZACIÓN 15
+                    <br>ATENCION A CLIENTES
+                </p>
+            </div>
+        </div>
+        <div class="card-footer py-1 text-center">
+            <button class="btn btn-flat btn-info" type="button" id="print">Imprimir</button>
+            <a class="btn btn-flat btn-primary"
+                href="<?php echo base_url . '/admin?page=purchase_order_kalahari/manage_po&id=' . (isset($id) ? $id : '') ?>">Editar</a>
+            <a class="btn btn-flat btn-danger"
+                href="<?php echo base_url . '/admin?page=purchase_order_kalahari' ?>">Volver</a>
+        </div>
     </div>
-    <div class="card-footer py-1 text-center">
-        <button class="btn btn-flat btn-info" type="button" id="print">Imprimir</button>
-        <a class="btn btn-flat btn-primary"
-            href="<?php echo base_url . '/admin?page=purchase_order_kalahari/manage_po&id=' . (isset($id) ? $id : '') ?>">Editar</a>
-        <a class="btn btn-flat btn-danger" href="<?php echo base_url . '/admin?page=purchase_order_kalahari' ?>">Volver</a>
-    </div>
-</div>
-<table id="clone_list" class="d-none">
-    <tr>
-        <td class="py-1 px-2 text-center">
-            <button class="btn btn-outline-danger btn-sm rem_row" type="button"><i class="fa fa-times"></i></button>
-        </td>
-        <td class="py-1 px-2 text-center qty">
-            <span class="visible"></span>
-            <input type="hidden" name="item_id[]">
-            <input type="hidden" name="unit[]">
-            <input type="hidden" name="qty[]">
-            <input type="hidden" name="price[]">
-            <input type="hidden" name="iva[]">
-            <input type="hidden" name="total[]">
-        </td>
-        <td class="py-1 px-2 text-center unit">
-        </td>
-        <td class="py-1 px-2 item">
-        </td>
-        <td class="py-1 px-2 text-right cost">
-        </td>
-        <td class="py-1 px-2 text-right total">
-        </td>
-    </tr>
-</table>
-<script>
-    $(function () {
-        $('#print').click(function () {
-            start_loader()
-            var _el = $('<div>')
-            var _head = $('head').clone()
-            _head.find('title').text("")
-            var p = $('#print_out').clone()
-            p.find('tr.text-light').removeClass("text-light bg-navy")
+    <table id="clone_list" class="d-none">
+        <tr>
+            <td class="py-1 px-2 text-center">
+                <button class="btn btn-outline-danger btn-sm rem_row" type="button"><i class="fa fa-times"></i></button>
+            </td>
+            <td class="py-1 px-2 text-center qty">
+                <span class="visible"></span>
+                <input type="hidden" name="item_id[]">
+                <input type="hidden" name="unit[]">
+                <input type="hidden" name="qty[]">
+                <input type="hidden" name="price[]">
+                <input type="hidden" name="iva[]">
+                <input type="hidden" name="total[]">
+            </td>
+            <td class="py-1 px-2 text-center unit">
+            </td>
+            <td class="py-1 px-2 item">
+            </td>
+            <td class="py-1 px-2 text-right cost">
+            </td>
+            <td class="py-1 px-2 text-right total">
+            </td>
+        </tr>
+    </table>
+    <script>
+        $(function () {
+            $('#print').click(function () {
+                start_loader()
+                var _el = $('<div>')
+                var _head = $('head').clone()
+                _head.find('title').text("")
+                var p = $('#print_out').clone()
+                p.find('tr.text-light').removeClass("text-light bg-navy")
 
-            var encabezado = $('#print_encabezado').clone()
+                var encabezado = $('#print_encabezado').clone()
 
-            _el.append(_head)
-            _el.append('<div class="d-flex justify-content-center">' +
-                '<div class="col-1 text-center" >' +
-                '<img src="<?php echo validate_image($logo_empresa) ?>" width="1100px" height="100px"/>' +
-                '</div><hr/>')
-            _el.append( 
-                '<div class="d-flex justify-content-center">' +
-                '<table class="demoTable" style="height: 54px; width: 672px;">' +
-                '    <thead>' +
-                '        <tr style="height: 18px;">' +
-                '            <td style="height: 36px; width: 400px;"></td>' +
-                '            <td style="width: 300px; height: 15px; text-align: right;"><span' +
-                '                    style="font-size: 12px; color: #9552BD;">OAXACA DE JUÁREZ, OAXACA, </span></td>' +
-                '        </tr>' +
-                '    </thead>' +
-                '    <tbody>' +
-                '        <tr style="height: 18px;">' +
-                '            <td style="height: 36px; width: 400px;"></td>' +
-                '            <td style="width: 300px; height: 36px; text-align: right;"><span' +
-                '                    style="font-size: 12px; color: #9552BD;">COTIZACIÓN:' +
-                '                    </span></td>' +
-                '            <td style="height: 36px; width: 146.234375px; text-align: right;"><?php echo isset($date_exp) ? $date_exp : '' ?></td>' +
-                '        </tr>' +
-                '    </tbody>' +
-                '</table>' +
-                '</div><hr/>')
+                _el.append(_head)
+                _el.append('<div class="d-flex justify-content-center">' +
+                    '<div class="col-1 text-center" >' +
+                    '<img src="<?php echo validate_image($logo_empresa) ?>" width="1100px" height="150px"/>' +
+                    '</div><hr/>')
 
-            _el.append(encabezado.html())
+                _el.append(
+                    //'<div class="card-body" id="print_encabezado">'+
+                    //'    <div class="col-md-6">'+
+                    //'        <label class="control-label text-info" style="color: #0B779E;">Vendido a: </label>'+
+                    //'        <?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?>'+
+                    //'    </div>'+
+                    //'</div>'+
+                    '<div class="d-flex justify-content-center">' +
+                    '<table class="demoTable" style="height: 54px; width: 672px;">' +
+                    '    <thead>' +
+                    '        <tr style="height: 18px;">' +
+                    '            <td style="height: 36px; width: 400px;"></td>' +
+                    '            <td style="width: 300px; height: 15px; text-align: right;"><span' +
+                    '                    style="font-size: 12px; color: #9552BD;">OAXACA DE JUÁREZ, OAXACA</span></td>' +
+                    '        </tr>' +
+                    '    </thead>' +
+                    '</table>' +
+                    '<br><br>' +
+                    '<table>' +
+                    '    <thead>' +
+                    '        <tr style="height: 18px;">' +
+                    '            <td style="width: 166.734375px; height: 18px; border: white 3px solid; text-align: center"></td>' +
+                    '            <td style="width: 168.484375px; height: 18px; border: white 3px solid; text-align: center"></td>' +
+                    '            <td style="width: 182.796875px; background-color: #9552BD; color: white; height: 18px; border: white 3px solid; text-align: center">FECHA</td>' +
+                    '            <td style="width: 182.796875px; background-color: #9552BD; color: white; height: 18px; border: white 3px solid; text-align: center">FOLIO</td>' +
+                    '        </tr>' +
+                    '    </thead>' +
+                    '    <tbody>' +
+                    '        <tr style="height: 29px;">' +
+                    '            <td style="width: 166.734375px; height: 29px; border: white 3px solid; text-align: center"></td>' +
+                    '            <td style="width: 168.484375px; height: 29px; border: white 3px solid; text-align: center"></td>' +
+                    '            <td style="width: 182.796875px; height: 29px; border: white 3px solid; text-align: center"><?php echo isset($date_exp) ? $date_exp : '' ?></td>' +
+                    '            <td style="width: 182.796875px; height: 29px; border: white 3px solid; text-align: center"></td>' +
+                    '        </tr>' +
+                    '    </tbody>' +
+                    '</table>' +
+                    '</div><hr/>'
+                )
 
-            _el.append(
-                //'<div class="card-body" id="print_encabezado">'+
-                //'    <div class="col-md-6">'+
-                //'        <label class="control-label text-info" style="color: #0B779E;">Vendido a: </label>'+
-                //'        <?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?>'+
-                //'    </div>'+
-                //'</div>'+
-                '<div class="d-flex justify-content-center">' +
-                '<table class="demoTable" style="height: 47px; width: 100%;">'+
-                '    <thead>'+
-                '        <tr style="height: 18px;">'+
-                '            <td style="width: 166.734375px; height: 18px; border: white 3px solid; text-align: center"></td>'+
-                '            <td style="width: 168.484375px; height: 18px; border: white 3px solid; text-align: center"></td>'+
-                '            <td style="width: 182.796875px; background-color: #9552BD; color: white; height: 18px; border: white 3px solid; text-align: center">Fecha</td>'+
-                '        </tr>'+
-                '    </thead>'+
-                '    <tbody>'+
-                '        <tr style="height: 29px;">'+
-                '            <td style="width: 166.734375px; height: 29px; border: white 3px solid; text-align: center"></td>'+
-                '            <td style="width: 168.484375px; height: 29px; border: white 3px solid; text-align: center"></td>'+
-                '            <td style="width: 182.796875px; height: 29px; border: white 3px solid; text-align: center"><?php echo isset($date_exp) ? $date_exp : '' ?></td>'+
-                '        </tr>'+
-                '    </tbody>'+
-                '</table>'+
-                '</div><hr/>'
-            )
+                _el.append(encabezado.html())
+                _el.append(p.html())
 
-            _el.append(p.html())
 
-                
 
-            var nw = window.open("", "", "width=1200,height=900,left=250,location=no,titlebar=yes")
-            nw.document.write(_el.html())
-            nw.document.close()
-            setTimeout(() => {
-                nw.print()
+                var nw = window.open("", "", "width=1200,height=900,left=250,location=no,titlebar=yes")
+                nw.document.write(_el.html())
+                nw.document.close()
                 setTimeout(() => {
-                    nw.close()
-                    end_loader()
-                }, 200);
-            }, 500);
+                    nw.print()
+                    setTimeout(() => {
+                        nw.close()
+                        end_loader()
+                    }, 200);
+                }, 500);
+            })
         })
-    })
-</script>
+    </script>

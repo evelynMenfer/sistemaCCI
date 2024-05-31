@@ -1,5 +1,5 @@
 <?php
-$qry = $conn->query("SELECT p.*,s.name as supplier, c.logo as logo_empresa, c.name as name_empresa, c.email, c.cperson FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id left join company_list c on p.id_company = c.id where p.id = '{$_GET['id']}'");
+$qry = $conn->query("SELECT p.*,s.name as supplier, c.logo as logo_empresa, c.name as name_empresa, c.email, c.cperson, c.contact, c.address FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id left join company_list c on p.id_company = c.id where p.id = '{$_GET['id']}'");
 
 if ($qry->num_rows > 0) {
     foreach ($qry->fetch_array() as $k => $v) {
@@ -10,7 +10,7 @@ if ($qry->num_rows > 0) {
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h4 class="card-title">Información de la Cotización :
-            <?php echo $po_code ?>
+            <?php echo $po_code ?>  -  <?php echo $name_empresa ?>
         </h4>
         <br><br>
         <div class="row">
@@ -88,34 +88,36 @@ if ($qry->num_rows > 0) {
     </div>
     <div class="card-body" id="print_encabezado" >
         <div class="col-md-6"><!--class="control-label text-info"-->
-            <label class="control-label" style="color: #009966;">Atención:</label> 
-            <?php echo isset($cperson) ? $cperson : '' ?>
+            <label class="control-label" style="color: #009966;">ATENCIÓN:</label> 
+            <?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?>
         </div>
         <div class="col-md-6">
-            <label class="control-label" style="color: #009966;">E-mail:</label> 
-            <?php echo isset($email) ? $email : '' ?>
+            <label class="control-label" style="color: #009966;">E-MAIL:</label> 
+            <?php echo isset($cliente_email) ? $cliente_email : '' ?>
         </div>
     </div>
     <div class="card-body" id="print_out">
         <div class="container-fluid">
             <br>
-            <table class="table table-striped table-bordered" id="list">
+            <table class="table table-striped table-success" id="list">
                 <colgroup>
-                    <col width="10%">
-                    <col width="10%">
+                    <col width="5%">
                     <col width="30%">
+                    <col width="10%">
+                    <col width="10%">
                     <col width="15%">
                     <col width="15%">
-                    <col width="20%">
+                    <col width="15%">
                 </colgroup>
                 <thead><!--class="text-light bg-navy"-->
                     <tr class="text-light" style="background-color: #009966;">
-                            <th class="text-center py-1 px-2">Cantidad</th>
-                            <th class="text-center py-1 px-2">Unidad</th>
-                            <th class="text-center py-1 px-2">Descripción</th>
+                            <th class="text-center py-1 px-2">PARTIDA</th>
+                            <th class="text-center py-1 px-2">DESCRIPCIÓN</th>
+                            <th class="text-center py-1 px-2">IMAGEN</th>
+                            <th class="text-center py-1 px-2">UNIDAD</th>
+                            <th class="text-center py-1 px-2">CANTIDAD</th>
                             <th class="text-center py-1 px-2">P.U.</th>
-                            <th class="text-center py-1 px-2">Imagen</th>
-                            <th class="text-center py-1 px-2">Importe</th>
+                            <th class="text-center py-1 px-2">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,23 +129,23 @@ if ($qry->num_rows > 0) {
                             ?>
                         <tr>
                             <td class="py-1 px-2 text-center">
-                                <?php echo number_format($row['quantity'], 2) ?>
                             </td>
                             <td class="py-1 px-2 text-center">
-                                <?php echo ($row['unit']) ?>
-                            </td>
-                            <td class="py-1 px-2">
-                                <?php echo $row['name'] ?> <br>
                                 <?php echo $row['description'] ?>
                             </td>
-                            <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['price']) ?>
+                            <td class="py-1 px-2">
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <!--<php echo number_format($row['price'] * 0.16) ?>-->
+                                <?php echo ($row['unit']) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['total']) ?>
+                                <?php echo number_format($row['quantity']) ?>
+                            </td>
+                            <td class="py-1 px-2 text-right">
+                                $<?php echo number_format($row['price']) ?>
+                            </td>
+                            <td class="py-1 px-2 text-right">
+                                $<?php echo number_format($row['total'], 2) ?>
                             </td>
                         </tr>
 
@@ -152,42 +154,42 @@ if ($qry->num_rows > 0) {
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Sub Total</th>
+                        <th class="text-right py-1 px-2" colspan="6">SUBTOTAL</th>
                         <th class="text-right py-1 px-2 sub-total">
-                            <?php echo number_format($total, 2) ?>
+                            $<?php echo number_format($total, 2) ?>
                         </th>
                     </tr>
-                    <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Descuento
+                    <!--<tr>
+                        <th class="text-right py-1 px-2" colspan="6">Descuento
                             <?php echo isset($discount_perc) ? $discount_perc : 0 ?>%
                         </th>
                         <th class="text-right py-1 px-2 discount">
-                            <?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
+                            $<?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
                         </th>
-                    </tr>
+                    </tr>-->
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Impuesto
-                            <?php echo isset($tax_perc) ? $tax_perc : 0 ?>%
+                        <th class="text-right py-1 px-2" colspan="6">
+                            <!--<?php echo isset($tax_perc) ? $tax_perc : 0 ?>%-->
                         </th>
                         <th class="text-right py-1 px-2 tax">
-                            <?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
+                            <!--$<?php echo isset($tax) ? number_format($tax, 2) : 0 ?>-->
                         </th>
                     </tr>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Total</th>
+                        <th class="text-right py-1 px-2" colspan="6">TOTAL</th>
                         <th class="text-right py-1 px-2 grand-total">
-                            <?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
+                            $<?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
                         </th>
                     </tr>
                     <tr>
-                        <th class="text-left py-1 px-1" colspan="6">
-                            <label for="remarks" style="color: #009966;">Forma de Pago:</label>
+                        <th class="text-left py-1 px-1" colspan="7">
+                            <label for="remarks" style="color: #009966;">FORMA DE PAGO:</label>
                             <?php echo isset($metodo_pago) ? $metodo_pago : ''; ?>
                         </th>
                     </tr> 
                     <tr>
-                        <th class="text-left py-1 px-1" colspan="6">
-                            <label for="remarks" style="color: #009966;">Notas:</label>
+                        <th class="text-left py-1 px-1" colspan="7">
+                            <label for="remarks" style="color: #009966;">NOTAS:</label>
                             <?php echo isset($remarks) ? $remarks : '' ?>
                         </th>
                     </tr>
@@ -306,7 +308,7 @@ if ($qry->num_rows > 0) {
                 '        <tr style="height: 18px;">'+
                 '            <td style="width: 166.734375px; height: 18px; border: white 3px solid; text-align: center"></td>'+
                 '            <td style="width: 168.484375px; height: 18px; border: white 3px solid; text-align: center"></td>'+
-                '            <td style="width: 182.796875px; background-color: #009966; color: white; height: 18px; border: white 3px solid; text-align: center">Fecha</td>'+
+                '            <td style="width: 182.796875px; background-color: #009966; color: white; height: 18px; border: white 3px solid; text-align: center">FECHA</td>'+
                 '        </tr>'+
                 '    </thead>'+
                 '    <tbody>'+

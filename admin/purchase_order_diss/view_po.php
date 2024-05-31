@@ -1,6 +1,6 @@
 <?php
 //$qry = $conn->query("SELECT p.*,s.name as supplier FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id  where p.id = '{$_GET['id']}'");
-$qry = $conn->query("SELECT p.*,s.name as supplier, c.logo as logo_empresa, c.name as name_empresa FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id left join company_list c on p.id_company = c.id where p.id = '{$_GET['id']}'");
+$qry = $conn->query("SELECT p.*,s.name as supplier, c.logo as logo_empresa, c.name as name_empresa, c.email, c.contact, c.address FROM purchase_order_list p inner join supplier_list s on p.supplier_id = s.id left join company_list c on p.id_company = c.id where p.id = '{$_GET['id']}'");
 
 if ($qry->num_rows > 0) {
     foreach ($qry->fetch_array() as $k => $v) {
@@ -11,7 +11,8 @@ if ($qry->num_rows > 0) {
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h4 class="card-title">Información de la Cotización :
-            <?php echo $po_code ?>
+            <?php echo $po_code ?> -
+            <?php echo $name_empresa ?>
         </h4>
         <br><br>
         <div class="row">
@@ -87,32 +88,37 @@ if ($qry->num_rows > 0) {
 
         <br>
     </div>
-    <div class="card-body" id="print_encabezado" >
+    <div class="card-body" id="print_encabezado">
         <div class="col-md-6">
-            <label class="control-label text-info" style="color: #0B779E;">Vendido a: </label> 
-            <?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?>
+            <label class="control-label " >PRESUPUESTO N°: </label>
+            <!--<?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?>-->
+            <br>
+            <label class="control-label " >FECHA: </label>
+            <?php echo isset($date_exp) ? $date_exp : '' ?>
         </div>
     </div>
     <div class="card-body" id="print_out">
         <div class="container-fluid">
             <br>
-            <table class="table table-striped table-bordered" id="list">
+            <table class="table table-striped table-info" id="list">
                 <colgroup>
-                    <col width="10%">
-                    <col width="10%">
+                    <col width="15%">
                     <col width="30%">
                     <col width="15%">
-                    <col width="15%">
-                    <col width="20%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
                 </colgroup>
                 <thead>
-                    <tr class="text-light bg-navy">
-                        <th class="text-center py-1 px-2">Cant.</th>
-                        <th class="text-center py-1 px-2">Unidad</th>
-                        <th class="text-center py-1 px-2">Descripción</th>
-                        <th class="text-center py-1 px-2">Precio por Unidad</th>
-                        <th class="text-center py-1 px-2">Desc</th>
-                        <th class="text-center py-1 px-2">Total</th>
+                    <tr class="text-light" style="background-color: #3883AB;">
+                        <th class="text-center py-1 px-2">MODELO</th>
+                        <th class="text-center py-1 px-2">DESCRIPCIÓN</th>
+                        <th class="text-center py-1 px-2">TIEMPO DE ENTREGA</th>
+                        <th class="text-center py-1 px-2">IMAGEN</th>
+                        <th class="text-center py-1 px-2">CANTIDAD</th>
+                        <th class="text-center py-1 px-2">PRECIO UNITARIO</th>
+                        <th class="text-center py-1 px-2">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,23 +130,22 @@ if ($qry->num_rows > 0) {
                             ?>
                         <tr>
                             <td class="py-1 px-2 text-center">
-                                <?php echo number_format($row['quantity'], 2) ?>
-                            </td>
-                            <td class="py-1 px-2 text-center">
-                                <?php echo ($row['unit']) ?>
                             </td>
                             <td class="py-1 px-2">
-                                <?php echo $row['name'] ?> <br>
                                 <?php echo $row['description'] ?>
                             </td>
-                            <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['price']) ?>
+                            <td class="py-1 px-2 text-center">
+                            </td>
+                            <td class="py-1 px-2 text-center">
+                            </td>
+                            <td class="py-1 px-2 text-center">
+                                <?php echo number_format($row['quantity']) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['price'] * 0.16) ?>
+                                $<?php echo number_format($row['price'], 2) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <?php echo number_format($row['total']) ?>
+                                $<?php echo number_format($row['total'], 2) ?>
                             </td>
                         </tr>
 
@@ -149,44 +154,48 @@ if ($qry->num_rows > 0) {
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Sub Total</th>
+                        <th class="text-right py-1 px-2" colspan="6">SUBTOTAL</th>
                         <th class="text-right py-1 px-2 sub-total">
-                            <?php echo number_format($total, 2) ?>
+                            $<?php echo number_format($total, 2) ?>
                         </th>
                     </tr>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Descuento
-                            <?php echo isset($discount_perc) ? $discount_perc : 0 ?>%
+                        <th class="text-right py-1 px-2" colspan="6">IVA
+                            <!--<?php echo isset($tax_perc) ? $tax_perc : 0 ?>-->
                         </th>
-                        <th class="text-right py-1 px-2 discount">
-                            <?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
-                        </th>
+                        <!--<th class="text-right py-1 px-2 tax">
+                            $<?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
+                        </th>-->
                     </tr>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Impuesto
-                            <?php echo isset($tax_perc) ? $tax_perc : 0 ?>%
-                        </th>
-                        <th class="text-right py-1 px-2 tax">
-                            <?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Total</th>
+                        <th class="text-right py-1 px-2" colspan="6">TOTAL</th>
                         <th class="text-right py-1 px-2 grand-total">
+                            $
                             <?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
                         </th>
                     </tr>
                 </tfoot>
             </table>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="form-group">
-                        <label for="remarks" class="text-info control-label">Observaciones</label>
+                        <label for="remarks" class="control-label">FORMA DE PAGO: </label>
                         <p>
-                            <?php echo isset($remarks) ? $remarks : '' ?>
+                            <?php echo isset($metodo_pago) ? $metodo_pago : '' ?>
                         </p>
                     </div>
                 </div>
+
+                <div class="col-md-12" style="color: #8CA7C1;">
+                    <br><br>
+                    <p style="text-align: center;">
+                        <br>
+                        <?php echo isset($address) ? $address : '' ?>
+                        <br>Teléfono:
+                        <?php echo isset($contact) ? $contact : '' ?>
+                    </p>
+                </div>
+
                 <?php if ($status > 0): ?>
                     <div class="col-md-6">
                         <span class="text-info">
@@ -245,28 +254,7 @@ if ($qry->num_rows > 0) {
                 '<div class="col-1 text-center">' +
                 '<img src="<?php echo validate_image($logo_empresa) ?>" width="1100px" height="120px" />' +
                 '</div><hr/>')
-            _el.append( 
-                '<div class="d-flex justify-content-center">' +
-                '<table class="demoTable" style="height: 54px; width: 672px;">' +
-                '    <thead>' +
-                '        <tr style="height: 18px;">' +
-                '           <td style="height: 18px; width: 550px; font-size: 20px"><span style="color: #0B779E;"><?php echo $name_empresa ?></span></td>' +
-                '            <td style="width: 135.21875px; height: 18px; text-align: right;"><span' +
-                '                    style="color: #0B779E;">Fecha: </span></td>' +
-                '            <td style="height: 18px; width: 146.234375px; text-align: left;"><?php echo isset($date_exp) ? $date_exp : '' ?></td>' +
-                '        </tr>' +
-                '    </thead>' +
-                '    <tbody>' +
-                '        <tr style="height: 36px;">' +
-                '            <td style="height: 36px; width: 400px;"></td>' +
-                '            <td style="width: 135.21875px; height: 36px; text-align: right;"><span' +
-                '                    style="font-size: 16px;"><span style="color: #0B779E;">N°de factura :' +
-                '                    </span></span></td>' +
-                '            <td style="height: 36px; width: 146.234375px; text-align: left;"><?php echo isset($date_exp) ? $date_exp : '' ?></td>' +
-                '        </tr>' +
-                '    </tbody>' +
-                '</table>' +
-                '</div><hr/>')
+           
 
             _el.append(encabezado.html())
 
@@ -278,28 +266,24 @@ if ($qry->num_rows > 0) {
                 //'    </div>'+
                 //'</div>'+
                 '<div class="d-flex justify-content-center">' +
-                '<table class="demoTable" style="height: 47px; width: 100%;">'+
-                '    <thead>'+
-                '        <tr style="height: 18px; background-color: #488BCE;">'+
-                '            <td style="width: 166.734375px; height: 18px; border: white 3px solid; text-align: center">Método de pago</td>'+
-                '            <td style="width: 168.484375px; height: 18px; border: white 3px solid; text-align: center">N° de cheque</td>'+
-                '            <td style="width: 182.796875px; height: 18px; border: white 3px solid; text-align: center">Trabajo</td>'+
-                '        </tr>'+
-                '    </thead>'+
-                '    <tbody>'+
-                '        <tr style="height: 29px; background-color: #e7f2fd;">'+
-                '            <td style="width: 166.734375px; height: 29px; border: white 3px solid; text-align: center"><?php echo isset($metodo_pago) ? $metodo_pago : '' ?></td>'+
-                '            <td style="width: 168.484375px; height: 29px; border: white 3px solid; text-align: center"><?php echo isset($num_cheque) ? $num_cheque : '' ?></td>'+
-                '            <td style="width: 182.796875px; height: 29px; border: white 3px solid; text-align: center"><?php echo isset($trabajo) ? $trabajo : '' ?></td>'+
-                '        </tr>'+
-                '    </tbody>'+
-                '</table>'+
+                '<table class="demoTable" style="height: 47px; width: 100%;">' +
+                '    <thead>' +
+                '        <tr class="text-light" style="height: 18px; background-color: #3883AB;">' +
+                '            <td style="width: 166.734375px; height: 18px; border: white 3px solid; text-align: CENTER">CLIENTE:</td>' +
+                '        </tr>' +
+                '    </thead>' +
+                '    <tbody>' +
+                '        <tr style="height: 29px; background-color: #E7E7E7;">' + 
+                '            <td style="width: 166.734375px; height: 29px; border: white 3px solid; text-align: center"><?php echo isset($cliente_cotizacion) ? $cliente_cotizacion : '' ?></td>' +
+                '        </tr>' +
+                '    </tbody>' +
+                '</table>' +
                 '</div><hr/>'
             )
 
             _el.append(p.html())
 
-                
+
 
             var nw = window.open("", "", "width=1200,height=900,left=250,location=no,titlebar=yes")
             nw.document.write(_el.html())

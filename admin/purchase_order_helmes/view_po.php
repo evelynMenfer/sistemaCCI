@@ -10,7 +10,8 @@ if ($qry->num_rows > 0) {
 <div class="card card-outline card-primary">
     <div class="card-header">
         <h4 class="card-title">Información de la Cotización :
-            <?php echo $po_code ?>
+            <?php echo $po_code ?> -
+            <?php echo $name_empresa ?>
         </h4>
         <br><br>
         <div class="row">
@@ -86,13 +87,14 @@ if ($qry->num_rows > 0) {
 
         <br>
     </div>
-    <div class="card-body" id="print_encabezado" >
-        <div class="col-md-6"><!--class="control-label text-info"-->
-            <label class="control-label" style="color: #DF9A10;">Atención: </label> 
+    <div class="card-body" id="print_encabezado">
+        <div class="col-md-6">
+            <!--class="control-label text-info"-->
+            <label class="control-label">ATENCION: </label>
             <?php echo isset($cperson) ? $cperson : '' ?>
         </div>
         <div class="col-md-6">
-            <label class="control-label" style="color: #DF9A10;">E-mail:</label> 
+            <label class="control-label">EMAIL:</label>
             <?php echo isset($email) ? $email : '' ?>
         </div>
     </div>
@@ -101,21 +103,24 @@ if ($qry->num_rows > 0) {
             <br>
             <table class="table table-striped table-bordered" id="list">
                 <colgroup>
-                    <col width="10%">
-                    <col width="10%">
+                    <col width="5%">
+                    <col width="15%">
                     <col width="30%">
+                    <col width="10%">
+                    <col width="10%">
                     <col width="15%">
                     <col width="15%">
-                    <col width="20%">
                 </colgroup>
-                <thead><!--class="text-light bg-navy"-->
-                    <tr class="text-light" style="background-color: #DF9A10;">
-                            <th class="text-center py-1 px-2">Cantidad</th>
-                            <th class="text-center py-1 px-2">Unidad</th>
-                            <th class="text-center py-1 px-2">Descripción, Marca y Modelo</th>
-                            <th class="text-center py-1 px-2">P.U.</th>
-                            <th class="text-center py-1 px-2">Fecha de entrega</th>
-                            <th class="text-center py-1 px-2">Importe</th>
+                <thead>
+                    <!--class="text-light bg-navy"-->
+                    <tr class="text-light" style="background-color: #F0960C;">
+                        <th class="text-center py-1 px-2">#</th>
+                        <th class="text-center py-1 px-2">FECHA DE ENTREGA</th>
+                        <th class="text-center py-1 px-2">DESCRIPCION, MARCA Y MODELO</th>
+                        <th class="text-center py-1 px-2">UNIDAD</th>
+                        <th class="text-center py-1 px-2">CANTIDAD</th>
+                        <th class="text-center py-1 px-2">P.U.</th>
+                        <th class="text-center py-1 px-2">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,22 +132,26 @@ if ($qry->num_rows > 0) {
                             ?>
                         <tr>
                             <td class="py-1 px-2 text-center">
-                                <?php echo number_format($row['quantity'], 2) ?>
+                                <!--<?php echo number_format($row['quantity'], 2) ?>-->
                             </td>
                             <td class="py-1 px-2 text-center">
-                                <?php echo ($row['unit']) ?>
+                                <!--<?php echo ($row['unit']) ?>-->
                             </td>
                             <td class="py-1 px-2">
-                                <?php echo $row['name'] ?> <br>
                                 <?php echo $row['description'] ?>
                             </td>
                             <td class="py-1 px-2 text-right">
+                                <?php echo ($row['unit']) ?>
+                            </td>
+                            <td class="py-1 px-2 text-right">
+                                <?php echo number_format($row['quantity']) ?>
+                            </td>
+                            <td class="py-1 px-2 text-right">
+                                $
                                 <?php echo number_format($row['price']) ?>
                             </td>
                             <td class="py-1 px-2 text-right">
-                                <!--<php echo number_format($row['price'] * 0.16) ?>-->
-                            </td>
-                            <td class="py-1 px-2 text-right">
+                                $
                                 <?php echo number_format($row['total']) ?>
                             </td>
                         </tr>
@@ -152,52 +161,48 @@ if ($qry->num_rows > 0) {
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Sub Total</th>
+                        <th class="text-right py-1 px-2" colspan="6">SUBTOTAL</th>
                         <th class="text-right py-1 px-2 sub-total">
+                            $
                             <?php echo number_format($total, 2) ?>
                         </th>
                     </tr>
+
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Descuento
-                            <?php echo isset($discount_perc) ? $discount_perc : 0 ?>%
-                        </th>
-                        <th class="text-right py-1 px-2 discount">
-                            <?php echo isset($discount) ? number_format($discount, 2) : 0 ?>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Impuesto
-                            <?php echo isset($tax_perc) ? $tax_perc : 0 ?>%
+                        <th class="text-right py-1 px-2" colspan="6">I.V.A. 16%
                         </th>
                         <th class="text-right py-1 px-2 tax">
+                            $
                             <?php echo isset($tax) ? number_format($tax, 2) : 0 ?>
                         </th>
                     </tr>
                     <tr>
-                        <th class="text-right py-1 px-2" colspan="5">Total</th>
+                        <th class="text-right py-1 px-2" colspan="6">TOTAL</th>
                         <th class="text-right py-1 px-2 grand-total">
+                            $
                             <?php echo isset($amount) ? number_format($amount, 2) : 0 ?>
-                        </th>
-                    </tr>
-                    <tr>
-                        <th class="text-left py-1 px-1" colspan="6">
-                            <label for="remarks" style="color: #DF9A10;">Forma de Pago:</label>
-                            <?php echo isset($metodo_pago) ? $metodo_pago : ''; ?>
-                        </th>
-                    </tr> 
-                    <tr>
-                        <th class="text-left py-1 px-1" colspan="6">
-                            <label for="remarks" style="color: #DF9A10;">Notas:</label>
-                            <?php echo isset($remarks) ? $remarks : '' ?>
                         </th>
                     </tr>
                 </tfoot>
             </table>
+
+            <table class="table table-striped table-bordered" id="list">
+                <tr>
+                    <th>
+                        <label for="metodo_pago" style="color: #F0960C;">Forma de Pago:</label>
+                        <?php echo isset($metodo_pago) ? $metodo_pago : ''; ?>
+                    </th>
+                    <th> <label for="remarks" style="color: #F0960C;">Notas:</label>
+                        <?php echo isset($remarks) ? $remarks : '' ?>
+                    </th>
+                </tr>
+            </table>
+
             <div class="row">
                 <div class="col-md-6">
                     <br><br>
                     <p>HORARIO DE ATENCIÓN A CLIENTES DE LUNES-SABADO 08:00 A 16:00
-                    <br>EMILIO CARRANZA 811 INT 4, REFORMA CH C.P 68050, OAXACA DE JUAREZ, OAX.
+                        <br>EMILIO CARRANZA 811 INT 4, REFORMA CH C.P 68050, OAXACA DE JUAREZ, OAX.
                     </p>
                 </div>
             </div>
@@ -224,7 +229,8 @@ if ($qry->num_rows > 0) {
         <button class="btn btn-flat btn-info" type="button" id="print">Imprimir</button>
         <a class="btn btn-flat btn-primary"
             href="<?php echo base_url . '/admin?page=purchase_order_helmes/manage_po&id=' . (isset($id) ? $id : '') ?>">Editar</a>
-        <a class="btn btn-flat btn-danger" href="<?php echo base_url . '/admin?page=purchase_order_helmes' ?>">Volver</a>
+        <a class="btn btn-flat btn-danger"
+            href="<?php echo base_url . '/admin?page=purchase_order_helmes' ?>">Volver</a>
     </div>
 </div>
 <table id="clone_list" class="d-none">
@@ -268,7 +274,7 @@ if ($qry->num_rows > 0) {
                 '<div class="col-1 text-center" >' +
                 '<img src="<?php echo validate_image($logo_empresa) ?>" width="1100px" height="150px"/>' +
                 '</div><hr/>')
-            _el.append( 
+            _el.append(
                 '<div class="d-flex justify-content-center">' +
                 '<table class="demoTable" style="height: 54px; width: 672px;">' +
                 '    <thead>' +
@@ -316,7 +322,7 @@ if ($qry->num_rows > 0) {
 
             _el.append(p.html())
 
-                
+
 
             var nw = window.open("", "", "width=1200,height=900,left=250,location=no,titlebar=yes")
             nw.document.write(_el.html())

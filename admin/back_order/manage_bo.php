@@ -231,7 +231,7 @@ if (isset($_GET['id'])) {
                         var row = items[supplier_id][k]
                         var opt = $('<option>')
                         opt.attr('value', row.id)
-                        opt.text(row.name)
+                        opt.text(row.description)
                         $('#item_id').append(opt)
                     })
                     resolve()
