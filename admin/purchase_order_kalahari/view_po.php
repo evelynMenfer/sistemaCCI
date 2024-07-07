@@ -223,7 +223,7 @@ if ($qry->num_rows > 0) {
                     <br><br>
                     <p  style="text-align: center;" >LA DISPONIBILIDAD DE LOS PRODUCTOS ES SALVO PREVIA VENTA, 
                     <br>PRECIOS SUJETOS A CAMBIO SIN PREVIO AVISO POR PARTE DEL FABRICANTE, 
-                    <br>VIGENCIA DE COTIZACIÓN 15
+                    <br>VIGENCIA DE COTIZACIÓN 15 DIAS
                     <br>ATENCION A CLIENTES
                 </p>
             </div>

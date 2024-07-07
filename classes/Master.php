@@ -136,6 +136,7 @@ class Master extends DBConnection
 
 	function save_item()
 	{
+
 		extract($_POST);
 		$data = "";
 		foreach ($_POST as $k => $v) {
@@ -145,7 +146,10 @@ class Master extends DBConnection
 				$data .= " `{$k}`='{$v}' ";
 			}
 		}
-		$check = $this->conn->query("SELECT * FROM `item_list` where `name` = '{$name}' and `supplier_id` = '{$supplier_id}' " . (!empty($id) ? " and id != {$id} " : "") . " ")->num_rows;
+
+		//$check = $this->conn->query("SELECT * FROM `item_list` where `description` = '{$description}' and `supplier_id` = '{$supplier_id}' " . (!empty($id) ? " and id != {$id} " : "") . " ")->num_rows;
+		$check = $this->conn->query("SELECT * FROM `item_list` where `description` = '{$description}' and `supplier_id` = '{$supplier_id}' " . (!empty($id) ? " and id != {$id} " : "") . " ")->num_rows;
+
 		if ($this->capture_err())
 			return $this->capture_err();
 		if ($check > 0) {
@@ -154,6 +158,8 @@ class Master extends DBConnection
 			return json_encode($resp);
 			exit;
 		}
+
+		
 		if (empty($id)) {
 			$sql = "INSERT INTO `item_list` set {$data} ";
 			$save = $this->conn->query($sql);

@@ -176,7 +176,7 @@ if (isset($_GET['id'])) {
                                     <option <?php echo !isset($supplier_id) ? 'selected' : '' ?> disabled></option>
                                     <?php
                                     //$supplier = $conn->query("SELECT * FROM `supplier_list` where status = 1 order by `name` asc");
-                                    $supplier = $conn->query("SELECT DISTINCT supplier_list.id, supplier_list.* FROM `supplier_list` inner join `item_list` ON item_list.supplier_id = supplier_list.id where supplier_list.status = 1 order by `name` asc");
+                                    $supplier = $conn->query("SELECT DISTINCT supplier_list.id, supplier_list.* FROM `supplier_list` inner join `item_list` ON item_list.supplier_id = supplier_list.id where supplier_list.status = 1 and item_list.status = 1 order by `name` asc");
                                     while ($row = $supplier->fetch_assoc()):
                                         ?>
                                         <option value="<?php echo $row['id'] ?>" <?php echo isset($supplier_id) && $supplier_id == $row['id'] ? "selected" : "" ?>><?php echo $row['name'] ?>

@@ -92,7 +92,7 @@
                                     </p>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <!--<li class="nav-item">
                                 <a href="<?php echo base_url ?>admin/?page=stocks" class="nav-link nav-stocks">
                                     <i class="nav-icon fas fa-table"></i>
                                     <p>
@@ -115,7 +115,7 @@
                                         Devoluciones
                                     </p>
                                 </a>
-                            </li>
+                            </li>-->
                             <?php if ($_settings->userdata('type') == 1) : ?>
                             <li class="nav-header">Mantenimiento</li>
 
