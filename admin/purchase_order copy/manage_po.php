@@ -59,7 +59,7 @@ if (isset($_GET['id'])) {
                             <select name="id_company" id="id_company" class="custom-select select2">
                                 <option <?php echo !isset($company_id) ? 'selected' : '' ?> disabled></option>
                                 <?php
-                                $supplier = $conn->query("SELECT * FROM `company_list` where status = 1 order by `name` asc");
+                                $supplier = $conn->query("SELECT * FROM `company_list` where status = 1 and id = 3 order by `name` asc");
                                 while ($row = $supplier->fetch_assoc()):
                                     ?>
                                     <option value="<?php echo $row['id'] ?>" <?php echo isset($id_company) && $id_company == $row['id'] ? "selected" : "" ?>><?php echo $row['name'] ?></option>
@@ -159,6 +159,9 @@ if (isset($_GET['id'])) {
                         $cost_arr = array();
                         $item = $conn->query("SELECT * FROM `item_list` where status = 1 order by `name` asc");
                         while ($row = $item->fetch_assoc()):
+                            //REEMPLAZAR 
+                            $row = str_replace("\r\n","\\u000D\\u000A",$row);
+                            $row = str_replace('"','\"',$row);
                             $item_arr[$row['supplier_id']][$row['id']] = $row;
                             $cost_arr[$row['id']] = $row['cost'];
                         endwhile;

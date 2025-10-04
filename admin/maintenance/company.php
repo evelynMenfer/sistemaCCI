@@ -2,7 +2,7 @@
 	<div class="card-header">
 		<h3 class="card-title">Lista de Empresas</h3>
 		<div class="card-tools">
-			<a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span> Nuevo</a>
+			<a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span> Nueva Empresa</a>
 		</div>
 	</div>
 	<div class="card-body">
@@ -48,19 +48,13 @@
 										<span class="badge badge-danger rounded-pill">Inactivo</span>
 									<?php endif; ?>
 								</td>
-								<td align="center">
-									<button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-										Acción
-										<span class="sr-only">Toggle Dropdown</span>
-									</button>
-									<div class="dropdown-menu" role="menu">
-										<a class="dropdown-item view_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-eye text-dark"></span> Ver</a>
-										<div class="dropdown-divider"></div>
-										<a class="dropdown-item edit_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Editar</a>
-										<div class="dropdown-divider"></div>
-										<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Eliminar</a>
-									</div>
-								</td>
+								<td>
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-outline-secondary view_data" data-id="<?= $row['id'] ?>"><i class="fa fa-eye"></i></button>
+                  <button class="btn btn-sm btn-outline-primary edit_data" data-id="<?= $row['id'] ?>"><i class="fa fa-edit"></i></button>
+                  <button class="btn btn-sm btn-outline-danger delete_data" data-id="<?= $row['id'] ?>"><i class="fa fa-trash"></i></button>
+                </div>
+              </td>
 							</tr>
 						<?php endwhile; ?>
 					</tbody>
@@ -72,7 +66,7 @@
 <script>
 	$(document).ready(function() {
 		$('.delete_data').click(function() {
-			_conf("Deseas eliminar al Empresa permanentemente?", "delete_category", [$(this).attr('data-id')])
+			_conf("Deseas eliminar la Empresa permanentemente?", "delete_category", [$(this).attr('data-id')])
 		})
 		$('#create_new').click(function() {
 			uni_modal("<i class='fa fa-plus'></i> Agregar Empresa", "maintenance/manage_company.php", "mid-large")
