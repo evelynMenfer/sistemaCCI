@@ -118,7 +118,7 @@ CREATE TABLE `purchase_order_list` (
   `id` int(30) NOT NULL,
   `po_code` varchar(50) NOT NULL,
   `supplier_id` int(30) NOT NULL,
-  `amount` float NOT NULL,
+  `amount` FLOAT NOT NULL DEFAULT 0,
   `discount_perc` float NOT NULL DEFAULT 0,
   `discount` float NOT NULL DEFAULT 0,
   `tax_perc` float NOT NULL DEFAULT 0,
