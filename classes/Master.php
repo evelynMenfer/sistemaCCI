@@ -1,4 +1,12 @@
 <?php
+// =========================
+// CONFIGURACIÓN DE ERRORES
+// =========================
+ini_set('log_errors', 1);
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 require_once('../config.php');
 
 class Master extends DBConnection {
@@ -16,11 +24,11 @@ class Master extends DBConnection {
         return json_encode(['status'=>'failed','error'=>$this->conn->error]);
     }
 
-    /** ======================
-     *   SAVE / DELETE BASE
-     * ======================= */
+    /* =======================================================
+     *   SECCIÓN GENERAL: GUARDAR / ELIMINAR ENTIDADES
+     * ======================================================= */
 
-    /* -------- Proveedor -------- */
+    // --- GUARDAR PROVEEDOR ---
     function save_supplier(){ 
         extract($_POST);
         $data = "";
@@ -48,7 +56,7 @@ class Master extends DBConnection {
         return $del ? json_encode(['status'=>'success']) : json_encode(['status'=>'failed','error'=>$this->conn->error]);
     }
 
-    /* -------- Empresa -------- */
+    // --- GUARDAR EMPRESA ---
     function save_company(){ 
         extract($_POST);
         $data = "";
@@ -76,7 +84,7 @@ class Master extends DBConnection {
         return $del ? json_encode(['status'=>'success']) : json_encode(['status'=>'failed','error'=>$this->conn->error]);
     }
 
-    /* -------- Producto -------- */
+    // --- GUARDAR PRODUCTO ---
     function save_item() {
         extract($_POST);
         $fields=[]; $types=''; $values=[];
@@ -111,105 +119,149 @@ class Master extends DBConnection {
         return $del ? json_encode(['status'=>'success']) : json_encode(['status'=>'failed','error'=>$this->conn->error]);
     }
 
-    /* -------- Cotización (Purchase Order) -------- */
-    function save_po(){
-        // Generar código si es nuevo
-        if (empty($_POST['id'])) {
-            $prefix = "C";
-            $num = 1;
-            do {
-                $code = sprintf("%'.04d", $num);
-                $exists = $this->conn->query("SELECT 1 FROM purchase_order_list WHERE po_code='{$prefix}{$code}'")->num_rows;
-                $num++;
-            } while($exists);
-            $_POST['po_code'] = $prefix.$code;
-        }
+    /* =======================================================
+     *   COTIZACIONES / PURCHASE ORDER
+     * ======================================================= */
+	function save_po(){
+		// 🔹 Asegurar proveedor válido o genérico
+		$defaultSupplierId = 1;
+		$checkSupplier = $this->conn->query("SELECT id FROM supplier_list WHERE id = {$defaultSupplierId}");
+		if(!$checkSupplier || $checkSupplier->num_rows == 0){
+			$this->conn->query("INSERT INTO supplier_list (id, name, address, status) VALUES (1, 'Proveedor Genérico', '', 1)");
+		}
+	
+		// 🔹 Si no viene supplier_id o es inválido, usar el genérico
+		$supplier_id = intval($_POST['supplier_id'] ?? 0);
+		if ($supplier_id <= 0) {
+			$_POST['supplier_id'] = $defaultSupplierId;
+		}
+	
+		// 🔹 Validar productos
+		if (empty($_POST['item_id']) || count($_POST['item_id']) == 0) {
+			return json_encode(['status'=>'failed','msg'=>'Debes agregar al menos un producto antes de guardar.']);
+		}
+	
+		// 🔹 Generar código si es nuevo
+		if (empty($_POST['id'])) {
+			$prefix = "C";
+			$num = 1;
+			do {
+				$code = sprintf("%'.04d", $num);
+				$exists = $this->conn->query("SELECT 1 FROM purchase_order_list WHERE po_code='{$prefix}{$code}'")->num_rows;
+				$num++;
+			} while($exists);
+			$_POST['po_code'] = $prefix.$code;
+		}
+	
+		// 🔹 Conversor seguro a float (convierte vacío o NULL a 0.0)
+		$toFloat = function($v){
+			if ($v === null || $v === '' || is_bool($v)) return 0.0;
+			$v = trim((string)$v);
+			$v = str_replace([',',' '], ['',''], $v);
+			return is_numeric($v) ? (float)$v : 0.0;
+		};
+	
+		// 🔹 Campos que no deben ir en la cabecera
+		$exclude = ['id','item_id','qty','price','unit','discount','total','amount','tax'];
+		$set = [];
+		foreach($_POST as $k=>$v){
+			if (in_array($k,$exclude) || is_array($v)) continue;
+			if (stripos($k, 'perc') !== false || stripos($k, 'amount') !== false || stripos($k, 'tax') !== false || stripos($k, 'discount') !== false) {
+				// 🔹 Si es campo numérico, convertir vacío a 0
+				$val = $toFloat($v);
+			} else {
+				$val = $this->conn->real_escape_string((string)$v);
+			}
+			$set[] = "`$k`='{$val}'";
+		}
+	
+		$id = intval($_POST['id'] ?? 0);
+		$this->conn->begin_transaction();
+	
+		try {
+			// 🔹 Guardar cabecera
+			$sql = $id==0
+				? "INSERT INTO purchase_order_list SET ".implode(", ",$set)
+				: "UPDATE purchase_order_list SET ".implode(", ",$set)." WHERE id='{$id}'";
+			if(!$this->conn->query($sql)) throw new Exception("Cabecera: ".$this->conn->error);
+	
+			$po_id = $id==0 ? $this->conn->insert_id : $id;
+	
+			// 🔹 Limpiar productos antiguos
+			$this->conn->query("DELETE FROM po_items WHERE po_id={$po_id}");
+	
+			// 🔹 Insertar productos nuevos
+			$stmt = $this->conn->prepare("
+				INSERT INTO po_items (po_id,item_id,quantity,price,unit,discount,total)
+				VALUES (?,?,?,?,?,?,?)
+			");
+			if(!$stmt) throw new Exception("Error prepare: ".$this->conn->error);
+	
+			$stmt->bind_param("iiddsdd", $b_po,$b_item,$b_qty,$b_price,$b_unit,$b_disc,$b_total);
+			$b_po = $po_id;
+			$subtotal = 0.0;
+	
+			$item_ids = $_POST['item_id'] ?? [];
+			$qtys = $_POST['qty'] ?? [];
+			$prices = $_POST['price'] ?? [];
+			$units = $_POST['unit'] ?? [];
+			$discounts = $_POST['discount'] ?? [];
+	
+			foreach($item_ids as $k=>$iid){
+				$b_item = intval($iid);
+				if ($b_item <= 0) continue;
+				$b_qty = $toFloat($qtys[$k] ?? 0);
+				$b_price = $toFloat($prices[$k] ?? 0);
+				$b_unit = (string)($units[$k] ?? '');
+				$b_disc = $toFloat($discounts[$k] ?? 0);
+				$b_total = round(($b_price - ($b_price*$b_disc/100))*$b_qty,2);
+	
+				if(!$stmt->execute()) throw new Exception("Item: ".$stmt->error);
+				$subtotal += $b_total;
+			}
+			$stmt->close();
+	
+			// 🔹 Calcular totales
+			$discount_perc = $toFloat($_POST['discount_perc'] ?? 0);
+			$tax_perc = $toFloat($_POST['tax_perc'] ?? 0);
+			$discount = round($subtotal * $discount_perc / 100, 2);
+			$tax = round(($subtotal - $discount) * $tax_perc / 100, 2);
+			$amount = round($subtotal - $discount + $tax, 2);
+	
+			// 🔹 Actualizar totales
+			$sql = "
+				UPDATE purchase_order_list SET
+					discount='{$discount}',
+					discount_perc='{$discount_perc}',
+					tax='{$tax}',
+					tax_perc='{$tax_perc}',
+					amount='{$amount}'
+				WHERE id='{$po_id}'
+			";
+			if(!$this->conn->query($sql)) throw new Exception("Totales: ".$this->conn->error);
+	
+			$this->conn->commit();
+			$this->settings->set_flashdata('success',$id==0 ? "Cotización creada correctamente." : "Cotización actualizada correctamente.");
+	
+			return json_encode(['status'=>'success','id'=>$po_id]);
+	
+		} catch (Exception $e) {
+			$this->conn->rollback();
+			return json_encode(['status'=>'failed','msg'=>'EXCEPCIÓN: '.$e->getMessage()]);
+		}
+	}
+	
 
-        $toFloat = function($v){
-            if ($v === null) return 0.0;
-            $v = trim((string)$v);
-            $v = str_replace([',',' '],['',''],$v);
-            return is_numeric($v) ? (float)$v : 0.0;
-        };
+	function delete_po(){
+		$id = intval($_POST['id'] ?? 0);
+		if ($id<=0) return json_encode(['status'=>'failed','msg'=>'ID inválido']);
+		$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
+		$del = $this->conn->query("DELETE FROM purchase_order_list WHERE id={$id}");
+		return $del ? json_encode(['status'=>'success','msg'=>'Cotización eliminada correctamente'])
+					: json_encode(['status'=>'failed','msg'=>$this->conn->error]);
+	}
 
-        $exclude = ['id','item_id','qty','price','unit','discount','descuento','total','amount','discount_perc','tax'];
-        $set = [];
-        foreach($_POST as $k=>$v){
-            if (in_array($k,$exclude) || is_array($v)) continue;
-            $val = is_numeric($v) ? $v : $this->conn->real_escape_string($v);
-            $set[] = "`$k`='{$val}'";
-        }
-
-        $id = intval($_POST['id'] ?? 0);
-        $this->conn->begin_transaction();
-        try{
-            $sql = $id==0
-                ? "INSERT INTO purchase_order_list SET ".implode(", ",$set)
-                : "UPDATE purchase_order_list SET ".implode(", ",$set)." WHERE id='{$id}'";
-            if(!$this->conn->query($sql)) throw new Exception("Error cabecera: ".$this->conn->error);
-
-            $po_id = $id==0 ? $this->conn->insert_id : $id;
-
-            // Validar productos
-            $item_ids = $_POST['item_id'] ?? [];
-            if (empty($item_ids)) throw new Exception("Debe agregar al menos un producto.");
-
-            // Borrar items antiguos
-            $this->conn->query("DELETE FROM po_items WHERE po_id={$po_id}");
-
-            // Insertar items
-            $stmt = $this->conn->prepare("
-                INSERT INTO po_items (po_id,item_id,quantity,price,unit,discount,total) 
-                VALUES (?,?,?,?,?,?,?)
-            ");
-            if(!$stmt) throw new Exception("Error prepare: ".$this->conn->error);
-            $stmt->bind_param("iiddsdd",$b_po,$b_item,$b_qty,$b_price,$b_unit,$b_disc,$b_total);
-            $b_po=$po_id;
-            $subtotal=0.0;
-
-            $qtys=$_POST['qty']??[]; $prices=$_POST['price']??[];
-            $units=$_POST['unit']??[]; $discounts=$_POST['discount']??[];
-            foreach($item_ids as $k=>$iid){
-                $iid=intval($iid); if($iid<=0) continue;
-                $b_item=$iid;
-                $b_qty=$toFloat($qtys[$k]??0);
-                $b_price=$toFloat($prices[$k]??0);
-                $b_unit=$units[$k]??'';
-                $b_disc=$toFloat($discounts[$k]??0);
-                $b_total=round(($b_price - ($b_price*$b_disc/100))*$b_qty,2);
-                if(!$stmt->execute()) throw new Exception("Insert item: ".$stmt->error);
-                $subtotal+=$b_total;
-            }
-            $stmt->close();
-
-            // Totales
-            $tax_perc=$toFloat($_POST['tax_perc']??0);
-            $tax=round($subtotal*$tax_perc/100,2);
-            $amount=round($subtotal+$tax,2);
-            $sql="UPDATE purchase_order_list 
-                  SET tax_perc='{$tax_perc}', tax='{$tax}', amount='{$amount}', discount='0', discount_perc='0'
-                  WHERE id='{$po_id}'";
-            if(!$this->conn->query($sql)) throw new Exception("Actualizar totales: ".$this->conn->error);
-
-            $this->conn->commit();
-            $this->settings->set_flashdata('success',$id==0?"Cotización creada.":"Cotización actualizada.");
-            return json_encode(['status'=>'success','id'=>$po_id]);
-        }catch(Exception $e){
-            $this->conn->rollback();
-            return json_encode(['status'=>'failed','msg'=>$e->getMessage()]);
-        }
-    }
-
-    function delete_po(){
-        $id = intval($_POST['id'] ?? 0);
-        if ($id<=0) return json_encode(['status'=>'failed','msg'=>'ID inválido']);
-        $this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
-        $del = $this->conn->query("DELETE FROM purchase_order_list WHERE id={$id}");
-        return $del ? json_encode(['status'=>'success','msg'=>'Cotización eliminada correctamente'])
-                    : json_encode(['status'=>'failed','msg'=>$this->conn->error]);
-    }
-
-// --- Guardar y eliminar Recepción ---
+    // --- Guardar y eliminar Recepción ---
 function save_receiving() { 
 	if (empty($_POST['id'])) {
 		$prefix = "BO";
@@ -528,23 +580,80 @@ function delete_sale()
 	$this->conn->query("DELETE FROM sales_list WHERE id={$id}");
 	return json_encode(['status'=>'success','msg'=>'Venta eliminada correctamente']);
 }
+    // --- BUSCAR PRODUCTOS ---
+    function search_products(){
+        $q = trim($_GET['q'] ?? '');
+        if(strlen($q) < 2) return json_encode([]);
+
+        $sql = "
+            SELECT 
+                i.id,
+                i.description AS descripcion,
+                s.name AS proveedor,
+                i.supplier_id,
+                i.stock,
+                i.product_cost AS precio_compra,
+                i.cost AS precio_venta
+            FROM item_list i
+            LEFT JOIN supplier_list s ON s.id = i.supplier_id
+            WHERE i.status = 1
+              AND (i.description LIKE CONCAT('%', ?, '%')
+                OR s.name LIKE CONCAT('%', ?, '%'))
+            ORDER BY i.description ASC
+            LIMIT 20
+        ";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $q, $q);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $data = [];
+        while($row = $res->fetch_assoc()) $data[] = $row;
+
+        header('Content-Type: application/json; charset=utf-8');
+        return json_encode($data);
+    }
 }
 
 /* ======================
  *        ROUTER
  * ======================= */
-$Master = new Master();
-$action = strtolower($_GET['f'] ?? 'none');
-$sysset = new SystemSettings();
+$Master  = new Master();
+$action  = strtolower($_GET['f'] ?? 'none');
+$sysset  = new SystemSettings();
 
-switch ($action) {
-  case 'save_supplier': echo $Master->save_supplier(); break;
-  case 'delete_supplier': echo $Master->delete_supplier(); break;
-  case 'save_company': echo $Master->save_company(); break;
-  case 'delete_company': echo $Master->delete_company(); break;
-  case 'save_item': echo $Master->save_item(); break;
-  case 'delete_item': echo $Master->delete_item(); break;
-  case 'save_po': echo $Master->save_po(); break;
-  case 'delete_po': echo $Master->delete_po(); break;
-  default: break;
-}
+try {
+  switch ($action) {
+    case 'save_supplier':   $out = $Master->save_supplier(); break;
+    case 'delete_supplier': $out = $Master->delete_supplier(); break;
+    case 'save_company':    $out = $Master->save_company(); break;
+    case 'delete_company':  $out = $Master->delete_company(); break;
+    case 'save_item':       $out = $Master->save_item(); break;
+    case 'delete_item':     $out = $Master->delete_item(); break;
+    case 'save_po':         $out = $Master->save_po(); break;
+    case 'delete_po':       $out = $Master->delete_po(); break;
+    case 'save_receiving':  $out = $Master->save_receiving(); break;
+    case 'delete_receiving':$out = $Master->delete_receiving(); break;
+    case 'save_return':     $out = $Master->save_return(); break;
+    case 'delete_return':   $out = $Master->delete_return(); break;
+    case 'save_sale':       $out = $Master->save_sale(); break;
+    case 'delete_sale':     $out = $Master->delete_sale(); break;
+    case 'search_products': $out = $Master->search_products(); break;
+    default:                $out = json_encode(['status'=>'failed','msg'=>'Acción no válida']);
+  }
+} catch (Throwable $e) {
+	header('Content-Type: text/plain; charset=utf-8');
+	echo "⚠️ Excepción detectada:\n\n";
+	echo $e->getMessage() . "\n\n";
+	echo $e->getTraceAsString();
+	exit;
+  }
+  
+
+while (ob_get_level() > 0) { ob_end_clean(); }
+
+header('Content-Type: application/json; charset=utf-8');
+if (!is_string($out)) { $out = json_encode($out); }
+echo $out;
+exit;
+?>

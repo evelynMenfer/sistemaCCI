@@ -4,7 +4,7 @@ $qry = $conn->query("
   SELECT p.*, s.name AS supplier, c.logo AS logo_empresa, 
          c.name AS name_empresa, c.email, c.contact, c.address 
   FROM purchase_order_list p 
-  INNER JOIN supplier_list s ON p.supplier_id = s.id 
+  LEFT JOIN supplier_list s ON p.supplier_id = s.id 
   LEFT JOIN company_list c ON p.id_company = c.id 
   WHERE p.id = {$id}
 ");
@@ -15,37 +15,47 @@ if ($qry && $qry->num_rows > 0) {
 <style>
   .card-title { font-weight:600; }
   th, td { vertical-align: middle !important; }
-  thead th { background-color:#001f3f; color:white; }
+  thead th { background-color:#001f3f; color:white; text-align:center; }
   tfoot th { background:#f6f6f6; }
+  .text-end { text-align: right !important; }
+  .text-center { text-align: center !important; }
+  .text-start { text-align: left !important; }
+  .border-top-2 { border-top: 2px solid #001f3f !important; }
 </style>
 
 <div class="card card-outline card-primary">
   <div class="card-header">
     <h4 class="card-title">
-      Información de la Cotización: <?php echo $po_code ?? '' ?> - <?php echo $name_empresa ?? '' ?>
+      Información de la Cotización: <?php echo $po_code ?? '' ?> 
+      <?php if (!empty($name_empresa)): ?> - <?php echo $name_empresa ?><?php endif; ?>
     </h4>
+
     <div class="mt-3 row">
-      <div class="col-md-3"><label class="text-info">OC</label><div><?php echo $oc ?? '' ?></div></div>
-      <div class="col-md-3"><label class="text-info">Proveedor</label><div><?php echo $supplier ?? '' ?></div></div>
-      <div class="col-md-3"><label class="text-info">No. Factura</label><div><?php echo $num_factura ?? '' ?></div></div>
-      <div class="col-md-3"><label class="text-info">Carga al Portal</label><div><?php echo $date_carga_portal ?? '' ?></div></div>
+      <div class="col-md-3"><label class="text-info">Proveedor</label><div><?php echo $supplier ?? '—'; ?></div></div>
+      <div class="col-md-3"><label class="text-info">OC</label><div><?php echo $oc ?? '—'; ?></div></div>
+      <div class="col-md-3"><label class="text-info">No. Factura</label><div><?php echo $num_factura ?? '—'; ?></div></div>
+      <div class="col-md-3"><label class="text-info">Carga al Portal</label><div><?php echo $date_carga_portal ?? '—'; ?></div></div>
     </div>
     <div class="row mt-2">
-      <div class="col-md-3"><label class="text-info">Fecha de Pago</label><div><?php echo $date_pago ?? '' ?></div></div>
-      <div class="col-md-3"><label class="text-info">Folio Fiscal</label><div><?php echo $folio_fiscal ?? '' ?></div></div>
-      <div class="col-md-3"><label class="text-info">Comprobante de Pago</label><div><?php echo $folio_comprobante_pago ?? '' ?></div></div>
-      <div class="col-md-3"><label class="text-info">Pago en Efectivo</label><div><?php echo $pago_efectivo ?? '' ?></div></div>
+      <div class="col-md-3"><label class="text-info">Fecha de Pago</label><div><?php echo $date_pago ?? '—'; ?></div></div>
+      <div class="col-md-3"><label class="text-info">Folio Fiscal</label><div><?php echo $folio_fiscal ?? '—'; ?></div></div>
+      <div class="col-md-3"><label class="text-info">Comprobante de Pago</label><div><?php echo $folio_comprobante_pago ?? '—'; ?></div></div>
+      <div class="col-md-3"><label class="text-info">Pago en Efectivo</label><div><?php echo $pago_efectivo ?? '—'; ?></div></div>
     </div>
   </div>
 
   <div class="card-body" id="print_out">
     <div class="row mb-3">
       <div class="col-md-6">
-        <img src="<?php echo validate_image($logo_empresa ?? '') ?>" style="max-height:80px;" alt="Logo">
-        <p><strong><?php echo $name_empresa ?? '' ?></strong><br>
-        <?php echo $address ?? '' ?><br>
-        Tel: <?php echo $contact ?? '' ?><br>
-        Email: <?php echo $email ?? '' ?></p>
+        <?php if (!empty($logo_empresa)): ?>
+          <img src="<?php echo validate_image($logo_empresa) ?>" style="max-height:80px;" alt="Logo">
+        <?php endif; ?>
+        <p class="mt-2">
+          <strong><?php echo $name_empresa ?? '' ?></strong><br>
+          <?php echo $address ?? '' ?><br>
+          Tel: <?php echo $contact ?? '' ?><br>
+          Email: <?php echo $email ?? '' ?>
+        </p>
       </div>
       <div class="col-md-6 text-end">
         <p><strong>Vendido a:</strong> <?php echo $cliente_cotizacion ?? '' ?><br>
@@ -54,15 +64,16 @@ if ($qry && $qry->num_rows > 0) {
       </div>
     </div>
 
+    <!-- ================= TABLA DE PRODUCTOS ================= -->
     <table class="table table-striped table-bordered">
-      <thead class="text-center">
+      <thead>
         <tr>
-          <th>Cant.</th>
-          <th>Unidad</th>
-          <th>Descripción</th>
-          <th>Precio Unitario</th>
-          <th>Desc %</th>
-          <th>Total</th>
+          <th style="width:8%">Cant.</th>
+          <th style="width:10%">Unidad</th>
+          <th style="width:40%">Descripción</th>
+          <th style="width:12%">Precio Unitario</th>
+          <th style="width:10%">Desc %</th>
+          <th style="width:15%">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -79,19 +90,38 @@ if ($qry && $qry->num_rows > 0) {
             $subtotal += $line_total;
         ?>
         <tr>
-          <td class="text-center"><?php echo number_format($row['quantity'],2) ?></td>
+          <td class="text-end"><?php echo number_format($row['quantity'],2) ?></td>
           <td class="text-center"><?php echo $row['unit'] ?></td>
-          <td><?php echo $row['description'] ?></td>
+          <td class="text-start"><?php echo $row['description'] ?></td>
           <td class="text-end">$<?php echo number_format($row['price'],2) ?></td>
           <td class="text-end"><?php echo number_format($row['discount'],2) ?>%</td>
           <td class="text-end">$<?php echo number_format($line_total,2) ?></td>
         </tr>
         <?php endwhile; ?>
       </tbody>
+
+      <!-- ================= TOTALES ================= -->
       <tfoot>
-        <tr><th colspan="5" class="text-end">Sub Total</th><th class="text-end">$<?php echo number_format($subtotal,2) ?></th></tr>
-        <tr><th colspan="5" class="text-end">Impuesto <?php echo $tax_perc ?? 0 ?>%</th><th class="text-end">$<?php echo number_format($tax ?? ($subtotal*($tax_perc??0)/100),2) ?></th></tr>
-        <tr><th colspan="5" class="text-end">Total</th><th class="text-end">$<?php echo number_format($amount ?? ($subtotal + ($subtotal*($tax_perc??0)/100)),2) ?></th></tr>
+        <tr>
+          <th colspan="5" class="text-end">Sub Total</th>
+          <th class="text-end">$<?php echo number_format($subtotal,2) ?></th>
+        </tr>
+        <tr>
+          <th colspan="5" class="text-end">
+            Descuento Total (<?php echo $discount_perc ?? 0 ?>%)
+          </th>
+          <th class="text-end">$<?php echo number_format($discount ?? 0,2) ?></th>
+        </tr>
+        <tr>
+          <th colspan="5" class="text-end">
+            Impuesto (<?php echo $tax_perc ?? 0 ?>%)
+          </th>
+          <th class="text-end">$<?php echo number_format($tax ?? 0,2) ?></th>
+        </tr>
+        <tr class="border-top-2">
+          <th colspan="5" class="text-end">Total</th>
+          <th class="text-end">$<?php echo number_format($amount ?? 0,2) ?></th>
+        </tr>
       </tfoot>
     </table>
 
@@ -119,7 +149,10 @@ function printDiv(){
       <style>
         body{font-family:Arial,sans-serif;padding:20px;}
         th,td{border:1px solid #ccc;padding:6px;}
-        th{background:#001f3f;color:white;}
+        th{background:#001f3f;color:white;text-align:center;}
+        td{text-align:right;}
+        td:nth-child(3){text-align:left;} /* Descripción */
+        td:nth-child(2){text-align:center;} /* Unidad */
         table{width:100%;border-collapse:collapse;}
         h4{text-align:center;margin-bottom:20px;}
       </style>
