@@ -29,7 +29,7 @@ if ($qry && $qry->num_rows > 0) {
       Información de la Cotización: <?php echo $po_code ?? '' ?> 
       <?php if (!empty($name_empresa)): ?> - <?php echo $name_empresa ?><?php endif; ?>
     </h4>
-
+        <br>
     <div class="mt-3 row">
       <div class="col-md-3"><label class="text-info">Proveedor</label><div><?php echo $supplier ?? '—'; ?></div></div>
       <div class="col-md-3"><label class="text-info">OC</label><div><?php echo $oc ?? '—'; ?></div></div>
