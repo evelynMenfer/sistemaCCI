@@ -1,30 +1,40 @@
 <?php
-if(!defined('DB_SERVER')){
+if (!defined('DB_SERVER')) {
     require_once("../initialize.php");
 }
 
 class DBConnection {
+    private $host;
+    private $username;
+    private $password;
+    private $database;
+    private $port;
 
-    private $host = DB_SERVER;
-    private $username = DB_USERNAME;
-    private $password = DB_PASSWORD;
-    private $database = DB_NAME;
-    
     public $conn;
-    
+
     public function __construct() {
+        // Asignar valores desde las constantes globales
+        $this->host = DB_SERVER;
+        $this->username = DB_USERNAME;
+        $this->password = DB_PASSWORD;
+        $this->database = DB_NAME;
+        $this->port = defined('DB_PORT') ? DB_PORT : 3306;
 
-        if (!isset($this->conn)) {
-            
-            $this->conn = new mysqli($this->host, $this->username, $this->password, $this->database);
-            
-            if ($this->conn->connect_error) {
-                die('No se puede conectar al servidor de la base de datos: ' . $this->conn->connect_error);
-            }
+        // Crear conexión
+        $this->conn = new mysqli(
+            $this->host,
+            $this->username,
+            $this->password,
+            $this->database,
+            $this->port
+        );
 
-            // Configura la conexión para UTF-8
-            $this->conn->set_charset("utf8mb4");
-        }    
+        if ($this->conn->connect_error) {
+            die('❌ Error al conectar con la base de datos: ' . $this->conn->connect_error);
+        }
+
+        // Configura la conexión para UTF-8
+        $this->conn->set_charset("utf8mb4");
     }
 
     public function __destruct() {
