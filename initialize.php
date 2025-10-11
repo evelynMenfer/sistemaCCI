@@ -1,6 +1,6 @@
 <?php
 // Cargar configuración global
-require_once("config.php");
+require_once(__DIR__ . "/config.php");
 
 // Activar zona horaria y errores (útil para debug)
 date_default_timezone_set('America/Mexico_City');
@@ -13,7 +13,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 // Cargar conexión a base de datos
-require_once("classes/DBConnection.php");
+require_once(__DIR__ . "/classes/DBConnection.php");
 
 // Crear instancia global para acceso fácil
 $conn = new DBConnection();

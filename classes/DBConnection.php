@@ -1,6 +1,6 @@
 <?php
 if (!defined('DB_SERVER')) {
-    require_once("../initialize.php");
+    require_once(__DIR__ . "/../config.php");
 }
 
 class DBConnection {
@@ -9,7 +9,6 @@ class DBConnection {
     private $password;
     private $database;
     private $port;
-
     public $conn;
 
     public function __construct() {

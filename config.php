@@ -10,12 +10,12 @@ $dev_data = array(
     'date_added' => ''
 );
 
-// 🔹 Render usará las variables definidas en su panel (Environment)
-if (!defined('DB_SERVER'))   define('DB_SERVER', getenv('DB_HOST') ?: 'localhost');
-if (!defined('DB_USERNAME')) define('DB_USERNAME', getenv('DB_USERNAME') ?: 'root');
-if (!defined('DB_PASSWORD')) define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '');
-if (!defined('DB_NAME'))     define('DB_NAME', getenv('DB_DATABASE') ?: 'dbinventariosprueba');
-if (!defined('DB_PORT'))     define('DB_PORT', getenv('DB_PORT') ?: 3306);
+// 🔹 Render leerá directamente las variables de Railway
+if (!defined('DB_SERVER'))   define('DB_SERVER', getenv('MYSQLHOST') ?: 'localhost');
+if (!defined('DB_USERNAME')) define('DB_USERNAME', getenv('MYSQLUSER') ?: 'root');
+if (!defined('DB_PASSWORD')) define('DB_PASSWORD', getenv('MYSQLPASSWORD') ?: '');
+if (!defined('DB_NAME'))     define('DB_NAME', getenv('MYSQLDATABASE') ?: 'dbinventariosprueba');
+if (!defined('DB_PORT'))     define('DB_PORT', getenv('MYSQLPORT') ?: 3306);
 
 // Base URL según entorno
 $render_url = getenv('RENDER_EXTERNAL_URL') ?: 'http://localhost/sisinventarios/';
