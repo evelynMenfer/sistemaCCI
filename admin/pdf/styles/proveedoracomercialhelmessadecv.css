@@ -1,0 +1,163 @@
+/* ======================================
+   CENIT
+   ====================================== */
+   @page {
+    margin: 20mm 15mm;
+  }
+  
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11.5px;
+    color: #222;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* --- LOGO SUPERIOR --- */
+  .company-block {
+    text-align: center;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  
+  .logo {
+    display: block;
+    margin: 0 auto 0px auto;
+    width: 100%;
+    max-width: 700px; /* ocupa casi todo el ancho A4 */
+    height: auto;
+  }
+  
+  /* --- INFORMACIÓN DE EMPRESA DEBAJO DEL LOGO --- */
+  .company-data {
+    text-align: center;
+    margin-top: 5px;
+    line-height: 1.4;
+  }
+  
+  .company-data h2 {
+    margin: 0;
+    color: #001f3f;
+    font-size: 18px;
+    text-transform: uppercase;
+  }
+  
+  .company-data p {
+    margin: 4px 0 0 0;
+    font-size: 11px;
+  }
+  
+  /* --- TÍTULO PRINCIPAL --- */
+  .title {
+    text-align: center;
+    color: #001f3f;
+    margin: 20px 0 15px 0;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-top: 2px solid #001f3f;
+    padding-top: 8px;
+  }
+  
+  /* --- TABLAS --- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .info td {
+    padding: 4px 6px;
+    vertical-align: top;
+    width: 50%;
+    font-size: 11px;
+  }
+  
+  /* --- TABLA DE PRODUCTOS --- */
+  .items th, .items td {
+    border: 1px solid #aaa;
+    padding: 6px;
+  }
+  
+  .items th {
+    background: #001f3f;
+    color: #fff;
+    text-align: center;
+    font-size: 11px;
+  }
+  
+  .items td {
+    font-size: 10.8px;
+  }
+  
+  .items .num {
+    text-align: right;
+  }
+  
+  /* --- BLOQUE DE TOTALES --- */
+tfoot td {
+    border-top: 1px solid #001f3f;
+    font-weight: bold;
+    font-size: 11.5px;
+    color: #001f3f;
+    background: none !important;
+    padding: 6px 8px;
+  }
+  
+  /* Etiquetas (Subtotal, Descuento, etc.) */
+  tfoot .total-label {
+    text-align: right;
+    color: #001f3f;
+    font-weight: bold;
+  }
+  
+  /* Valores ($...) */
+  tfoot .total-value {
+    text-align: right;
+    color: #001f3f;
+    font-weight: bold;
+  }
+  
+  /* Línea más gruesa para TOTAL */
+  tfoot tr.total td {
+    border-top: 2px solid #001f3f;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  
+  
+  /* --- OBSERVACIONES --- */
+  .remarks {
+    margin-top: 15px;
+    font-size: 11px;
+  }
+  
+  /* --- EVITAR CORTES DE TABLAS ENTRE PÁGINAS --- */
+  .items, .items tr, .items td, .items th {
+    page-break-inside: avoid !important;
+  }
+  
+  /* --- BLOQUE CLIENTE --- */
+.cliente-block {
+    margin: 15px 0 15px 0;
+    border: 1px solid #001f3f;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: #f8f9fa;
+    font-size: 11px;
+  }
+  
+  .cliente-block strong {
+    color: #001f3f;
+  }
+  
+  /* --- FRASE FINAL --- */
+  .footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 11px;
+    color: #001f3f;
+    font-weight: bold;
+  }
+  
+  

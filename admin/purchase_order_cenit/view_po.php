@@ -10,6 +10,9 @@ $qry = $conn->query("
 ");
 if ($qry && $qry->num_rows > 0) {
     foreach ($qry->fetch_array() as $k => $v) $$k = $v;
+} else {
+    echo "<div class='alert alert-warning'>No se encontró la cotización.</div>";
+    exit;
 }
 ?>
 <style>
@@ -29,7 +32,7 @@ if ($qry && $qry->num_rows > 0) {
       Información de la Cotización: <?php echo $po_code ?? '' ?> 
       <?php if (!empty($name_empresa)): ?> - <?php echo $name_empresa ?><?php endif; ?>
     </h4>
-        <br>
+    <br>
     <div class="mt-3 row">
       <div class="col-md-3"><label class="text-info">Proveedor</label><div><?php echo $supplier ?? '—'; ?></div></div>
       <div class="col-md-3"><label class="text-info">OC</label><div><?php echo $oc ?? '—'; ?></div></div>
@@ -44,23 +47,14 @@ if ($qry && $qry->num_rows > 0) {
     </div>
   </div>
 
-  <div class="card-body" id="print_out">
+  <div class="card-body">
     <div class="row mb-3">
-      <div class="col-md-6">
-        <?php if (!empty($logo_empresa)): ?>
-          <img src="<?php echo validate_image($logo_empresa) ?>" style="max-height:80px;" alt="Logo">
-        <?php endif; ?>
-        <p class="mt-2">
-          <strong><?php echo $name_empresa ?? '' ?></strong><br>
-          <?php echo $address ?? '' ?><br>
-          Tel: <?php echo $contact ?? '' ?><br>
-          Email: <?php echo $email ?? '' ?>
-        </p>
-      </div>
       <div class="col-md-6 text-end">
-        <p><strong>Vendido a:</strong> <?php echo $cliente_cotizacion ?? '' ?><br>
-        <strong>Fecha:</strong> <?php echo !empty($date_exp) ? date("d/m/Y", strtotime($date_exp)) : '' ?><br>
-        <strong>OC:</strong> <?php echo $oc ?? '' ?></p>
+        <p>
+          <strong>Vendido a:</strong> <?php echo $cliente_cotizacion ?? '' ?> &nbsp; | &nbsp;
+          <strong>Fecha:</strong> <?php echo !empty($date_exp) ? date("d/m/Y", strtotime($date_exp)) : '—'; ?> &nbsp; | &nbsp;
+          <strong>OC:</strong> <?php echo $oc ?? '—'; ?>
+        </p>
       </div>
     </div>
 
@@ -133,35 +127,10 @@ if ($qry && $qry->num_rows > 0) {
   <div class="card-footer text-center">
     <a class="btn btn-primary" href="<?php echo base_url . '/admin?page=purchase_order_cenit/manage_po&id=' . $id ?>">Editar</a>
     <a class="btn btn-danger" href="<?php echo base_url . '/admin?page=purchase_order_cenit' ?>">Volver</a>
-    <button class="btn btn-success" type="button" onclick="printDiv()">Imprimir / PDF</button>
+
+    <!-- ✅ Se mantiene solo el botón Generar PDF -->
+    <a class="btn btn-success" href="<?php echo base_url; ?>/admin/pdf/generate_po.php?id=<?php echo $id; ?>" target="_blank">
+      Generar PDF
+    </a>
   </div>
 </div>
-
-<script>
-function printDiv(){
-  const printContents = document.getElementById('print_out').innerHTML;
-  const win = window.open('', '', 'width=900,height=650');
-  win.document.write(`
-    <html>
-    <head>
-      <title>Cotización</title>
-      <link rel="stylesheet" href="<?php echo base_url ?>/plugins/bootstrap/css/bootstrap.min.css">
-      <style>
-        body{font-family:Arial,sans-serif;padding:20px;}
-        th,td{border:1px solid #ccc;padding:6px;}
-        th{background:#001f3f;color:white;text-align:center;}
-        td{text-align:right;}
-        td:nth-child(3){text-align:left;} /* Descripción */
-        td:nth-child(2){text-align:center;} /* Unidad */
-        table{width:100%;border-collapse:collapse;}
-        h4{text-align:center;margin-bottom:20px;}
-      </style>
-    </head>
-    <body onload="window.print()">
-      ${printContents}
-    </body>
-    </html>
-  `);
-  win.document.close();
-}
-</script>
