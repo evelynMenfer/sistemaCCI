@@ -12,6 +12,9 @@ use Dompdf\Options;
 
 include __DIR__ . '/../../config.php';
 
+// =============================
+// VALIDAR ID
+// =============================
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id <= 0) die("ID inválido.");
 
@@ -30,10 +33,36 @@ if (!$qry || $qry->num_rows === 0) die("No se encontró la cotización.");
 $data = $qry->fetch_assoc();
 
 // =============================
-// DETECTAR ESTILO
+// DETECTAR ESTILO (ORDEN CORRECTO)
 // =============================
-$style_name = strtolower(preg_replace('/[^a-z0-9]/', '', $data['name_empresa']));
-$style_file = __DIR__ . "/styles/ingenieriayservicioscenitsadecvcv.css";
+// 1) Tomar el nombre crudo
+$raw_name = trim($data['name_empresa'] ?? '');
+
+// 2) Forzar a UTF-8 si hiciera falta
+if (!mb_check_encoding($raw_name, 'UTF-8')) {
+    $raw_name = utf8_encode($raw_name);
+}
+
+// 3) Normalizar acentos/Ñ
+$replace = [
+  'Á'=>'A','É'=>'E','Í'=>'I','Ó'=>'O','Ú'=>'U','Ü'=>'U','Ñ'=>'N',
+  'á'=>'a','é'=>'e','í'=>'i','ó'=>'o','ú'=>'u','ü'=>'u','ñ'=>'n'
+];
+$normalized = strtr($raw_name, $replace);
+
+// 4) **Primero** pasar a minúsculas
+$normalized_lower = strtolower($normalized);
+
+// 5) **Después** filtrar lo que no sea a-z o 0-9
+$style_name = preg_replace('/[^a-z0-9]/', '', $normalized_lower);
+
+// 6) Fallback seguro
+if ($style_name === '' || $style_name === null) {
+    $style_name = 'default';
+}
+
+// 7) Cargar CSS
+$style_file = __DIR__ . "/styles/{$style_name}.css";
 if (!file_exists($style_file)) {
   $style_file = __DIR__ . "/styles/default.css";
 }
@@ -79,7 +108,7 @@ ob_start();
 $logo_path = '';
 if (!empty($data['logo_empresa'])) {
     $relative_logo = ltrim($data['logo_empresa'], '/');
-    $absolute_logo_path = realpath($_SERVER['DOCUMENT_ROOT'] . '/sisinventarios/' . $relative_logo);
+    $absolute_logo_path = realpath(__DIR__ . '/../../' . $relative_logo);
     if ($absolute_logo_path && file_exists($absolute_logo_path)) {
         $logo_path = 'file://' . $absolute_logo_path;
     } else {
@@ -102,16 +131,13 @@ if (!empty($data['logo_empresa'])) {
 
 <!-- BLOQUE DE CLIENTE Y FECHA -->
 <div class="cliente-fecha">
-    <!-- Columna izquierda: Vendido a -->
-    <div class="col-cliente">
+  <div class="col-cliente">
     <p class="cliente-linea">
-    <strong>Vendido a:</strong>
-    <?= htmlspecialchars(preg_replace('/\s+/', ' ', str_replace(array("\r", "\n"), ' ', trim($data['cliente_cotizacion'] ?? '')))) ?>
-  </p>
-  <br>
+      <strong>Vendido a:</strong>
+      <?= htmlspecialchars(preg_replace('/\s+/', ' ', str_replace(["\r", "\n"], ' ', trim($data['cliente_cotizacion'] ?? '')))) ?>
+    </p>
   </div>
 
-  <!-- Columna derecha: Fecha y Factura -->
   <div class="col-fecha">
     <?php if (!empty($data['date_exp'])): ?>
       <p><strong>Fecha:</strong> <?= date("d/m/Y", strtotime($data['date_exp'])) ?></p>
@@ -122,28 +148,26 @@ if (!empty($data['logo_empresa'])) {
   </div>
 </div>
 
-
 <!-- TABLA DE INFORMACIÓN DE PAGO -->
 <div class="tabla-pago-wrap">
-      <table class="tabla-pago">
-        <thead>
-          <tr>
-            <th>Método de Pago</th>
-            <th>No. de Cheque</th>
-            <th>Trabajo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
-            <td><?= htmlspecialchars($data['num_cheque'] ?? '') ?></td>
-            <td><?= htmlspecialchars($data['trabajo'] ?? '') ?></td>
-          </tr>
-        </tbody>
-      </table><br>
-    </div>
-
-
+  <table class="tabla-pago">
+    <thead>
+      <tr>
+        <th>Método de Pago</th>
+        <th>No. de Cheque</th>
+        <th>Trabajo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
+        <td><?= htmlspecialchars($data['num_cheque'] ?? '') ?></td>
+        <td><?= htmlspecialchars($data['trabajo'] ?? '') ?></td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+</div>
 
 <!-- TABLA DE PRODUCTOS -->
 <table class="items">
@@ -187,14 +211,13 @@ if (!empty($data['logo_empresa'])) {
       <td class="total-value">$<?= number_format($data['amount'], 2) ?></td>
     </tr>
   </tfoot>
-
 </table>
 
 <?php if (!empty($data['remarks'])): ?>
   <p class="remarks"><strong>Observaciones:</strong><br><?= nl2br(htmlspecialchars($data['remarks'])) ?></p>
 <?php endif; ?>
 
-<!-- SOLO LA FRASE FINAL CENTRADA -->
+<!-- FRASE FINAL -->
 <div class="footer">
   <p>Gracias por su confianza.</p>
 </div>
