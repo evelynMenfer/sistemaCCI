@@ -1,51 +1,9 @@
 <?php
-/*
-|--------------------------------------------------------------------------
-| INITIALIZE.PHP
-|--------------------------------------------------------------------------
-| Este archivo inicializa todo el entorno del sistema.
-| Se encarga de:
-|  - Cargar la configuración global (config.php)
-|  - Iniciar sesión de usuario
-|  - Conectar automáticamente a la base de datos
-|  - Definir zona horaria y manejo de errores
-|--------------------------------------------------------------------------
-*/
-
-// 🔹 Cargar configuración principal
-require_once(__DIR__ . '/config.php');
-
-// 🔹 Zona horaria por defecto
-date_default_timezone_set('America/Mexico_City');
-
-// 🔹 Mostrar errores solo en entorno local
-if (getenv('RENDER') || getenv('RAILWAY_ENVIRONMENT')) {
-    // Producción: oculta errores
-    error_reporting(0);
-    ini_set('display_errors', 0);
-} else {
-    // Local: muestra errores para depuración
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-}
-
-// 🔹 Iniciar sesión si no está activa
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// 🔹 Incluir clase de conexión
-require_once(__DIR__ . '/classes/DBConnection.php');
-
-// 🔹 Crear instancia global de conexión
-try {
-    $conn = new DBConnection();
-} catch (Exception $e) {
-    die('❌ Error al conectar con la base de datos: ' . $e->getMessage());
-}
-
-// 🔹 Confirmar conexión (solo para debug local)
-if (!getenv('RENDER')) {
-    // echo "✅ Conexión exitosa a la base de datos.";
-}
-?>
+$dev_data = array('id' => '1', 'firstname' => 'administrador', 'lastname' => '', 'username' => 'admin', 'password' => '21232f297a57a5a743894a0e4a801fc3', 'last_login' => '', 'date_updated' => '', 'date_added' => '');
+if (!defined('base_url')) define('base_url', 'http://localhost/sisinventarios/');
+if (!defined('base_app')) define('base_app', str_replace('\\', '/', __DIR__) . '/');
+if (!defined('dev_data')) define('dev_data', $dev_data);
+if (!defined('DB_SERVER')) define('DB_SERVER', "localhost");
+if (!defined('DB_USERNAME')) define('DB_USERNAME', "root");
+if (!defined('DB_PASSWORD')) define('DB_PASSWORD', "");
+if (!defined('DB_NAME')) define('DB_NAME', "dbinventariosprueba");

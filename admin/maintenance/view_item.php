@@ -19,7 +19,7 @@ if ($qry->num_rows > 0) {
                 <div class="col-12">
 
                     <dl>
-                        <dt class="text-info">SKU:</dt>
+                        <dt class="text-info">Producto:</dt>
                         <dd class="pl-3"><?php echo $name ?></dd>
                         <dt class="text-info">Descripción:</dt>
                         <dd class="pl-3"><?php echo isset($description) ? $description : '' ?></dd>

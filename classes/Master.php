@@ -85,33 +85,108 @@ class Master extends DBConnection {
     }
 
     // --- GUARDAR PRODUCTO ---
-    function save_item() {
-        extract($_POST);
-        $fields=[]; $types=''; $values=[];
-        foreach($_POST as $k=>$v){
-            if ($k==='id') continue;
-            $fields[]="`$k`=?";
-            if (is_int($v)) $types.='i';
-            elseif (is_double($v)||is_float($v)) $types.='d';
-            else $types.='s';
-            $values[]=$v;
-        }
-        $sql = empty($id) ? "INSERT INTO `item_list` SET ".implode(", ",$fields)
-                          : "UPDATE `item_list` SET ".implode(", ",$fields)." WHERE id=?";
-        if(!empty($id)){ $types.='i'; $values[]=$id; }
+	function save_item() {
+		extract($_POST);
+	
+		// 🔹 CAMPOS OBLIGATORIOS
+		$required = [
+			'date_purchase' => 'Fecha de compra',
+			'supplier_id' => 'Proveedor',
+			'company_id' => 'Empresa',
+			'cost' => 'Precio de venta',
+			'product_cost' => 'Precio de compra'
+		];
+		foreach ($required as $field => $label) {
+			if (!isset($_POST[$field]) || trim($_POST[$field]) === '' || $_POST[$field] === '0') {
+				return json_encode([
+					'status' => 'failed',
+					'msg' => "El campo \"{$label}\" es obligatorio. Por favor complétalo antes de guardar."
+				]);
+			}
+		}
+	
+		// 🔹 Si se está actualizando, obtener datos previos
+		$old = [];
+		if (!empty($id)) {
+			$get = $this->conn->query("SELECT * FROM item_list WHERE id = '{$id}'");
+			if ($get->num_rows > 0) $old = $get->fetch_assoc();
+		}
+	
+		// 🔹 Manejo de imagen
+		if (isset($_FILES['foto_producto']) && $_FILES['foto_producto']['tmp_name'] != '') {
+			$upload_dir = "uploads/productos/";
+			if (!is_dir(base_app . $upload_dir)) mkdir(base_app . $upload_dir, 0777, true);
+			$filename = time() . '_' . basename($_FILES['foto_producto']['name']);
+			$filepath = $upload_dir . $filename;
+	
+			// Mover archivo
+			if (move_uploaded_file($_FILES['foto_producto']['tmp_name'], base_app . $filepath)) {
+				$_POST['foto_producto'] = $filepath;
+	
+				// 🔹 Eliminar foto anterior si existe y es distinta
+				if (!empty($old['foto_producto']) && file_exists(base_app . $old['foto_producto'])) {
+					@unlink(base_app . $old['foto_producto']);
+				}
+			}
+		} else {
+			// Si no sube nueva foto, conservar la anterior
+			if (!empty($old['foto_producto'])) {
+				$_POST['foto_producto'] = $old['foto_producto'];
+			}
+		}
+	
+		// 🔹 Preparar campos
+		$fields = []; 
+		$types = ''; 
+		$values = [];
+	
+		foreach ($_POST as $k => $v) {
+			if ($k === 'id') continue;
+	
+			if ($v === '' || $v === null) $v = null;
+	
+			$fields[] = "`$k` = ?";
+			if (is_int($v)) $types .= 'i';
+			elseif (is_double($v) || is_float($v)) $types .= 'd';
+			else $types .= 's';
+			$values[] = $v;
+		}
+	
+		// 🔹 SQL dinámico
+		$sql = empty($id)
+			? "INSERT INTO `item_list` SET " . implode(", ", $fields)
+			: "UPDATE `item_list` SET " . implode(", ", $fields) . " WHERE id = ?";
+		if (!empty($id)) {
+			$types .= 'i';
+			$values[] = $id;
+		}
+	
+		$stmt = $this->conn->prepare($sql);
+		if (!$stmt)
+			return json_encode(['status' => 'failed', 'msg' => $this->conn->error]);
+	
+		$stmt->bind_param($types, ...$values);
+	
+		try {
+			$ok = $stmt->execute();
+		} catch (mysqli_sql_exception $e) {
+			return json_encode([
+				'status' => 'failed',
+				'msg' => 'Error al guardar producto: ' . $e->getMessage()
+			]);
+		}
+	
+		$stmt->close();
+	
+		if ($ok) {
+			$this->settings->set_flashdata('success', empty($id) ? "Producto guardado correctamente." : "Producto actualizado correctamente.");
+			return json_encode(['status' => 'success']);
+		}
+	
+		return json_encode(['status' => 'failed', 'msg' => 'No se pudo guardar el producto.']);
+	}
+	
 
-        $stmt = $this->conn->prepare($sql);
-        if(!$stmt) return json_encode(['status'=>'failed','err'=>$this->conn->error." [$sql]"]);
-        $stmt->bind_param($types,...$values);
-        $ok = $stmt->execute();
-        $stmt->close();
-
-        if($ok){
-            $this->settings->set_flashdata('success', empty($id)?"Producto guardado.":"Producto actualizado.");
-            return json_encode(['status'=>'success']);
-        }
-        return json_encode(['status'=>'failed','err'=>$this->conn->error]);
-    }
     function delete_item(){
         $id = intval($_POST['id'] ?? 0);
         if ($id<=0) return json_encode(['status'=>'failed','msg'=>'ID inválido']);
