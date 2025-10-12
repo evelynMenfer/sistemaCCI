@@ -1,7 +1,7 @@
 <?php
-// =====================================
+// =============================
 // CONFIGURACIÓN DE DEPURACIÓN
-// =====================================
+// =============================
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -12,18 +12,18 @@ use Dompdf\Options;
 
 include __DIR__ . '/../../config.php';
 
-// =====================================
-// VALIDAR ID DE COTIZACIÓN
-// =====================================
+// =============================
+// VALIDAR ID
+// =============================
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id <= 0) die("ID inválido.");
 
-// =====================================
+// =============================
 // CONSULTA PRINCIPAL
-// =====================================
+// =============================
 $qry = $conn->query("
   SELECT p.*, s.name AS supplier, c.name AS name_empresa, c.logo AS logo_empresa,
-         c.address, c.email, c.contact, c.id AS company_id
+         c.address, c.email, c.contact
   FROM purchase_order_list p
   LEFT JOIN supplier_list s ON p.supplier_id = s.id
   LEFT JOIN company_list c ON p.id_company = c.id
@@ -32,35 +32,45 @@ $qry = $conn->query("
 if (!$qry || $qry->num_rows === 0) die("No se encontró la cotización.");
 $data = $qry->fetch_assoc();
 
-// =====================================
-// OBTENER company_id
-// =====================================
-$company_id = isset($_GET['company_id']) ? intval($_GET['company_id']) : intval($data['company_id'] ?? 0);
-
-// =====================================
-// NORMALIZAR NOMBRE DE EMPRESA PARA CSS
-// =====================================
+// =============================
+// DETECTAR ESTILO (ORDEN CORRECTO)
+// =============================
+// 1) Tomar el nombre crudo
 $raw_name = trim($data['name_empresa'] ?? '');
-if (!mb_check_encoding($raw_name, 'UTF-8')) $raw_name = utf8_encode($raw_name);
+
+// 2) Forzar a UTF-8 si hiciera falta
+if (!mb_check_encoding($raw_name, 'UTF-8')) {
+    $raw_name = utf8_encode($raw_name);
+}
+
+// 3) Normalizar acentos/Ñ
 $replace = [
   'Á'=>'A','É'=>'E','Í'=>'I','Ó'=>'O','Ú'=>'U','Ü'=>'U','Ñ'=>'N',
   'á'=>'a','é'=>'e','í'=>'i','ó'=>'o','ú'=>'u','ü'=>'u','ñ'=>'n'
 ];
 $normalized = strtr($raw_name, $replace);
-$normalized_lower = strtolower($normalized);
-$style_name = preg_replace('/[^a-z0-9]/', '', $normalized_lower);
-if ($style_name === '' || $style_name === null) $style_name = 'default';
 
-// =====================================
-// CARGAR CSS SEGÚN EMPRESA
-// =====================================
+// 4) **Primero** pasar a minúsculas
+$normalized_lower = strtolower($normalized);
+
+// 5) **Después** filtrar lo que no sea a-z o 0-9
+$style_name = preg_replace('/[^a-z0-9]/', '', $normalized_lower);
+
+// 6) Fallback seguro
+if ($style_name === '' || $style_name === null) {
+    $style_name = 'default';
+}
+
+// 7) Cargar CSS
 $style_file = __DIR__ . "/styles/{$style_name}.css";
-if (!file_exists($style_file)) $style_file = __DIR__ . "/styles/default.css";
+if (!file_exists($style_file)) {
+  $style_file = __DIR__ . "/styles/default.css";
+}
 $style = file_get_contents($style_file);
 
-// =====================================
+// =============================
 // CONSULTAR ITEMS
-// =====================================
+// =============================
 $items = [];
 $subtotal = 0;
 $qry_items = $conn->query("
@@ -78,9 +88,23 @@ while ($row = $qry_items->fetch_assoc()) {
   $items[] = $row + ['line_total' => $line_total];
 }
 
-// =====================================
-// RUTA DEL LOGO
-// =====================================
+// =============================
+// GENERAR HTML
+// =============================
+ob_start();
+?>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style><?= $style ?></style>
+</head>
+<body>
+
+<div class="company-block">
+<?php
+// =========================
+// RESOLVER RUTA DEL LOGO
+// =========================
 $logo_path = '';
 if (!empty($data['logo_empresa'])) {
     $relative_logo = ltrim($data['logo_empresa'], '/');
@@ -88,41 +112,14 @@ if (!empty($data['logo_empresa'])) {
     if ($absolute_logo_path && file_exists($absolute_logo_path)) {
         $logo_path = 'file://' . $absolute_logo_path;
     } else {
-        $logo_path = base_url . $relative_logo;
+        $logo_path = 'http://localhost/sisinventarios/' . $relative_logo;
     }
 }
-
-// =====================================
-// GENERAR HTML DEL PDF
-// =====================================
-ob_start();
 ?>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    <?= $style ?>
 
-    body { font-family: DejaVu Sans, sans-serif; color:#333; }
-    .company-block { display:flex; align-items:center; border-bottom:3px solid #001f3f; padding-bottom:10px; margin-bottom:15px; }
-    .company-block img.logo { width:70px; height:70px; object-fit:contain; margin-right:15px; }
-    .company-data h2 { margin:0; color:#001f3f; }
-    .company-data p { margin:3px 0; font-size:12px; }
-    .cliente-fecha { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; }
-    .tabla-pago th { background:#001f3f; color:white; }
-    .tabla-pago, .items { width:100%; border-collapse:collapse; font-size:12px; }
-    .tabla-pago td, .tabla-pago th, .items td, .items th { border:1px solid #ccc; padding:5px; }
-    .items th { background:#001f3f; color:white; text-align:center; }
-    .items td.num, .total-label, .total-value { text-align:right; }
-    .footer { text-align:center; margin-top:20px; font-size:11px; color:#555; }
-  </style>
-</head>
-<body>
-
-<div class="company-block">
-  <?php if (!empty($logo_path)): ?>
-    <img src="<?= $logo_path ?>" class="logo">
-  <?php endif; ?>
+<?php if (!empty($logo_path)): ?>
+  <img src="<?= $logo_path ?>" class="logo">
+<?php endif; ?>
 
   <div class="company-data">
     <h2><?= htmlspecialchars($data['name_empresa']) ?></h2>
@@ -132,31 +129,45 @@ ob_start();
   </div>
 </div>
 
-<!-- DATOS DE CLIENTE Y FECHA -->
+<!-- BLOQUE DE CLIENTE Y FECHA -->
 <div class="cliente-fecha">
-  <div><strong>Cliente:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? '') ?></div>
-  <div><strong>Fecha:</strong> <?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></div>
+  <div class="col-cliente">
+    <p class="cliente-linea">
+      <strong>Vendido a:</strong>
+      <?= htmlspecialchars(preg_replace('/\s+/', ' ', str_replace(["\r", "\n"], ' ', trim($data['cliente_cotizacion'] ?? '')))) ?>
+    </p>
+  </div>
+
+  <div class="col-fecha">
+    <?php if (!empty($data['date_exp'])): ?>
+      <p><strong>Fecha:</strong> <?= date("d/m/Y", strtotime($data['date_exp'])) ?></p>
+    <?php endif; ?>
+    <?php if (!empty($data['num_factura'])): ?>
+      <p><strong>No. Factura:</strong> <?= htmlspecialchars($data['num_factura']) ?></p>
+    <?php endif; ?>
+  </div>
 </div>
 
-<!-- TABLA DE PAGO -->
-<table class="tabla-pago">
-  <thead>
-    <tr>
-      <th>Método de Pago</th>
-      <th>No. Cheque</th>
-      <th>Trabajo</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
-      <td><?= htmlspecialchars($data['num_cheque'] ?? '') ?></td>
-      <td><?= htmlspecialchars($data['trabajo'] ?? '') ?></td>
-    </tr>
-  </tbody>
-</table>
-
-<br>
+<!-- TABLA DE INFORMACIÓN DE PAGO -->
+<div class="tabla-pago-wrap">
+  <table class="tabla-pago">
+    <thead>
+      <tr>
+        <th>Método de Pago</th>
+        <th>No. de Cheque</th>
+        <th>Trabajo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
+        <td><?= htmlspecialchars($data['num_cheque'] ?? '') ?></td>
+        <td><?= htmlspecialchars($data['trabajo'] ?? '') ?></td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+</div>
 
 <!-- TABLA DE PRODUCTOS -->
 <table class="items">
@@ -184,7 +195,7 @@ ob_start();
   </tbody>
   <tfoot>
     <tr>
-      <td colspan="5" class="total-label"><strong>Subtotal</strong></td>
+      <td colspan="5" class="total-label">Subtotal</td>
       <td class="total-value">$<?= number_format($subtotal, 2) ?></td>
     </tr>
     <tr>
@@ -196,16 +207,17 @@ ob_start();
       <td class="total-value">$<?= number_format($data['tax'] ?? 0, 2) ?></td>
     </tr>
     <tr class="total">
-      <td colspan="5" class="total-label"><strong>TOTAL</strong></td>
-      <td class="total-value"><strong>$<?= number_format($data['amount'], 2) ?></strong></td>
+      <td colspan="5" class="total-label">TOTAL</td>
+      <td class="total-value">$<?= number_format($data['amount'], 2) ?></td>
     </tr>
   </tfoot>
 </table>
 
 <?php if (!empty($data['remarks'])): ?>
-  <p style="margin-top:10px;"><strong>Observaciones:</strong><br><?= nl2br(htmlspecialchars($data['remarks'])) ?></p>
+  <p class="remarks"><strong>Observaciones:</strong><br><?= nl2br(htmlspecialchars($data['remarks'])) ?></p>
 <?php endif; ?>
 
+<!-- FRASE FINAL -->
 <div class="footer">
   <p>Gracias por su confianza.</p>
 </div>
@@ -215,9 +227,9 @@ ob_start();
 <?php
 $html = ob_get_clean();
 
-// =====================================
+// =============================
 // CONFIGURAR Y GENERAR PDF
-// =====================================
+// =============================
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('chroot', realpath($_SERVER['DOCUMENT_ROOT'] . '/sisinventarios/'));

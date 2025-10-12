@@ -197,144 +197,159 @@ class Master extends DBConnection {
     /* =======================================================
      *   COTIZACIONES / PURCHASE ORDER
      * ======================================================= */
-	function save_po(){
-		// 🔹 Asegurar proveedor válido o genérico
-		$defaultSupplierId = 1;
-		$checkSupplier = $this->conn->query("SELECT id FROM supplier_list WHERE id = {$defaultSupplierId}");
-		if(!$checkSupplier || $checkSupplier->num_rows == 0){
-			$this->conn->query("INSERT INTO supplier_list (id, name, address, status) VALUES (1, 'Proveedor Genérico', '', 1)");
+	public function save_po() {
+		extract($_POST);
+	
+		// ===========================
+		// 🔍 VALIDACIONES
+		// ===========================
+		if (!isset($id_company) || intval($id_company) <= 0)
+			return json_encode(['status' => 'failed', 'msg' => 'No se ha especificado la empresa.']);
+	
+		if (empty($cliente_cotizacion))
+			return json_encode(['status' => 'failed', 'msg' => 'Debe indicar el nombre del cliente.']);
+	
+		if (!isset($item_id) || count($item_id) == 0)
+			return json_encode(['status' => 'failed', 'msg' => 'Debe agregar al menos un producto.']);
+	
+		// ===========================
+		// 🧩 CAMPOS PRINCIPALES
+		// ===========================
+		$fields = [
+			'id_company' => intval($id_company),
+			'supplier_id' => isset($supplier_id) ? intval($supplier_id) : 'NULL',
+			'date_exp' => $date_exp ?? date('Y-m-d'),
+			'cliente_cotizacion' => trim($cliente_cotizacion ?? ''),
+			'cliente_email' => trim($cliente_email ?? ''),
+			'trabajo' => trim($trabajo ?? ''),
+			'metodo_pago' => trim($metodo_pago ?? ''),
+			'date_pago' => !empty($date_pago) ? $date_pago : null,
+			'pago_efectivo' => !empty($pago_efectivo) ? $pago_efectivo : null,
+			'oc' => trim($oc ?? ''),
+			'num_factura' => trim($num_factura ?? ''),
+			'date_carga_portal' => !empty($date_carga_portal) ? $date_carga_portal : null,
+			'folio_fiscal' => trim($folio_fiscal ?? ''),
+			'folio_comprobante_pago' => trim($folio_comprobante_pago ?? ''),
+			'num_cheque' => trim($num_cheque ?? ''),
+			'discount_perc' => floatval($discount_perc ?? 0),
+			'discount' => floatval($discount ?? 0),
+			'tax_perc' => floatval($tax_perc ?? 0),
+			'tax' => floatval($tax ?? 0),
+			'amount' => floatval($amount ?? 0),
+			'remarks' => trim($remarks ?? ''),
+			'status' => 0
+		];
+	
+		$data = "";
+		foreach ($fields as $k => $v) {
+			if ($v === null || $v === 'NULL') $data .= " `{$k}`=NULL, ";
+			else $data .= " `{$k}`='" . $this->conn->real_escape_string($v) . "', ";
 		}
+		$data = rtrim($data, ', ');
 	
-		// 🔹 Si no viene supplier_id o es inválido, usar el genérico
-		$supplier_id = intval($_POST['supplier_id'] ?? 0);
-		if ($supplier_id <= 0) {
-			$_POST['supplier_id'] = $defaultSupplierId;
-		}
-	
-		// 🔹 Validar productos
-		if (empty($_POST['item_id']) || count($_POST['item_id']) == 0) {
-			return json_encode(['status'=>'failed','msg'=>'Debes agregar al menos un producto antes de guardar.']);
-		}
-	
-		// 🔹 Generar código si es nuevo
-		if (empty($_POST['id'])) {
-			$prefix = "C";
-			$num = 1;
-			do {
-				$code = sprintf("%'.04d", $num);
-				$exists = $this->conn->query("SELECT 1 FROM purchase_order_list WHERE po_code='{$prefix}{$code}'")->num_rows;
-				$num++;
-			} while($exists);
-			$_POST['po_code'] = $prefix.$code;
-		}
-	
-		// 🔹 Conversor seguro a float (convierte vacío o NULL a 0.0)
-		$toFloat = function($v){
-			if ($v === null || $v === '' || is_bool($v)) return 0.0;
-			$v = trim((string)$v);
-			$v = str_replace([',',' '], ['',''], $v);
-			return is_numeric($v) ? (float)$v : 0.0;
-		};
-	
-		// 🔹 Campos que no deben ir en la cabecera
-		$exclude = ['id','item_id','qty','price','unit','discount','total','amount','tax'];
-		$set = [];
-		foreach($_POST as $k=>$v){
-			if (in_array($k,$exclude) || is_array($v)) continue;
-			if (stripos($k, 'perc') !== false || stripos($k, 'amount') !== false || stripos($k, 'tax') !== false || stripos($k, 'discount') !== false) {
-				// 🔹 Si es campo numérico, convertir vacío a 0
-				$val = $toFloat($v);
+		// ===========================
+		// ⚙️ TRANSACCIÓN SEGURA
+		// ===========================
+		$this->conn->begin_transaction();
+		try {
+			// --- CREAR o ACTUALIZAR ENCABEZADO ---
+			if (empty($id)) {
+				$po_code = "COT-" . strtoupper(substr(md5(uniqid()), 0, 6));
+				$sql = "INSERT INTO purchase_order_list SET {$data}, po_code='{$po_code}', date_created=NOW()";
+				$this->conn->query($sql);
+				$id = $this->conn->insert_id;
 			} else {
-				$val = $this->conn->real_escape_string((string)$v);
+				$sql = "UPDATE purchase_order_list SET {$data} WHERE id={$id}";
+				$this->conn->query($sql);
+	
+				// 🔸 Eliminar ítems anteriores solo si todo va bien
+				$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
 			}
-			$set[] = "`$k`='{$val}'";
+	
+			// --- INSERTAR NUEVOS PRODUCTOS ---
+// --- INSERTAR NUEVOS PRODUCTOS ---
+$stmt = $this->conn->prepare("
+    INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
+    VALUES (?, ?, ?, ?, ?, ?)
+");
+if(!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
+
+foreach ($item_id as $key => $val) {
+    $iid = intval($val);
+    $qty = floatval($qty[$key] ?? 0);
+    $unit_val = trim($unit[$key] ?? '');
+    $price_val = floatval($price[$key] ?? 0);
+    $disc_val = floatval($discount[$key] ?? 0);
+
+    // Orden y tipos correctos:
+    // i = po_id, i = item_id, d = quantity, s = unit, d = price, d = discount
+    $stmt->bind_param('iidsdd', $id, $iid, $qty, $unit_val, $price_val, $disc_val);
+    $stmt->execute();
+}
+
+	
+			$stmt->close();
+	
+			// --- SI TODO VA BIEN ---
+			$this->conn->commit();
+	
+			return json_encode([
+				'status' => 'success',
+				'id' => $id,
+				'msg' => empty($_POST['id'])
+					? 'Cotización guardada correctamente.'
+					: 'Cotización actualizada correctamente.'
+			]);
+	
+		} catch (Exception $e) {
+			// ❌ REVERSIÓN EN CASO DE ERROR
+			$this->conn->rollback();
+			return json_encode([
+				'status' => 'failed',
+				'msg' => 'Error al guardar: ' . $e->getMessage()
+			]);
+		}
+	}
+	
+	
+	public function delete_po() {
+		// Validar ID recibido
+		$id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+		if ($id <= 0) {
+			return json_encode(['status' => 'failed', 'msg' => 'ID inválido o no especificado.']);
 		}
 	
-		$id = intval($_POST['id'] ?? 0);
+		// Verificar existencia del registro
+		$chk = $this->conn->query("SELECT id FROM purchase_order_list WHERE id = {$id}");
+		if (!$chk || $chk->num_rows == 0) {
+			return json_encode(['status' => 'failed', 'msg' => 'No se encontró la cotización a eliminar.']);
+		}
+	
+		// Iniciar transacción para asegurar consistencia
 		$this->conn->begin_transaction();
 	
 		try {
-			// 🔹 Guardar cabecera
-			$sql = $id==0
-				? "INSERT INTO purchase_order_list SET ".implode(", ",$set)
-				: "UPDATE purchase_order_list SET ".implode(", ",$set)." WHERE id='{$id}'";
-			if(!$this->conn->query($sql)) throw new Exception("Cabecera: ".$this->conn->error);
+			// Eliminar ítems asociados primero
+			$this->conn->query("DELETE FROM po_items WHERE po_id = {$id}");
 	
-			$po_id = $id==0 ? $this->conn->insert_id : $id;
+			// Eliminar cotización principal
+			$delete_main = $this->conn->query("DELETE FROM purchase_order_list WHERE id = {$id}");
 	
-			// 🔹 Limpiar productos antiguos
-			$this->conn->query("DELETE FROM po_items WHERE po_id={$po_id}");
-	
-			// 🔹 Insertar productos nuevos
-			$stmt = $this->conn->prepare("
-				INSERT INTO po_items (po_id,item_id,quantity,price,unit,discount,total)
-				VALUES (?,?,?,?,?,?,?)
-			");
-			if(!$stmt) throw new Exception("Error prepare: ".$this->conn->error);
-	
-			$stmt->bind_param("iiddsdd", $b_po,$b_item,$b_qty,$b_price,$b_unit,$b_disc,$b_total);
-			$b_po = $po_id;
-			$subtotal = 0.0;
-	
-			$item_ids = $_POST['item_id'] ?? [];
-			$qtys = $_POST['qty'] ?? [];
-			$prices = $_POST['price'] ?? [];
-			$units = $_POST['unit'] ?? [];
-			$discounts = $_POST['discount'] ?? [];
-	
-			foreach($item_ids as $k=>$iid){
-				$b_item = intval($iid);
-				if ($b_item <= 0) continue;
-				$b_qty = $toFloat($qtys[$k] ?? 0);
-				$b_price = $toFloat($prices[$k] ?? 0);
-				$b_unit = (string)($units[$k] ?? '');
-				$b_disc = $toFloat($discounts[$k] ?? 0);
-				$b_total = round(($b_price - ($b_price*$b_disc/100))*$b_qty,2);
-	
-				if(!$stmt->execute()) throw new Exception("Item: ".$stmt->error);
-				$subtotal += $b_total;
+			if (!$delete_main) {
+				throw new Exception('Error al eliminar la cotización principal: ' . $this->conn->error);
 			}
-			$stmt->close();
 	
-			// 🔹 Calcular totales
-			$discount_perc = $toFloat($_POST['discount_perc'] ?? 0);
-			$tax_perc = $toFloat($_POST['tax_perc'] ?? 0);
-			$discount = round($subtotal * $discount_perc / 100, 2);
-			$tax = round(($subtotal - $discount) * $tax_perc / 100, 2);
-			$amount = round($subtotal - $discount + $tax, 2);
-	
-			// 🔹 Actualizar totales
-			$sql = "
-				UPDATE purchase_order_list SET
-					discount='{$discount}',
-					discount_perc='{$discount_perc}',
-					tax='{$tax}',
-					tax_perc='{$tax_perc}',
-					amount='{$amount}'
-				WHERE id='{$po_id}'
-			";
-			if(!$this->conn->query($sql)) throw new Exception("Totales: ".$this->conn->error);
-	
+			// Confirmar cambios
 			$this->conn->commit();
-			$this->settings->set_flashdata('success',$id==0 ? "Cotización creada correctamente." : "Cotización actualizada correctamente.");
 	
-			return json_encode(['status'=>'success','id'=>$po_id]);
-	
+			return json_encode(['status' => 'success']);
 		} catch (Exception $e) {
+			// Revertir en caso de error
 			$this->conn->rollback();
-			return json_encode(['status'=>'failed','msg'=>'EXCEPCIÓN: '.$e->getMessage()]);
+			return json_encode(['status' => 'failed', 'msg' => 'Error al eliminar: ' . $e->getMessage()]);
 		}
 	}
 	
-
-	function delete_po(){
-		$id = intval($_POST['id'] ?? 0);
-		if ($id<=0) return json_encode(['status'=>'failed','msg'=>'ID inválido']);
-		$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
-		$del = $this->conn->query("DELETE FROM purchase_order_list WHERE id={$id}");
-		return $del ? json_encode(['status'=>'success','msg'=>'Cotización eliminada correctamente'])
-					: json_encode(['status'=>'failed','msg'=>$this->conn->error]);
-	}
 
     // --- Guardar y eliminar Recepción ---
 function save_receiving() { 
@@ -656,38 +671,62 @@ function delete_sale()
 	return json_encode(['status'=>'success','msg'=>'Venta eliminada correctamente']);
 }
     // --- BUSCAR PRODUCTOS ---
-    function search_products(){
-        $q = trim($_GET['q'] ?? '');
-        if(strlen($q) < 2) return json_encode([]);
-
-        $sql = "
-            SELECT 
-                i.id,
-                i.description AS descripcion,
-                s.name AS proveedor,
-                i.supplier_id,
-                i.stock,
-                i.product_cost AS precio_compra,
-                i.cost AS precio_venta
-            FROM item_list i
-            LEFT JOIN supplier_list s ON s.id = i.supplier_id
-            WHERE i.status = 1
-              AND (i.description LIKE CONCAT('%', ?, '%')
-                OR s.name LIKE CONCAT('%', ?, '%'))
-            ORDER BY i.description ASC
-            LIMIT 20
-        ";
-
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('ss', $q, $q);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $data = [];
-        while($row = $res->fetch_assoc()) $data[] = $row;
-
-        header('Content-Type: application/json; charset=utf-8');
-        return json_encode($data);
-    }
+	function search_products(){
+		$q = trim($_GET['q'] ?? '');
+		if(strlen($q) < 2){
+			return json_encode([]); // mínimo 2 caracteres
+		}
+	
+		// ===============================
+		// BUSCAR PRODUCTOS ACTIVOS POR SKU (name) O DESCRIPCIÓN
+		// ===============================
+		$sql = "
+			SELECT 
+				i.id,
+				i.name AS name,              -- SKU
+				i.description AS description, -- Descripción
+				i.date_purchase,             -- Fecha de compra
+				i.stock,
+				i.product_cost AS precio_compra,
+				i.cost AS precio_venta
+			FROM item_list i
+			WHERE i.status = 1
+			  AND (
+					i.name LIKE CONCAT('%', ?, '%') 
+				 OR i.description LIKE CONCAT('%', ?, '%')
+			  )
+			ORDER BY i.description ASC
+			LIMIT 50
+		";
+	
+		$stmt = $this->conn->prepare($sql);
+		if(!$stmt){
+			return json_encode(['status'=>'failed','msg'=>$this->conn->error]);
+		}
+	
+		$stmt->bind_param('ss', $q, $q);
+		$stmt->execute();
+		$res = $stmt->get_result();
+	
+		$data = [];
+		while($row = $res->fetch_assoc()){
+			$data[] = [
+				'id' => (int)$row['id'],
+				'sku' => $row['name'] ?: '—',                       // SKU
+				'descripcion' => $row['description'] ?: '',         // Descripción
+				'fecha_compra' => $row['date_purchase'] ?: '—',     // Fecha de compra
+				'stock' => (float)$row['stock'],
+				'precio_compra' => (float)$row['precio_compra'],
+				'precio_venta' => (float)$row['precio_venta']
+			];
+		}
+	
+		$stmt->close();
+		header('Content-Type: application/json; charset=utf-8');
+		return json_encode($data);
+	}
+	
+	
 }
 
 /* ======================
