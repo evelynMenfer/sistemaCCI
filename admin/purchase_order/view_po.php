@@ -86,7 +86,21 @@ if (!empty($logo_empresa)) {
   <div class="card-body">
     <!-- ================= DATOS GENERALES ================= -->
     <div class="row mb-3">
-      <div class="col-md-4"><label class="text-info">Proveedor</label><div><?php echo htmlspecialchars($supplier ?? '—'); ?></div></div>
+    <!-- ================= ESTADO ================= -->
+    <?php
+    $estado_txt = 'Pendiente';
+    if (isset($status)) {
+        switch (intval($status)) {
+            case 1: $estado_txt = 'En proceso'; break;
+            case 2: $estado_txt = 'Aceptado'; break;
+        }
+    }
+    ?>
+    <div class="col-md-4 mb-4">
+      <label class="control-label text-info">Estado de la cotización</label>
+      <input type="text" class="form-control rounded-0" value="<?php echo $estado_txt; ?>" readonly>
+    </div>
+
       <div class="col-md-4"><label class="text-info">OC</label><div><?php echo htmlspecialchars($oc ?? '—'); ?></div></div>
       <div class="col-md-4"><label class="text-info">No. Factura</label><div><?php echo htmlspecialchars($num_factura ?? '—'); ?></div></div>
     </div>
@@ -103,20 +117,6 @@ if (!empty($logo_empresa)) {
       <div class="col-md-4"><label class="text-info">Método de Pago</label><div><?php echo htmlspecialchars($metodo_pago ?? '—'); ?></div></div>
     </div>
 
-    <!-- ================= ESTADO ================= -->
-    <?php
-    $estado_txt = 'Pendiente';
-    if (isset($status)) {
-        switch (intval($status)) {
-            case 1: $estado_txt = 'En proceso'; break;
-            case 2: $estado_txt = 'Aceptado'; break;
-        }
-    }
-    ?>
-    <div class="col-md-3 mb-3">
-      <label class="control-label text-info">Estado de la cotización</label>
-      <input type="text" class="form-control rounded-0" value="<?php echo $estado_txt; ?>" readonly>
-    </div>
 
     <hr>
 
