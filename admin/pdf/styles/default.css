@@ -1,12 +1,13 @@
 /* ======================================
-   ESTILO BASE PDF - LOGO CENTRADO Y ANCHO
+   ESTILO DEFAULT
    ====================================== */
+
    @page {
     margin: 20mm 15mm;
   }
   
   body {
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-family: "DejaVu Sans", Arial, sans-serif;
     font-size: 11.5px;
     color: #222;
     margin: 0;
@@ -22,13 +23,13 @@
   
   .logo {
     display: block;
-    margin: 0 auto 0px auto;
-    width: 100%;
-    max-width: 700px; /* ocupa casi todo el ancho A4 */
+    margin: 0 auto;
+    width: auto;
+    max-width: 180px;
     height: auto;
   }
   
-  /* --- INFORMACIÓN DE EMPRESA DEBAJO DEL LOGO --- */
+  /* --- DATOS DE EMPRESA --- */
   .company-data {
     text-align: center;
     margin-top: 5px;
@@ -37,7 +38,7 @@
   
   .company-data h2 {
     margin: 0;
-    color: #001f3f;
+    color: #003366;
     font-size: 18px;
     text-transform: uppercase;
   }
@@ -45,44 +46,60 @@
   .company-data p {
     margin: 4px 0 0 0;
     font-size: 11px;
+    color: #444;
   }
   
   /* --- TÍTULO PRINCIPAL --- */
   .title {
     text-align: center;
-    color: #001f3f;
-    margin: 20px 0 15px 0;
-    font-size: 15px;
-    letter-spacing: 0.5px;
+    color: #003366;
+    margin: 20px 0 10px 0;
+    font-size: 14px;
+    letter-spacing: 0.3px;
     text-transform: uppercase;
-    border-top: 2px solid #001f3f;
-    padding-top: 8px;
+    border-top: 2px solid #003366;
+    padding-top: 6px;
   }
   
-  /* --- TABLAS --- */
-  table {
+  /* --- BLOQUE CLIENTE Y FECHA --- */
+  .cliente-fecha {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+    margin: 10px 0;
   }
   
-  .info td {
-    padding: 4px 6px;
+  .col-cliente,
+  .col-fecha {
+    width: 48%;
+    display: inline-block;
     vertical-align: top;
-    width: 50%;
     font-size: 11px;
+    line-height: 1.5;
+  }
+  
+  .col-cliente strong,
+  .col-fecha strong {
+    color: #003366;
   }
   
   /* --- TABLA DE PRODUCTOS --- */
-  .items th, .items td {
-    border: 1px solid #aaa;
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 11px;
+  }
+  
+  .items th,
+  .items td {
+    border: 1px solid #bbb;
     padding: 6px;
   }
   
   .items th {
-    background: #001f3f;
+    background: #003366;
     color: #fff;
     text-align: center;
+    font-weight: 600;
     font-size: 11px;
   }
   
@@ -95,69 +112,46 @@
   }
   
   /* --- BLOQUE DE TOTALES --- */
-tfoot td {
-    border-top: 1px solid #001f3f;
+  tfoot td {
+    border-top: 1px solid #003366;
     font-weight: bold;
     font-size: 11.5px;
-    color: #001f3f;
-    background: none !important;
+    color: #003366;
     padding: 6px 8px;
   }
   
-  /* Etiquetas (Subtotal, Descuento, etc.) */
   tfoot .total-label {
     text-align: right;
-    color: #001f3f;
-    font-weight: bold;
   }
   
-  /* Valores ($...) */
   tfoot .total-value {
     text-align: right;
-    color: #001f3f;
-    font-weight: bold;
   }
   
-  /* Línea más gruesa para TOTAL */
   tfoot tr.total td {
-    border-top: 2px solid #001f3f;
+    border-top: 2px solid #003366;
     font-size: 12px;
     text-transform: uppercase;
   }
-  
   
   /* --- OBSERVACIONES --- */
   .remarks {
     margin-top: 15px;
     font-size: 11px;
+    color: #333;
   }
   
-  /* --- EVITAR CORTES DE TABLAS ENTRE PÁGINAS --- */
-  .items, .items tr, .items td, .items th {
-    page-break-inside: avoid !important;
-  }
-  
-  /* --- BLOQUE CLIENTE --- */
-.cliente-block {
-    margin: 15px 0 15px 0;
-    border: 1px solid #001f3f;
-    padding: 8px 10px;
-    border-radius: 4px;
-    background: #f8f9fa;
-    font-size: 11px;
-  }
-  
-  .cliente-block strong {
-    color: #001f3f;
-  }
-  
-  /* --- FRASE FINAL --- */
+  /* --- PIE DE PÁGINA --- */
   .footer {
-    margin-top: 30px;
+    margin-top: 25px;
     text-align: center;
     font-size: 11px;
-    color: #001f3f;
+    color: #003366;
     font-weight: bold;
   }
   
+  /* --- PREVENIR CORTES DE TABLAS --- */
+  .items, .items tr, .items td, .items th {
+    page-break-inside: avoid !important;
+  }
   
