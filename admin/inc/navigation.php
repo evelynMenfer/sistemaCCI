@@ -35,22 +35,24 @@
                             </li>
 
                             <!-- ==============================
-                                 EMPRESAS DINÁMICAS
-                                 ============================== -->
-                            <li class="nav-header text-uppercase text-light">Empresas</li>
+                                EMPRESAS DINÁMICAS (usando idname)
+                                ============================== -->
+                                <li class="nav-header text-uppercase text-light">Empresas</li>
                             <?php
-                            $companies = $conn->query("SELECT id, name FROM company_list WHERE status = 1 ORDER BY name ASC");
+                            $companies = $conn->query("SELECT id, name, idname FROM company_list WHERE status = 1 ORDER BY name ASC");
                             while ($row = $companies->fetch_assoc()):
                                 $is_active = (isset($_GET['company_id']) && $_GET['company_id'] == $row['id']);
                             ?>
                             <li class="nav-item">
                                 <a href="<?php echo base_url ?>admin/?page=purchase_order/index&company_id=<?php echo $row['id']; ?>"
-                                   class="nav-link <?php echo $is_active ? 'active bg-blue' : ''; ?>">
+                                class="nav-link <?php echo $is_active ? 'active bg-blue' : ''; ?>"
+                                title="<?php echo htmlspecialchars($row['name']); ?>">
                                     <i class="nav-icon fas fa-th-list"></i>
-                                    <p><?php echo htmlspecialchars($row['name']); ?></p>
+                                    <p class="text-uppercase"><?php echo htmlspecialchars($row['idname']); ?></p>
                                 </a>
                             </li>
                             <?php endwhile; ?>
+
 
                             <!-- ==============================
                                  GESTIÓN GENERAL
