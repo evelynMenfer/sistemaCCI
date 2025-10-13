@@ -59,15 +59,25 @@ while ($row = $qry_items->fetch_assoc()) {
 }
 
 // =====================
-// LOGO
+// LOGO (versión 100 % funcional con base64 embebido)
 // =====================
 $logo_path = '';
+
 if (!empty($data['logo'])) {
-    $relative_logo = ltrim($data['logo'], '/');
-    $absolute_logo_path = realpath(__DIR__ . '/../../' . $relative_logo);
-    if ($absolute_logo_path && file_exists($absolute_logo_path)) {
-        $logo_path = 'file://' . $absolute_logo_path;
+    $logo_file = basename(trim($data['logo']));
+    $absolute_logo_path = __DIR__ . '/../../uploads/logos/' . $logo_file;
+
+    if (file_exists($absolute_logo_path)) {
+        $imgData = base64_encode(file_get_contents($absolute_logo_path));
+        // detecta automáticamente el tipo MIME
+        $mime = mime_content_type($absolute_logo_path);
+        $logo_path = 'data:' . $mime . ';base64,' . $imgData;
+        error_log("🟢 Logo incrustado en base64: {$absolute_logo_path}");
+    } else {
+        error_log("🔴 Logo NO encontrado: {$absolute_logo_path}");
     }
+} else {
+    error_log("⚠️ No hay logo definido en la BD.");
 }
 
 // =====================
@@ -84,9 +94,12 @@ ob_start();
 
 <!-- LOGO -->
 <div class="company-block">
-  <?php if ($logo_path): ?>
-    <img src="<?= $logo_path ?>" class="logo" alt="Logo">
-  <?php endif; ?>
+<?php if ($logo_path): ?>
+  <img src="<?= $logo_path ?>" class="logo" alt="Logo" style="max-height:80px; display:block; margin-bottom:10px;">
+<?php else: ?>
+  <p style="color:red;font-size:12px;">[Logo no disponible]</p>
+<?php endif; ?>
+  
 </div>
 
 <!-- DATOS DE EMPRESA -->
