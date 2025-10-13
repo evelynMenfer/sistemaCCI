@@ -1,8 +1,8 @@
 <?php
-require_once(__DIR__ . '/../../config.php'); // ✅ ruta correcta (2 niveles arriba)
+require_once(__DIR__ . '/../../config.php');
 
 // =============================
-// 1️⃣ Parámetros y validaciones
+// 🔹 VALIDACIÓN DE PARÁMETROS
 // =============================
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $company_id = isset($_GET['company_id']) ? intval($_GET['company_id']) : 0;
@@ -20,39 +20,33 @@ if (!isset($conn) || !$conn) {
 }
 
 // =============================
-// 2️⃣ Consulta principal
+// 🔹 CONSULTA PRINCIPAL
 // =============================
 $qry = $conn->query("
-  SELECT p.*, s.name AS supplier, c.logo AS logo_empresa, 
-         c.name AS name_empresa, c.email, c.contact, c.address,
+  SELECT p.*, s.name AS supplier, 
+         c.logo AS logo_empresa, 
+         c.name AS name_empresa, 
+         c.email, c.contact, c.address, 
          c.id AS id_company
-  FROM purchase_order_list p 
-  LEFT JOIN supplier_list s ON p.supplier_id = s.id 
-  LEFT JOIN company_list c ON p.id_company = c.id 
+  FROM purchase_order_list p
+  LEFT JOIN supplier_list s ON p.supplier_id = s.id
+  LEFT JOIN company_list c ON p.id_company = c.id
   WHERE p.id = {$id}
 ");
 
-if (!$qry) {
-    echo "<div class='alert alert-danger text-center mt-5'>
-          ⚠️ Error en consulta SQL: {$conn->error}
-          </div>";
-    exit;
-}
-
-if ($qry->num_rows == 0) {
-    echo "<div class='alert alert-warning mt-4 text-center'>⚠️ No se encontró la cotización.</div>";
+if (!$qry || $qry->num_rows === 0) {
+    echo "<div class='alert alert-warning text-center mt-5'>⚠️ Cotización no encontrada.</div>";
     exit;
 }
 
 foreach ($qry->fetch_array() as $k => $v) $$k = $v;
 
-// ✅ Si el parámetro company_id no viene en la URL, lo obtenemos del registro
 if (empty($company_id) && isset($id_company)) {
     $company_id = intval($id_company);
 }
 
 // =============================
-// 3️⃣ Obtener logo de la empresa
+// 🔹 OBTENER LOGO EMPRESA
 // =============================
 $logo_path = '';
 if (!empty($logo_empresa)) {
@@ -67,7 +61,7 @@ if (!empty($logo_empresa)) {
   .card-title { font-weight:600; }
   th, td { vertical-align: middle !important; }
   thead th { background-color:#001f3f; color:white; text-align:center; }
-  tfoot th { background:#f6f6f6; }
+  tfoot th { background:#f6f6f6; font-weight:600; }
   .text-end { text-align: right !important; }
   .text-center { text-align: center !important; }
   .text-start { text-align: left !important; }
@@ -78,7 +72,7 @@ if (!empty($logo_empresa)) {
   <div class="card-header d-flex align-items-center justify-content-between">
     <div class="d-flex align-items-center">
       <?php if (!empty($logo_path)): ?>
-        <img src="<?php echo $logo_path; ?>" alt="Logo" style="width:45px; height:45px; object-fit:contain; margin-right:10px;">
+        <img src="<?php echo $logo_path; ?>" alt="Logo" style="width:50px; height:50px; object-fit:contain; margin-right:10px;">
       <?php endif; ?>
       <div>
         <h4 class="card-title mb-0">
@@ -90,54 +84,55 @@ if (!empty($logo_empresa)) {
   </div>
 
   <div class="card-body">
+    <!-- ================= DATOS GENERALES ================= -->
     <div class="row mb-3">
-      <div class="col-md-4"><label class="text-info">Proveedor</label><div><?php echo $supplier ?? '—'; ?></div></div>
-      <div class="col-md-4"><label class="text-info">OC</label><div><?php echo $oc ?? '—'; ?></div></div>
-      <div class="col-md-4"><label class="text-info">No. Factura</label><div><?php echo $num_factura ?? '—'; ?></div></div>
+      <div class="col-md-4"><label class="text-info">Proveedor</label><div><?php echo htmlspecialchars($supplier ?? '—'); ?></div></div>
+      <div class="col-md-4"><label class="text-info">OC</label><div><?php echo htmlspecialchars($oc ?? '—'); ?></div></div>
+      <div class="col-md-4"><label class="text-info">No. Factura</label><div><?php echo htmlspecialchars($num_factura ?? '—'); ?></div></div>
     </div>
 
     <div class="row mb-3">
-      <div class="col-md-4"><label class="text-info">Carga al Portal</label><div><?php echo $date_carga_portal ?? '—'; ?></div></div>
-      <div class="col-md-4"><label class="text-info">Fecha de Pago</label><div><?php echo $date_pago ?? '—'; ?></div></div>
-      <div class="col-md-4"><label class="text-info">Folio Fiscal</label><div><?php echo $folio_fiscal ?? '—'; ?></div></div>
+      <div class="col-md-4"><label class="text-info">Carga al Portal</label><div><?php echo htmlspecialchars($date_carga_portal ?? '—'); ?></div></div>
+      <div class="col-md-4"><label class="text-info">Fecha de Pago</label><div><?php echo htmlspecialchars($date_pago ?? '—'); ?></div></div>
+      <div class="col-md-4"><label class="text-info">Folio Fiscal</label><div><?php echo htmlspecialchars($folio_fiscal ?? '—'); ?></div></div>
     </div>
 
     <div class="row mb-3">
-      <div class="col-md-4"><label class="text-info">Comprobante de Pago</label><div><?php echo $folio_comprobante_pago ?? '—'; ?></div></div>
-      <div class="col-md-4"><label class="text-info">Pago en Efectivo</label><div><?php echo $pago_efectivo ?? '—'; ?></div></div>
-      <div class="col-md-4"><label class="text-info">Método de Pago</label><div><?php echo $metodo_pago ?? '—'; ?></div></div>
+      <div class="col-md-4"><label class="text-info">Comprobante de Pago</label><div><?php echo htmlspecialchars($folio_comprobante_pago ?? '—'); ?></div></div>
+      <div class="col-md-4"><label class="text-info">Pago en Efectivo</label><div><?php echo htmlspecialchars($pago_efectivo ?? '—'); ?></div></div>
+      <div class="col-md-4"><label class="text-info">Método de Pago</label><div><?php echo htmlspecialchars($metodo_pago ?? '—'); ?></div></div>
     </div>
 
+    <!-- ================= ESTADO ================= -->
     <?php
-// Mostrar texto del estado según el valor
-$estado_txt = 'Pendiente';
-if (isset($status)) {
-    switch (intval($status)) {
-        case 1: $estado_txt = 'En proceso'; break;
-        case 2: $estado_txt = 'Aceptado'; break;
-        default: $estado_txt = 'Pendiente';
+    $estado_txt = 'Pendiente';
+    if (isset($status)) {
+        switch (intval($status)) {
+            case 1: $estado_txt = 'En proceso'; break;
+            case 2: $estado_txt = 'Aceptado'; break;
+        }
     }
-}
-?>
-<div class="col-md-3">
-  <label class="control-label text-info">Estado de la cotización</label>
-  <input type="text" class="form-control rounded-0" value="<?php echo $estado_txt; ?>" readonly>
-</div>
+    ?>
+    <div class="col-md-3 mb-3">
+      <label class="control-label text-info">Estado de la cotización</label>
+      <input type="text" class="form-control rounded-0" value="<?php echo $estado_txt; ?>" readonly>
+    </div>
 
     <hr>
 
+    <!-- ================= CLIENTE ================= -->
     <div class="row mb-3">
       <div class="col-md-8 text-start">
         <p>
-          <strong>Cliente:</strong> <?php echo $cliente_cotizacion ?? '—'; ?><br>
-          <strong>Email:</strong> <?php echo $cliente_email ?? '—'; ?><br>
-          <strong>Trabajo:</strong> <?php echo $trabajo ?? '—'; ?>
+          <strong>Cliente:</strong> <?php echo htmlspecialchars($cliente_cotizacion ?? '—'); ?><br>
+          <strong>Email:</strong> <?php echo htmlspecialchars($cliente_email ?? '—'); ?><br>
+          <strong>Trabajo:</strong> <?php echo htmlspecialchars($trabajo ?? '—'); ?>
         </p>
       </div>
       <div class="col-md-4 text-end">
         <p>
           <strong>Fecha:</strong> <?php echo !empty($date_exp) ? date("d/m/Y", strtotime($date_exp)) : '—'; ?><br>
-          <strong>OC:</strong> <?php echo $oc ?? '—'; ?>
+          <strong>OC:</strong> <?php echo htmlspecialchars($oc ?? '—'); ?>
         </p>
       </div>
     </div>
@@ -169,8 +164,8 @@ if (isset($status)) {
         ?>
         <tr>
           <td class="text-end"><?php echo number_format($row['quantity'],2) ?></td>
-          <td class="text-center"><?php echo $row['unit'] ?></td>
-          <td class="text-start"><?php echo $row['description'] ?></td>
+          <td class="text-center"><?php echo htmlspecialchars($row['unit']); ?></td>
+          <td class="text-start"><?php echo htmlspecialchars($row['description']); ?></td>
           <td class="text-end">$<?php echo number_format($row['price'],2) ?></td>
           <td class="text-end"><?php echo number_format($row['discount'],2) ?>%</td>
           <td class="text-end">$<?php echo number_format($line_total,2) ?></td>
@@ -178,28 +173,39 @@ if (isset($status)) {
         <?php endwhile; ?>
       </tbody>
 
+      <?php
+      // =======================
+      // 🔹 CÁLCULOS FINALES
+      // =======================
+      $discount_perc = floatval($discount_perc ?? 0);
+      $tax_perc      = floatval($tax_perc ?? 0);
+      $discount_total = $subtotal * ($discount_perc / 100);
+      $base_imponible = $subtotal - $discount_total;
+      $tax_total = $base_imponible * ($tax_perc / 100);
+      $total_final = $base_imponible + $tax_total;
+      ?>
       <tfoot>
         <tr>
           <th colspan="5" class="text-end">Sub Total</th>
           <th class="text-end">$<?php echo number_format($subtotal,2) ?></th>
         </tr>
         <tr>
-          <th colspan="5" class="text-end">Descuento Total (<?php echo $discount_perc ?? 0 ?>%)</th>
-          <th class="text-end">$<?php echo number_format($discount ?? 0,2) ?></th>
+          <th colspan="5" class="text-end">Descuento (<?php echo $discount_perc ?>%)</th>
+          <th class="text-end">$<?php echo number_format($discount_total,2) ?></th>
         </tr>
         <tr>
-          <th colspan="5" class="text-end">Impuesto (<?php echo $tax_perc ?? 0 ?>%)</th>
-          <th class="text-end">$<?php echo number_format($tax ?? 0,2) ?></th>
+          <th colspan="5" class="text-end">Impuesto (<?php echo $tax_perc ?>%)</th>
+          <th class="text-end">$<?php echo number_format($tax_total,2) ?></th>
         </tr>
         <tr class="border-top-2">
           <th colspan="5" class="text-end">Total</th>
-          <th class="text-end">$<?php echo number_format($amount ?? 0,2) ?></th>
+          <th class="text-end fw-bold">$<?php echo number_format($total_final,2) ?></th>
         </tr>
       </tfoot>
     </table>
 
     <?php if(!empty($remarks)): ?>
-      <p><strong>Observaciones:</strong> <?php echo nl2br(htmlspecialchars($remarks)); ?></p>
+      <p class="mt-3"><strong>Observaciones:</strong><br><?php echo nl2br(htmlspecialchars($remarks)); ?></p>
     <?php endif; ?>
   </div>
 
