@@ -77,18 +77,15 @@ if (!$empresa) {
                         <td><?php echo htmlspecialchars($row['cliente_cotizacion'] ?? '—') ?></td>
                         <td class="text-center"><?php echo number_format($row['items']) ?></td>
                         <td class="text-center">
-                            <?php if ($row['status'] == 0): ?>
-                                <span class="badge badge-primary">Pendiente</span>
-                            <?php elseif ($row['status'] == 1): ?>
-                                <span class="badge badge-warning">Parcial</span>
-                            <?php elseif ($row['status'] == 2): ?>
-                                <span class="badge badge-success">Recibido</span>
-                            <?php else: ?>
-                                <span class="badge badge-danger">N/A</span>
-                            <?php endif; ?>
+                            <select class="form-control form-control-sm estado-select" data-id="<?php echo $row['id']; ?>">
+                                <option value="0" <?php echo ($row['status'] == 0) ? 'selected' : ''; ?>>Pendiente</option>
+                                <option value="1" <?php echo ($row['status'] == 1) ? 'selected' : ''; ?>>En proceso</option>
+                                <option value="2" <?php echo ($row['status'] == 2) ? 'selected' : ''; ?>>Aceptado</option>
+                            </select>
                         </td>
                         <td class="text-center">
                             <div class="btn-group">
+                                <!--
                                 <?php if ($row['status'] == 0): ?>
                                     <a href="<?php echo base_url . 'admin?page=receiving/manage_receiving&po_id=' . $row['id'] ?>"
                                        class="btn btn-default btn-sm"
@@ -96,7 +93,7 @@ if (!$empresa) {
                                        <i class="fa fa-boxes text-dark"></i>
                                     </a>
                                 <?php endif; ?>
-
+                                -->
                                 <a href="<?php echo base_url . 'admin?page=purchase_order/view_po&id=' . $row['id'] ?>"
                                    class="btn btn-default btn-sm"
                                    title="Ver Detalle">
@@ -151,6 +148,49 @@ $(document).ready(function() {
 
     $('.delete_data').click(function() {
         _conf("¿Deseas eliminar esta cotización de forma permanente?", "delete_po", [$(this).attr('data-id')]);
+    });
+
+    // === CAMBIO DE ESTADO (select editable) ===
+    $('.estado-select').change(function() {
+    const id = $(this).data('id');
+    const nuevoEstado = $(this).val();
+    const select = $(this);
+
+    start_loader();
+    $.ajax({
+        url: _base_url_ + "classes/Master.php?f=update_po_status",
+        method: "POST",
+        data: { id: id, status: nuevoEstado },
+        dataType: "json",
+        success: function(resp) {
+            console.log("Respuesta del servidor:", resp); // 🔍 depuración
+            if (resp.status === 'success') {
+                alert_toast("Estado actualizado correctamente", 'success');
+                select.removeClass('bg-primary bg-warning bg-success text-white text-dark');
+                if (nuevoEstado == 0) select.addClass('bg-primary text-white');
+                if (nuevoEstado == 1) select.addClass('bg-warning text-dark');
+                if (nuevoEstado == 2) select.addClass('bg-success text-white');
+            } else {
+                alert_toast("Error al actualizar: " + (resp.error || 'desconocido'), 'error');
+                console.error(resp.error);
+            }
+            end_loader();
+        },
+        error: function(err) {
+            console.error("Error AJAX:", err);
+            alert_toast("Error de conexión con el servidor", 'error');
+            end_loader();
+        }
+    });
+});
+
+
+    // Inicializar colores según estado actual
+    $('.estado-select').each(function() {
+        const estado = $(this).val();
+        if (estado == 0) $(this).addClass('bg-primary text-white');
+        if (estado == 1) $(this).addClass('bg-warning text-dark');
+        if (estado == 2) $(this).addClass('bg-success text-white');
     });
 });
 

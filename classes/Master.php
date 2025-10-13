@@ -310,10 +310,7 @@ class Master extends DBConnection {
 				'msg' => 'Error al guardar: ' . $e->getMessage()
 			]);
 		}
-	}
-	
-	
-	
+	}	
 	public function delete_po() {
 		// Validar ID recibido
 		$id = isset($_POST['id']) ? intval($_POST['id']) : 0;
@@ -351,6 +348,34 @@ class Master extends DBConnection {
 			return json_encode(['status' => 'failed', 'msg' => 'Error al eliminar: ' . $e->getMessage()]);
 		}
 	}
+
+// =======================================================
+// 🔄 ACTUALIZAR ESTADO DE COTIZACIÓN
+// =======================================================
+public function update_po_status() {
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $status = isset($_POST['status']) ? intval($_POST['status']) : 0;
+
+    if ($id <= 0) {
+        return json_encode(['status' => 'failed', 'error' => 'ID inválido']);
+    }
+
+    try {
+        $stmt = $this->conn->prepare("UPDATE `purchase_order_list` SET `status` = ? WHERE `id` = ?");
+        if (!$stmt) {
+            return json_encode(['status' => 'failed', 'error' => 'Error al preparar: ' . $this->conn->error]);
+        }
+
+        $stmt->bind_param("ii", $status, $id);
+        $stmt->execute();
+        $stmt->close();
+
+        return json_encode(['status' => 'success']);
+    } catch (mysqli_sql_exception $e) {
+        return json_encode(['status' => 'failed', 'error' => $e->getMessage()]);
+    }
+}
+
 	
 // --- Guardar y eliminar Recepción (con company_id) ---
 function save_receiving()
@@ -448,8 +473,6 @@ function save_receiving()
         'company_id' => $company_id
     ]);
 }
-
-
 function delete_receiving()
 {
     $id = intval($_POST['id'] ?? 0);
@@ -722,6 +745,7 @@ try {
     case 'delete_item':     $out = $Master->delete_item(); break;
     case 'save_po':         $out = $Master->save_po(); break;
     case 'delete_po':       $out = $Master->delete_po(); break;
+	case 'update_po_status':$out = $Master->update_po_status(); break;
     case 'save_receiving':  $out = $Master->save_receiving(); break;
     case 'delete_receiving':$out = $Master->delete_receiving(); break;
     case 'save_return':     $out = $Master->save_return(); break;
