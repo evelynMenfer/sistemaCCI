@@ -352,161 +352,135 @@ class Master extends DBConnection {
 		}
 	}
 	
+// --- Guardar y eliminar Recepción (con company_id) ---
+function save_receiving()
+{
+    extract($_POST);
+    $resp = ['status' => 'failed'];
 
-    // --- Guardar y eliminar Recepción ---
-function save_receiving() { 
-	if (empty($_POST['id'])) {
-		$prefix = "BO";
-		$code = sprintf("%'.04d", 1);
-		while (true) {
-			$check_code = $this->conn->query("SELECT * FROM `back_order_list` where bo_code ='" . $prefix . '-' . $code . "' ")->num_rows;
-			if ($check_code > 0) {
-				$code = sprintf("%'.04d", $code + 1);
-			} else {
-				break;
-			}
-		}
-		$_POST['bo_code'] = $prefix . "-" . $code;
-	} else {
-		$get = $this->conn->query("SELECT * FROM back_order_list where receiving_id = '{$_POST['id']}' ");
-		if ($get->num_rows > 0) {
-			$res = $get->fetch_array();
-			$bo_id = $res['id'];
-			$_POST['bo_code'] = $res['bo_code'];
-		} else {
+    // =============================
+    // 🔍 Validar que venga empresa
+    // =============================
+    $company_id = intval($_POST['company_id'] ?? 0);
+    if ($company_id <= 0) {
+        return json_encode(['status' => 'failed', 'msg' => 'No se ha especificado la empresa.']);
+    }
 
-			$prefix = "BO";
-			$code = sprintf("%'.04d", 1);
-			while (true) {
-				$check_code = $this->conn->query("SELECT * FROM `back_order_list` where bo_code ='" . $prefix . '-' . $code . "' ")->num_rows;
-				if ($check_code > 0) {
-					$code = sprintf("%'.04d", $code + 1);
-				} else {
-					break;
-				}
-			}
-			$_POST['bo_code'] = $prefix . "-" . $code;
-		}
-	}
-	extract($_POST);
-	$data = "";
-	foreach ($_POST as $k => $v) {
-		if (!in_array($k, array('id', 'bo_code', 'supplier_id', 'po_id')) && !is_array($_POST[$k])) {
-			if (!is_numeric($v))
-				$v = $this->conn->real_escape_string($v);
-			if (!empty($data)) $data .= ", ";
-			$data .= " `{$k}` = '{$v}' ";
-		}
-	}
-	if (empty($id)) {
-		$sql = "INSERT INTO `receiving_list` set {$data}";
-	} else {
-		$sql = "UPDATE `receiving_list` set {$data} where id = '{$id}'";
-	}
-	$save = $this->conn->query($sql);
-	if ($save) {
-		$resp['status'] = 'success';
-		if (empty($id))
-			$r_id = $this->conn->insert_id;
-		else
-			$r_id = $id;
-		$resp['id'] = $r_id;
-		if (!empty($id)) {
-			$stock_ids = $this->conn->query("SELECT stock_ids FROM `receiving_list` where id = '{$id}'")->fetch_array()['stock_ids'];
-			$this->conn->query("DELETE FROM `stock_list` where id in ({$stock_ids})");
-		}
-		$stock_ids = array();
-		foreach ($item_id as $k => $v) {
-			if (!empty($data)) $data .= ", ";
-			$sql = "INSERT INTO stock_list (`item_id`,`quantity`,`price`,`unit`,`total`,`type`) VALUES ('{$v}','{$qty[$k]}','{$price[$k]}','{$unit[$k]}','{$total[$k]}','1')";
-			$this->conn->query($sql);
-			$stock_ids[] = $this->conn->insert_id;
-			if ($qty[$k] < $oqty[$k]) {
-				$bo_ids[] = $k;
-			}
-		}
-		if (count($stock_ids) > 0) {
-			$stock_ids = implode(',', $stock_ids);
-			$this->conn->query("UPDATE `receiving_list` set stock_ids = '{$stock_ids}' where id = '{$r_id}'");
-		}
-		if (isset($bo_ids)) {
-			$this->conn->query("UPDATE `purchase_order_list` set status = 1 where id = '{$po_id}'");
-			if ($from_order == 2) {
-				$this->conn->query("UPDATE `back_order_list` set status = 1 where id = '{$form_id}'");
-			}
-			if (!isset($bo_id)) {
-				$sql = "INSERT INTO `back_order_list` set 
-						bo_code = '{$bo_code}',	
-						receiving_id = '{$r_id}',	
-						po_id = '{$po_id}',	
-						supplier_id = '{$supplier_id}',	
-						discount_perc = '{$discount_perc}',	
-						tax_perc = '{$tax_perc}'
-					";
-			} else {
-				$sql = "UPDATE `back_order_list` set 
-						receiving_id = '{$r_id}',	
-						po_id = '{$form_id}',	
-						supplier_id = '{$supplier_id}',	
-						discount_perc = '{$discount_perc}',	
-						tax_perc = '{$tax_perc}',
-						where bo_id = '{$bo_id}'
-					";
-			}
-			$bo_save = $this->conn->query($sql);
-			if (!isset($bo_id))
-				$bo_id = $this->conn->insert_id;
-			$stotal = 0;
-			$data = "";
-			foreach ($item_id as $k => $v) {
-				if (!in_array($k, $bo_ids))
-					continue;
-				$total = ($oqty[$k] - $qty[$k]) * $price[$k];
-				$stotal += $total;
-				if (!empty($data)) $data .= ", ";
-				$data .= " ('{$bo_id}','{$v}','" . ($oqty[$k] - $qty[$k]) . "','{$price[$k]}','{$unit[$k]}','{$total}') ";
-			}
-			$this->conn->query("DELETE FROM `bo_items` where bo_id='{$bo_id}'");
-			$save_bo_items = $this->conn->query("INSERT INTO `bo_items` (`bo_id`,`item_id`,`quantity`,`price`,`unit`,`total`) VALUES {$data}");
-			if ($save_bo_items) {
-				$discount = $stotal * ($discount_perc / 100);
-				$stotal -= $discount;
-				$tax = $stotal * ($tax_perc / 100);
-				$stotal += $tax;
-				$amount = $stotal;
-				$this->conn->query("UPDATE back_order_list set amount = '{$amount}', discount='{$discount}', tax = '{$tax}' where id = '{$bo_id}'");
-			}
-		} else {
-			$this->conn->query("UPDATE `purchase_order_list` set status = 2 where id = '{$po_id}'");
-			if ($from_order == 2) {
-				$this->conn->query("UPDATE `back_order_list` set status = 2 where id = '{$form_id}'");
-			}
-		}
-	} else {
-		$resp['status'] = 'failed';
-		$resp['msg'] = 'An error occured. Error: ' . $this->conn->error;
-	}
-	if ($resp['status'] == 'success') {
-		if (empty($id)) {
-			$this->settings->set_flashdata('success', " El nuevo stock se recibió con éxito.");
-		} else {
-			$this->settings->set_flashdata('success', " Detalles del stock recibido Actualizado con éxito.");
-		}
-	}
+    // =============================
+    // 📦 Generar código de backorder si aplica
+    // =============================
+    if (empty($_POST['id'])) {
+        $prefix = "BO";
+        $code = sprintf("%'.04d", 1);
+        while (true) {
+            $check_code = $this->conn->query("SELECT * FROM `back_order_list` WHERE bo_code ='{$prefix}-{$code}'")->num_rows;
+            if ($check_code > 0) $code = sprintf("%'.04d", $code + 1);
+            else break;
+        }
+        $_POST['bo_code'] = "{$prefix}-{$code}";
+    }
 
-	return json_encode($resp);
- }
+    // =============================
+    // 🧩 Guardar encabezado
+    // =============================
+    $data = "";
+    foreach ($_POST as $k => $v) {
+        if (in_array($k, ['id', 'bo_code', 'supplier_id', 'po_id'])) continue;
+        if (is_array($v)) continue;
+        if (!is_numeric($v)) $v = $this->conn->real_escape_string($v);
+        if (!empty($data)) $data .= ", ";
+        $data .= " `{$k}` = '{$v}' ";
+    }
+    $data .= ", `company_id` = '{$company_id}'"; // 🔹 Agregar empresa
+
+    if (empty($id)) {
+        $sql = "INSERT INTO `receiving_list` SET {$data}";
+    } else {
+        $sql = "UPDATE `receiving_list` SET {$data} WHERE id = '{$id}'";
+    }
+
+    $save = $this->conn->query($sql);
+    if (!$save) {
+        return json_encode(['status' => 'failed', 'msg' => $this->conn->error]);
+    }
+
+    $r_id = empty($id) ? $this->conn->insert_id : $id;
+
+    // =============================
+    // 🧾 Registrar los productos recibidos
+    // =============================
+    if (!empty($id)) {
+        $old_stocks = $this->conn->query("SELECT stock_ids FROM `receiving_list` WHERE id='{$id}'")->fetch_assoc()['stock_ids'] ?? '';
+        if (!empty($old_stocks)) {
+            $this->conn->query("DELETE FROM `stock_list` WHERE id IN ({$old_stocks})");
+        }
+    }
+
+    $stock_ids = [];
+    foreach ($item_id as $k => $v) {
+        $sql = "INSERT INTO stock_list (`item_id`,`quantity`,`price`,`unit`,`total`,`type`) 
+                VALUES ('{$v}','{$qty[$k]}','{$price[$k]}','{$unit[$k]}','{$total[$k]}','1')";
+        $this->conn->query($sql);
+        $stock_ids[] = $this->conn->insert_id;
+    }
+
+    if (count($stock_ids) > 0) {
+        $stock_ids_str = implode(',', $stock_ids);
+        $this->conn->query("UPDATE `receiving_list` SET stock_ids='{$stock_ids_str}' WHERE id='{$r_id}'");
+    }
+
+    // =============================
+    // 🧾 Actualizar estado de cotización
+    // =============================
+    $this->conn->query("UPDATE `purchase_order_list` SET status = 2 WHERE id = '{$po_id}'");
+
+    // =============================
+    // ✅ Respuesta final
+    // =============================
+    $this->settings->set_flashdata('success', empty($id)
+        ? "Recepción registrada correctamente."
+        : "Recepción actualizada correctamente."
+    );
+
+    return json_encode([
+        'status' => 'success',
+        'id' => $r_id,
+        'company_id' => $company_id
+    ]);
+}
+
+
 function delete_receiving()
 {
-	$id = intval($_POST['id'] ?? 0);
-	if ($id <= 0) return json_encode(['status'=>'failed','msg'=>'ID inválido']);
+    $id = intval($_POST['id'] ?? 0);
+    if ($id <= 0)
+        return json_encode(['status' => 'failed', 'msg' => 'ID inválido']);
 
-	$res = $this->conn->query("SELECT stock_ids, form_id, from_order FROM receiving_list WHERE id={$id}")->fetch_assoc();
-	if (!empty($res['stock_ids'])) $this->conn->query("DELETE FROM stock_list WHERE id IN ({$res['stock_ids']})");
-	$this->conn->query("DELETE FROM receiving_list WHERE id={$id}");
-	if ($res['from_order']==1) $this->conn->query("UPDATE purchase_order_list SET status=0 WHERE id={$res['form_id']}");
-	return json_encode(['status'=>'success','msg'=>'Recepción eliminada correctamente']);
+    // 🔹 Obtener datos de la recepción
+    $res = $this->conn->query("SELECT stock_ids, form_id, from_order, company_id FROM receiving_list WHERE id={$id}")->fetch_assoc();
+    if (!$res)
+        return json_encode(['status' => 'failed', 'msg' => 'No se encontró la recepción']);
+
+    // 🔹 Eliminar registros de stock
+    if (!empty($res['stock_ids']))
+        $this->conn->query("DELETE FROM stock_list WHERE id IN ({$res['stock_ids']})");
+
+    // 🔹 Eliminar recepción
+    $this->conn->query("DELETE FROM receiving_list WHERE id={$id}");
+
+    // 🔹 Si era de cotización, revertir su estado
+    if ($res['from_order'] == 1)
+        $this->conn->query("UPDATE purchase_order_list SET status=0 WHERE id={$res['form_id']}");
+
+    $this->settings->set_flashdata('success', "Recepción eliminada correctamente.");
+
+    // 🔹 Devolver también company_id
+    return json_encode([
+        'status' => 'success',
+        'company_id' => intval($res['company_id'])
+    ]);
 }
+
 
 // --- Guardar y eliminar Devolución ---
 function save_return() { 
