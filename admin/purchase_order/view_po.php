@@ -69,73 +69,115 @@ if (!empty($logo_empresa)) {
 </style>
 
 <div class="card card-outline card-primary">
-  <div class="card-header d-flex align-items-center justify-content-between">
-    <div class="d-flex align-items-center">
-      <?php if (!empty($logo_path)): ?>
-        <img src="<?php echo $logo_path; ?>" alt="Logo" style="width:50px; height:50px; object-fit:contain; margin-right:10px;">
-      <?php endif; ?>
-      <div>
-        <h4 class="card-title mb-0">
-          Cotización: <?php echo htmlspecialchars($po_code ?? ''); ?>
-        </h4>
-        <small class="text-muted text-uppercase"><?php echo htmlspecialchars($name_empresa ?? ''); ?></small>
-      </div>
+<div class="card-header bg-white border-bottom pb-3">
+    <div class="text-center py-2">
+      <h5 class="text-info mb-1" style="font-weight:600; letter-spacing:0.5px;">
+        Cotización: <?php echo htmlspecialchars($po_code ?? ''); ?>
+      </h5>
+      <h4 class="mt-2" style="font-weight:600; color:#6c757d; font-size:1.15rem;">
+        <?php echo htmlspecialchars($name_empresa ?? ''); ?>
+      </h4>
     </div>
   </div>
+
 
   <div class="card-body">
     <!-- ================= DATOS GENERALES ================= -->
     <div class="row mb-3">
-    <!-- ================= ESTADO ================= -->
-    <?php
-    $estado_txt = 'Pendiente';
-    if (isset($status)) {
-        switch (intval($status)) {
-            case 1: $estado_txt = 'En proceso'; break;
-            case 2: $estado_txt = 'Aceptado'; break;
-        }
-    }
-    ?>
-    <div class="col-md-4 mb-4">
-      <label class="control-label text-info">Estado de la cotización</label>
-      <input type="text" class="form-control rounded-0" value="<?php echo $estado_txt; ?>" readonly>
-    </div>
+      <div class="col-md-4">
+        <label class="text-info">Método de Pago</label>
+        <div><?php echo htmlspecialchars($metodo_pago ?? '—'); ?></div>
+      </div>
 
-      <div class="col-md-4"><label class="text-info">OC</label><div><?php echo htmlspecialchars($oc ?? '—'); ?></div></div>
-      <div class="col-md-4"><label class="text-info">No. Factura</label><div><?php echo htmlspecialchars($num_factura ?? '—'); ?></div></div>
+      <div class="col-md-4">
+        <label class="text-info">Fecha de Pago</label>
+        <div><?php echo htmlspecialchars($date_pago ?? '—'); ?></div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="text-info">Pago en Efectivo</label>
+        <div><?php echo htmlspecialchars($pago_efectivo ?? '—'); ?></div>
+      </div>
     </div>
 
     <div class="row mb-3">
-      <div class="col-md-4"><label class="text-info">Carga al Portal</label><div><?php echo htmlspecialchars($date_carga_portal ?? '—'); ?></div></div>
-      <div class="col-md-4"><label class="text-info">Fecha de Pago</label><div><?php echo htmlspecialchars($date_pago ?? '—'); ?></div></div>
-      <div class="col-md-4"><label class="text-info">Folio Fiscal</label><div><?php echo htmlspecialchars($folio_fiscal ?? '—'); ?></div></div>
+      <div class="col-md-4">
+        <label class="text-info">No. Factura</label>
+        <div><?php echo htmlspecialchars($num_factura ?? '—'); ?></div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="text-info">Fecha de Carga Portal</label>
+        <div><?php echo htmlspecialchars($date_carga_portal ?? '—'); ?></div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="text-info">Folio Fiscal</label>
+        <div><?php echo htmlspecialchars($folio_fiscal ?? '—'); ?></div>
+      </div>
     </div>
 
     <div class="row mb-3">
-      <div class="col-md-4"><label class="text-info">Comprobante de Pago</label><div><?php echo htmlspecialchars($folio_comprobante_pago ?? '—'); ?></div></div>
-      <div class="col-md-4"><label class="text-info">Pago en Efectivo</label><div><?php echo htmlspecialchars($pago_efectivo ?? '—'); ?></div></div>
-      <div class="col-md-4"><label class="text-info">Método de Pago</label><div><?php echo htmlspecialchars($metodo_pago ?? '—'); ?></div></div>
-    </div>
+      <div class="col-md-4">
+        <label class="text-info">Folio Comprobante de Pago</label>
+        <div><?php echo htmlspecialchars($folio_comprobante_pago ?? '—'); ?></div>
+      </div>
 
+      <div class="col-md-4">
+        <label class="text-info">No. Cheque</label>
+        <div><?php echo htmlspecialchars($num_cheque ?? '—'); ?></div>
+      </div>
+
+      <div class="col-md-4">
+        <?php
+          $estado_txt = 'Pendiente';
+          if (isset($status)) {
+              switch (intval($status)) {
+                  case 1: $estado_txt = 'En proceso'; break;
+                  case 2: $estado_txt = 'Aceptado'; break;
+              }
+          }
+        ?>
+        <label class="text-info">Estado de la Cotización</label>
+        <div><?php echo $estado_txt; ?></div>
+      </div>
+    </div>
 
     <hr>
 
-    <!-- ================= CLIENTE ================= -->
-    <div class="row mb-3">
-      <div class="col-md-8 text-start">
-        <p>
-          <strong>Cliente:</strong> <?php echo htmlspecialchars($cliente_cotizacion ?? '—'); ?><br>
-          <strong>Email:</strong> <?php echo htmlspecialchars($cliente_email ?? '—'); ?><br>
-          <strong>Trabajo:</strong> <?php echo htmlspecialchars($trabajo ?? '—'); ?>
-        </p>
+
+       <!-- ================= CLIENTE ================= -->
+       <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="text-info">Cliente</label>
+        <div><?php echo htmlspecialchars($cliente_cotizacion ?? '—'); ?></div>
       </div>
-      <div class="col-md-4 text-end">
-        <p>
-          <strong>Fecha:</strong> <?php echo !empty($date_exp) ? date("d/m/Y", strtotime($date_exp)) : '—'; ?><br>
-          <strong>OC:</strong> <?php echo htmlspecialchars($oc ?? '—'); ?>
-        </p>
+
+      <div class="col-md-4">
+        <label class="text-info">Email</label>
+        <div><?php echo htmlspecialchars($cliente_email ?? '—'); ?></div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="text-info">Trabajo</label>
+        <div><?php echo htmlspecialchars($trabajo ?? '—'); ?></div>
       </div>
     </div>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label class="text-info">Fecha de Expedición</label>
+        <div><?php echo !empty($date_exp) ? date("d/m/Y", strtotime($date_exp)) : '—'; ?></div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="text-info">OC</label>
+        <div><?php echo htmlspecialchars($oc ?? '—'); ?></div>
+      </div>
+    </div>
+
+    <hr>
+
 
     <!-- ================= TABLA DE PRODUCTOS ================= -->
     <table class="table table-striped table-bordered">

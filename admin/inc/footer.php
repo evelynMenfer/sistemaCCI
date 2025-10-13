@@ -56,11 +56,11 @@
   })
 </script>
 <footer class="main-footer text-sm">
-  <strong><?php echo $_settings->info('short_name') ?><a href="" target="_blank"> Sysem Development</a>
+  <strong><?php echo $_settings->info('short_name') ?><a href="" target="_blank"> © 2025 Sysem Development</a>
     <!-- <a href=""></a> -->
   </strong>
   <div class="float-right d-none d-sm-inline-block">
-    <b>Versión 1.0 </b>
+    <b>Versión 2.0 </b>
   </div>
 </footer>
 </div>
