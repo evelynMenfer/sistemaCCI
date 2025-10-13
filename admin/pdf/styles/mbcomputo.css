@@ -1,0 +1,193 @@
+/* =====================================================
+   MB CÓMPUTO
+   Estilo tecnológico y formal
+   ===================================================== */
+
+/* ---------- CONFIGURACIÓN GENERAL ---------- */
+@page {
+    margin: 30px;
+  }
+  
+  body {
+    font-family: 'DejaVu Sans', sans-serif;
+    color: #1e1e1e;
+    font-size: 11px;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ---------- ENCABEZADO ---------- */
+  .header {
+    width: 100%;
+    text-align: center;
+    padding-top: 5px;
+    line-height: 1.2;
+  }
+  
+  .company-name {
+    font-size: 28px;
+    color: #0066cc; /* Azul profesional más intenso */
+    letter-spacing: 2px;
+    margin: 0;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  
+  .company-sub {
+    font-size: 13px;
+    color: #555;
+    font-weight: 400;
+    margin: 2px 0 10px 0;
+  }
+  
+  .header-line {
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #0066cc, #0099ff);
+    margin: 0;
+  }
+  
+  /* ---------- DATOS SUPERIORES ---------- */
+  .header-info {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .header-info .labels {
+    text-align: right;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .header-info .values {
+    text-align: right;
+    color: #111;
+  }
+  
+  .header-info .delivery {
+    text-align: right;
+    font-size: 11px;
+    color: #555;
+  }
+  
+  /* ---------- TABLA PRINCIPAL ---------- */
+  table.productos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 10px;
+  }
+  
+  .productos th {
+    background-color: #e9f3ff;
+    color: #1e1e1e;
+    border: 1px solid #c0d7f9;
+    padding: 6px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .productos td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    vertical-align: top;
+  }
+  
+  .productos td.desc {
+    width: 40%;
+    text-align: left;
+  }
+  
+  .productos td.num {
+    text-align: right;
+  }
+  
+  .productos tbody tr:nth-child(even) {
+    background: #f9fcff;
+  }
+  
+  /* ---------- TOTALES (nuevo formato) ---------- */
+  table.totals {
+    border: none;
+    width: 50%;
+    margin: 25px auto 0 auto;
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  
+  .totals td {
+    padding: 6px 10px;
+    text-align: right;
+    vertical-align: middle;
+  }
+  
+  .totals .label {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .totals .amount {
+    width: 120px;
+    color: #111;
+  }
+  
+  .totals .divider td,
+  .totals .divider {
+    border-bottom: 2px solid #0066cc; /* Línea azul profesional */
+    height: 8px;
+  }
+  
+  .totals .total td {
+    padding-top: 6px;
+  }
+  
+  .totals .total .label {
+    color: #0052b3;
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  
+  .totals .total .amount {
+    color: #0052b3;
+    font-weight: 800;
+    font-size: 13px;
+  }
+  
+  /* ---------- PIE DE PÁGINA ---------- */
+  .footer {
+    width: 100%;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.6em;
+    margin-top: 40px;
+  }
+  
+  .footer .bank-info {
+    border-top: 1px solid #0066cc;
+    border-bottom: 1px solid #0066cc;
+    padding: 8px 0;
+    margin-bottom: 10px;
+    color: #0066cc;
+  }
+  
+  .footer .contact {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #1e1e1e;
+  }
+  
+  .footer .terms {
+    font-size: 10px;
+    color: #555;
+  }
+  
+  /* ---------- IMPRESIÓN ---------- */
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr { page-break-inside: avoid; }
+  

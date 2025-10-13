@@ -1,256 +1,182 @@
-/* ======================================
-   CENIT
-   ====================================== */
-   @page {
-    margin: 20mm 15mm;
-  }
-  
-  body {
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    font-size: 11.5px;
-    color: #222;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* --- LOGO SUPERIOR --- */
-  .company-block {
-    text-align: center;
-    margin-bottom: 10px;
-    width: 100%;
-  }
-  
-  .logo {
-    display: block;
-    margin: 0 auto 0px auto;
-    width: 100%;
-    max-width: 700px; /* ocupa casi todo el ancho A4 */
-    height: auto;
-  }
-  
-  /* --- INFORMACIÓN DE EMPRESA DEBAJO DEL LOGO --- */
-  .company-data {
-    text-align: center;
-    margin-top: 5px;
-    line-height: 1.4;
-  }
-  
-  .company-data h2 {
-    margin: 0;
-    color: #001f3f;
-    font-size: 18px;
-    text-transform: uppercase;
-  }
-  
-  .company-data p {
-    margin: 4px 0 0 0;
-    font-size: 11px;
-  }
-  
-  /* --- TÍTULO PRINCIPAL --- */
-  .title {
-    text-align: center;
-    color: #001f3f;
-    margin: 20px 0 15px 0;
-    font-size: 15px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border-top: 2px solid #001f3f;
-    padding-top: 8px;
-  }
-  
-  /* --- TABLAS --- */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  
-  .info td {
-    padding: 4px 6px;
-    vertical-align: top;
-    width: 50%;
-    font-size: 11px;
-  }
-  
-  /* --- TABLA DE PRODUCTOS --- */
-  .items th, .items td {
-    border: 1px solid #aaa;
-    padding: 6px;
-  }
-  
-  .items th {
-    background: #001f3f;
-    color: #fff;
-    text-align: center;
-    font-size: 11px;
-  }
-  
-  .items td {
-    font-size: 10.8px;
-  }
-  
-  .items .num {
-    text-align: right;
-  }
-  
-  /* --- BLOQUE DE TOTALES --- */
-tfoot td {
-    border-top: 1px solid #001f3f;
-    font-weight: bold;
-    font-size: 11.5px;
-    color: #001f3f;
-    background: none !important;
-    padding: 6px 8px;
-  }
-  
-  /* Etiquetas (Subtotal, Descuento, etc.) */
-  tfoot .total-label {
-    text-align: right;
-    color: #001f3f;
-    font-weight: bold;
-  }
-  
-  /* Valores ($...) */
-  tfoot .total-value {
-    text-align: right;
-    color: #001f3f;
-    font-weight: bold;
-  }
-  
-  /* Línea más gruesa para TOTAL */
-  tfoot tr.total td {
-    border-top: 2px solid #001f3f;
-    font-size: 12px;
-    text-transform: uppercase;
-  }
-  
-  
-  /* --- OBSERVACIONES --- */
-  .remarks {
-    margin-top: 15px;
-    font-size: 11px;
-  }
-  
-  /* --- EVITAR CORTES DE TABLAS ENTRE PÁGINAS --- */
-  .items, .items tr, .items td, .items th {
-    page-break-inside: avoid !important;
-  }
-  
-  /* --- BLOQUE CLIENTE --- */
-.cliente-block {
-    margin: 15px 0 15px 0;
-    border: 1px solid #001f3f;
-    padding: 8px 10px;
-    border-radius: 4px;
-    background: #f8f9fa;
-    font-size: 11px;
-  }
-  
-  .cliente-block strong {
-    color: #001f3f;
-  }
-  
-  /* --- FRASE FINAL --- */
-  .footer {
-    margin-top: 30px;
-    text-align: center;
-    font-size: 11px;
-    color: #001f3f;
-    font-weight: bold;
-  }
-  
- /* --- BLOQUE CLIENTE Y FECHA A LO ANCHO DE LA HOJA --- */
-.cliente-fecha {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;                /* ✅ ocupa todo el ancho disponible */
-  max-width: 100%;            /* ✅ asegura ancho total */
-  margin: 15px 0;
-  padding: 0 0;               /* ✅ sin márgenes internos */
-  border: none !important;    /* ✅ sin borde */
-  box-sizing: border-box;     /* ✅ asegura que no se salga del margen de página */
+/* =====================================================
+   INGENIERÍA Y SERVICIOS CENIT S.A. DE C.V.
+   Replica exacta del formato corporativo 2025
+   ===================================================== */
+
+/* ---------- CONFIGURACIÓN GENERAL ---------- */
+@page {
+  margin: 30px;
 }
 
-.col-cliente,
-.col-fecha {
-  width: 48%;
-  font-size: 14px;
-  color: #001f3f;
-  line-height: 1.5;
-  border: none !important;
-  padding: 0;
-  margin: 0;
+body {
+  font-family: 'DejaVu Sans', sans-serif;
+  font-size: 11px;
+  color: #111;
+  background: #fff;
 }
 
-.col-cliente p,
-.col-fecha p {
-  margin: 2px 0;
-}
-
-.col-cliente strong,
-.col-fecha strong {
-  color: #001f3f;
-  font-weight: 600;
-}
-
-/* --- CLIENTE EN UNA LÍNEA, SIN CORTAR, AUTOAJUSTABLE --- */
-.cliente-linea {
-  display: block;
+/* ---------- ENCABEZADO ---------- */
+.header {
   width: 100%;
-  color: #001f3f;
-  line-height: 1.5;
-  font-size: 14px;
-  font-weight: normal;
-  white-space: nowrap;            /* fuerza una línea */
-  overflow: visible;              /* deja que el texto se muestre completo */
-  text-align: left;
-  word-spacing: 1px;
-  transform-origin: left center;
-}
-
-.cliente-linea strong {
-  color: #001f3f;
-  font-weight: 600;
-}
-
-
-/* --- TABLA DE PAGO AJUSTADA AL ANCHO DE PRODUCTOS --- */
-.tabla-pago-wrap {
-  width: 100%;
-  text-align: center;
-  margin-top: 10px;
-}
-
-.tabla-pago {
-  width: 100%;                   /* ✅ mismo ancho que tabla de productos */
   border-collapse: collapse;
-  font-size: 10px;
-  text-align: center;
-  border: 1.5px solid #001f3f;    /* borde azul exterior */
-  margin: 0 auto;                /* centrada dentro del bloque */
+  margin-bottom: 5px;
 }
 
-.tabla-pago th,
-.tabla-pago td {
-  border: 1px solid #001f3f;     /* bordes internos */
-  padding: 6px 8px;
-  text-align: center;            /* texto centrado */
+.header td {
   vertical-align: middle;
 }
 
-/* Encabezado sin fondo */
-.tabla-pago th {
-  background: none !important;
-  color: #001f3f;
-  font-weight: 600;
-  text-transform: uppercase;
+.logo img {
+  width: 180px;
+  height: auto;
 }
 
-/* Celdas limpias */
-.tabla-pago td {
-  background: none !important;
-  color: #001f3f;
-  font-weight: 500;
+.title {
+  text-align: right;
+  color: #0E2A47;
+  font-weight: bold;
 }
+
+.title h2 {
+  font-size: 22px;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* ---------- INFORMACIÓN DE LA EMPRESA ---------- */
+.company-info {
+  text-align: center;
+  font-size: 11px;
+  margin-top: -5px;
+  color: #0E2A47;
+}
+
+.company-info h3 {
+  margin: 3px 0;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.company-info p {
+  margin: 1px 0;
+}
+
+/* ---------- LÍNEA DIVISORIA ---------- */
+.line {
+  height: 2px;
+  background-color: #0E2A47;
+  border: none;
+  margin: 10px 0;
+}
+
+/* ---------- INFORMACIÓN DE COTIZACIÓN ---------- */
+.quote-info {
+  font-size: 11.5px;
+  margin-bottom: 10px;
+}
+
+.quote-info h4 {
+  color: #0E2A47;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.quote-info p {
+  margin: 2px 0;
+}
+
+.quote-info strong {
+  color: #0E2A47;
+}
+
+/* ---------- TABLA PRINCIPAL ---------- */
+table.productos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 10px;
+}
+
+.productos th {
+  background-color: #0E2A47;
+  color: #fff;
+  border: 1px solid #0E2A47;
+  text-align: center;
+  padding: 6px;
+  font-weight: bold;
+}
+
+.productos td {
+  border: 1px solid #aaa;
+  padding: 6px;
+  vertical-align: top;
+}
+
+.productos td.desc {
+  width: 40%;
+  text-align: left;
+}
+
+.productos td.num {
+  text-align: right;
+}
+
+.center {
+  text-align: center;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #F4F6F8;
+}
+
+/* ---------- TOTALES ---------- */
+table.totals {
+  width: 40%;
+  margin-left: auto;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.totals td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  text-align: right;
+  background-color: #fafafa;
+}
+
+.totals tr td:first-child {
+  text-align: left;
+  font-weight: bold;
+  color: #0E2A47;
+}
+
+.totals .total td {
+  background-color: #0E2A47;
+  color: #fff;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* ---------- PIE ---------- */
+.footer {
+  margin-top: 25px;
+  font-size: 10.5px;
+  color: #333;
+}
+
+.footer p {
+  margin: 3px 0;
+}
+
+.footer .thanks {
+  text-align: center;
+  font-weight: bold;
+  color: #0E2A47;
+  margin-top: 10px;
+}
+
+/* ---------- IMPRESIÓN ---------- */
+thead { display: table-header-group; }
+tfoot { display: table-footer-group; }
+tr { page-break-inside: avoid; }

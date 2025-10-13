@@ -1,0 +1,163 @@
+/* =====================================================
+   SOL NACIENTE
+   Estilo formal, tonos verdes como el PDF original
+   ===================================================== */
+
+/* ---------- CONFIGURACIÓN GENERAL ---------- */
+@page {
+    margin: 30px;
+  }
+  
+  body {
+    font-family: 'DejaVu Sans', sans-serif;
+    font-size: 11px;
+    color: #111;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ---------- ENCABEZADO ---------- */
+  .company-header {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .company-title {
+    background: #9bbb59;
+    color: #000;
+    text-align: center;
+    font-weight: bold;
+    padding: 6px 0;
+    border: 1px solid #000;
+  }
+  
+  .company-sub {
+    background: #d8e4bc;
+    text-align: center;
+    border: 1px solid #000;
+    padding: 4px 0;
+    font-size: 11px;
+  }
+  
+  .client-labels {
+    background: #d8e4bc;
+    border: 1px solid #000;
+    width: 20%;
+    vertical-align: top;
+    padding: 5px;
+    font-weight: bold;
+  }
+  
+  .client-values {
+    border: 1px solid #000;
+    width: 80%;
+    vertical-align: top;
+    padding: 5px;
+    line-height: 1.4em;
+  }
+  
+  .folio-block {
+    text-align: right;
+    font-size: 11px;
+    border: 1px solid #000;
+    padding: 5px;
+    font-weight: bold;
+    background: #fff;
+  }
+  
+  .empty {
+    border-left: 1px solid #000;
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+  }
+  
+  /* ---------- TABLA PRINCIPAL ---------- */
+  table.productos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 11px;
+  }
+  
+  .productos th {
+    background-color: #d8e4bc;
+    color: #000;
+    border: 1px solid #000;
+    text-align: center;
+    font-weight: bold;
+    padding: 6px;
+  }
+  
+  .productos td {
+    border: 1px solid #000;
+    padding: 5px;
+    vertical-align: top;
+  }
+  
+  .productos td.desc {
+    width: 45%;
+    text-align: left;
+  }
+  
+  .productos td.num {
+    text-align: right;
+  }
+  
+  .productos tbody tr:nth-child(even) {
+    background: #f9fbf6;
+  }
+  
+  /* ---------- TOTALES ---------- */
+  table.totals {
+    border-collapse: collapse;
+    width: 40%;
+    margin-left: auto;
+    margin-top: 10px;
+    font-size: 11.5px;
+  }
+  
+  .totals td {
+    border: 1px solid #000;
+    padding: 4px 8px;
+    text-align: right;
+  }
+  
+  .totals .label {
+    background: #d8e4bc;
+    font-weight: bold;
+    text-align: right;
+  }
+  
+  .totals .amount {
+    text-align: right;
+    font-weight: bold;
+  }
+  
+  .totals .total .label,
+  .totals .total .amount {
+    background: #9bbb59;
+    font-weight: bold;
+    font-size: 12px;
+  }
+  
+  /* ---------- PIE DE PÁGINA ---------- */
+  .footer {
+    width: 100%;
+    margin-top: 20px;
+    font-size: 10.5px;
+    line-height: 1.4em;
+  }
+  
+  .footer p {
+    margin: 0;
+  }
+  
+  /* ---------- IMPRESIÓN ---------- */
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr { page-break-inside: avoid; }
+  

@@ -1,0 +1,161 @@
+/* =====================================================
+   KALAHARI DISTRIBUIDORA COMERCIAL
+   Inspirado en su logo y PDF original
+   ===================================================== */
+
+/* ---------- CONFIGURACIÓN GENERAL ---------- */
+@page {
+    margin: 30px;
+  }
+  
+  body {
+    font-family: 'DejaVu Sans', sans-serif;
+    color: #2b2b2b;
+    font-size: 11px;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* ---------- ENCABEZADO ---------- */
+  .header {
+    width: 100%;
+  }
+  
+  .header img {
+    width: 70%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .header-line {
+    width: 100%;
+    height: 2px;
+    background-color: #d9b48c;
+    margin: 0;              /* Sin separación arriba ni abajo */
+    position: relative;
+    top: -100px;              /* Sube la línea para pegarla justo al borde del logo */
+  }
+  
+  
+  .header-info {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 25px;
+  }
+  
+  .header-info .labels {
+    text-align: right;
+    font-weight: bold;
+  }
+  
+  .header-info .values {
+    text-align: right;
+    padding-top: 3px;
+  }
+  
+  .header-info .delivery {
+    text-align: right;
+    font-size: 11px;
+    color: #555;
+  }
+  
+  /* ---------- TABLA PRINCIPAL ---------- */
+  table.productos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 10px;
+  }
+  
+  .productos th {
+    background-color: #fdf6ee;
+    color: #2b2b2b;
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .productos td {
+    border: 1px solid #eee;
+    padding: 5px;
+    vertical-align: top;
+  }
+  
+  .productos td.desc {
+    width: 35%;
+    text-align: left;
+  }
+  
+  .productos td.num {
+    text-align: right;
+  }
+  
+  .productos tbody tr:nth-child(even) {
+    background: #fcfcfc;
+  }
+  
+  /* ---------- TOTALES ---------- */
+  table.totals {
+    border: none;
+    width: 50%;
+    margin: 25px auto 0 auto;
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  
+  .totals td {
+    padding: 4px 10px;
+    text-align: right;
+  }
+  
+  .totals tr td:first-child {
+    font-weight: bold;
+    text-align: right;
+    color: #444;
+  }
+  
+  .totals tr.total td {
+    border-top: 1px solid #d9b48c;
+    font-size: 13px;
+    font-weight: bold;
+    color: #2b2b2b;
+  }
+  
+  /* ---------- PIE DE PÁGINA ---------- */
+  .footer {
+    width: 100%;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.6em;
+    margin-top: 40px;
+  }
+  
+  .footer .bank-info {
+    border-top: 1px solid #d9b48c;
+    border-bottom: 1px solid #d9b48c;
+    padding: 8px 0;
+    margin-bottom: 10px;
+  }
+  
+  .footer .contact {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .footer .terms {
+    font-size: 10px;
+    color: #555;
+  }
+  
+  /* ---------- IMPRESIÓN ---------- */
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr { page-break-inside: avoid; }
+  

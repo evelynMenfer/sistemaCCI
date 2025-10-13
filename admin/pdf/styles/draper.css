@@ -1,0 +1,86 @@
+/* =====================================================
+   FERRETERÍA DRAPER S.A. DE C.V.
+   Réplica fiel con tonos amarillos como el PDF original
+   ===================================================== */
+
+   body {
+    font-family: 'DejaVu Sans', sans-serif;
+    margin: 30px;
+    color: #111;
+    font-size: 12px;
+    background: #fff;
+  }
+  
+  /* ======= TABLAS ======= */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    vertical-align: top;
+  }
+  
+  th {
+    background-color: #ffe680; /* amarillo pastel como en el PDF */
+    font-weight: bold;
+    text-align: left;
+  }
+  
+  tbody tr:nth-child(even) {
+    background: #fffdfa;
+  }
+  
+  /* ======= TOTALES ======= */
+  table.totals {
+    border: none;
+    width: 60%;
+    margin: 0 auto;
+  }
+  
+  table.totals td {
+    border: none;
+    padding: 5px 0;
+  }
+  
+  table.totals tr:last-child {
+    background-color: #fff5cc; /* amarillo claro en total */
+  }
+  
+  table.totals td:first-child {
+    text-align: right;
+  }
+  
+  table.totals td:last-child {
+    text-align: right;
+    font-weight: bold;
+  }
+  
+  /* ======= BLOQUE FINAL ======= */
+  .footer-block {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.6em;
+  }
+  
+  .footer-block p {
+    margin: 2px 0;
+  }
+  
+  strong {
+    color: #000;
+  }
+  
+  /* ======= SALTO DE PÁGINA ======= */
+  @page {
+    margin: 30px;
+  }
+  
+  table.productos { page-break-inside: auto; }
+  tr { page-break-inside: avoid; page-break-after: auto; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  
