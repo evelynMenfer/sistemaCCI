@@ -2,8 +2,8 @@
 // =====================================
 // CONFIGURACIÓN DE DEPURACIÓN
 // =====================================
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -16,47 +16,48 @@ include __DIR__ . '/../../config.php';
 // VALIDAR ID DE COTIZACIÓN
 // =====================================
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-if ($id <= 0) die("ID inválido.");
+if ($id <= 0) {
+    die("<h3 style='text-align:center;color:red;margin-top:30px;'>ID inválido o no especificado.</h3>");
+}
 
 // =====================================
 // CONSULTA PRINCIPAL
 // =====================================
 $qry = $conn->query("
-  SELECT p.*, s.name AS supplier, c.name AS name_empresa, c.logo AS logo_empresa,
+  SELECT p.*, s.name AS supplier, 
+         c.name AS name_empresa, 
+         c.logo AS logo, 
          c.address, c.email, c.contact, c.id AS company_id
   FROM purchase_order_list p
   LEFT JOIN supplier_list s ON p.supplier_id = s.id
   LEFT JOIN company_list c ON p.id_company = c.id
   WHERE p.id = {$id}
 ");
-if (!$qry || $qry->num_rows === 0) die("No se encontró la cotización.");
+
+if (!$qry || $qry->num_rows === 0) {
+    die("<h3 style='text-align:center;color:red;margin-top:30px;'>❌ No se encontró la cotización.</h3>");
+}
+
 $data = $qry->fetch_assoc();
+$company_id = intval($data['company_id'] ?? 0);
 
 // =====================================
-// OBTENER company_id
+// CARGAR CSS BASE
 // =====================================
-$company_id = isset($_GET['company_id']) ? intval($_GET['company_id']) : intval($data['company_id'] ?? 0);
-
-// =====================================
-// NORMALIZAR NOMBRE DE EMPRESA PARA CSS
-// =====================================
-$raw_name = trim($data['name_empresa'] ?? '');
-if (!mb_check_encoding($raw_name, 'UTF-8')) $raw_name = utf8_encode($raw_name);
-$replace = [
-  'Á'=>'A','É'=>'E','Í'=>'I','Ó'=>'O','Ú'=>'U','Ü'=>'U','Ñ'=>'N',
-  'á'=>'a','é'=>'e','í'=>'i','ó'=>'o','ú'=>'u','ü'=>'u','ñ'=>'n'
-];
-$normalized = strtr($raw_name, $replace);
-$normalized_lower = strtolower($normalized);
-$style_name = preg_replace('/[^a-z0-9]/', '', $normalized_lower);
-if ($style_name === '' || $style_name === null) $style_name = 'default';
-
-// =====================================
-// CARGAR CSS SEGÚN EMPRESA
-// =====================================
-$style_file = __DIR__ . "/styles/{$style_name}.css";
-if (!file_exists($style_file)) $style_file = __DIR__ . "/styles/default.css";
-$style = file_get_contents($style_file);
+$style = "
+body { font-family: DejaVu Sans, sans-serif; font-size:12px; color:#333; margin:30px; }
+h2,h3 { color:#001f3f; margin:0; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+th, td { border:1px solid #ccc; padding:6px; vertical-align:middle; }
+th { background:#001f3f; color:white; text-align:center; }
+tfoot th { background:#f6f6f6; }
+.text-right { text-align:right; }
+.text-center { text-align:center; }
+.text-left { text-align:left; }
+.company-header { display:flex; align-items:center; border-bottom:3px solid #001f3f; margin-bottom:15px; padding-bottom:8px; }
+.company-header img { width:70px; height:70px; object-fit:contain; margin-right:15px; }
+.footer { text-align:center; font-size:11px; margin-top:30px; color:#555; }
+";
 
 // =====================================
 // CONSULTAR ITEMS
@@ -69,26 +70,28 @@ $qry_items = $conn->query("
   INNER JOIN item_list i ON p.item_id = i.id
   WHERE p.po_id = {$id}
 ");
+
 while ($row = $qry_items->fetch_assoc()) {
-  $price = floatval($row['price']);
-  $discount = floatval($row['discount']);
-  $quantity = floatval($row['quantity']);
-  $line_total = ($price - ($price * $discount / 100)) * $quantity;
-  $subtotal += $line_total;
-  $items[] = $row + ['line_total' => $line_total];
+    $price = floatval($row['price']);
+    $discount = floatval($row['discount']);
+    $quantity = floatval($row['quantity']);
+    $line_total = ($price - ($price * $discount / 100)) * $quantity;
+    $subtotal += $line_total;
+    $items[] = $row + ['line_total' => $line_total];
 }
 
 // =====================================
-// RUTA DEL LOGO
+// RUTA DEL LOGO (definitiva)
 // =====================================
 $logo_path = '';
-if (!empty($data['logo_empresa'])) {
-    $relative_logo = ltrim($data['logo_empresa'], '/');
+if (!empty($data['logo'])) {
+    $relative_logo = ltrim($data['logo'], '/');
     $absolute_logo_path = realpath(__DIR__ . '/../../' . $relative_logo);
     if ($absolute_logo_path && file_exists($absolute_logo_path)) {
         $logo_path = 'file://' . $absolute_logo_path;
     } else {
-        $logo_path = base_url . $relative_logo;
+        $base_url = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+        $logo_path = $base_url . '/sisinventarios/' . $relative_logo;
     }
 }
 
@@ -100,66 +103,40 @@ ob_start();
 <html>
 <head>
   <meta charset="UTF-8">
-  <style>
-    <?= $style ?>
-
-    body { font-family: DejaVu Sans, sans-serif; color:#333; }
-    .company-block { display:flex; align-items:center; border-bottom:3px solid #001f3f; padding-bottom:10px; margin-bottom:15px; }
-    .company-block img.logo { width:70px; height:70px; object-fit:contain; margin-right:15px; }
-    .company-data h2 { margin:0; color:#001f3f; }
-    .company-data p { margin:3px 0; font-size:12px; }
-    .cliente-fecha { display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px; }
-    .tabla-pago th { background:#001f3f; color:white; }
-    .tabla-pago, .items { width:100%; border-collapse:collapse; font-size:12px; }
-    .tabla-pago td, .tabla-pago th, .items td, .items th { border:1px solid #ccc; padding:5px; }
-    .items th { background:#001f3f; color:white; text-align:center; }
-    .items td.num, .total-label, .total-value { text-align:right; }
-    .footer { text-align:center; margin-top:20px; font-size:11px; color:#555; }
-  </style>
+  <style><?= $style ?></style>
 </head>
 <body>
 
-<div class="company-block">
+<div class="company-header">
   <?php if (!empty($logo_path)): ?>
-    <img src="<?= $logo_path ?>" class="logo">
+    <img src="<?= $logo_path ?>" alt="Logo">
   <?php endif; ?>
-
-  <div class="company-data">
+  <div>
     <h2><?= htmlspecialchars($data['name_empresa']) ?></h2>
-    <p><?= htmlspecialchars($data['address']) ?><br>
-    Tel: <?= htmlspecialchars($data['contact']) ?> |
-    Email: <?= htmlspecialchars($data['email']) ?></p>
+    <p style="font-size:11px; margin:3px 0;">
+      <?= htmlspecialchars($data['address']) ?><br>
+      Tel: <?= htmlspecialchars($data['contact']) ?> |
+      Email: <?= htmlspecialchars($data['email']) ?>
+    </p>
   </div>
 </div>
 
-<!-- DATOS DE CLIENTE Y FECHA -->
-<div class="cliente-fecha">
-  <div><strong>Cliente:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? '') ?></div>
-  <div><strong>Fecha:</strong> <?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></div>
-</div>
+<h3 style="text-align:right;">Cotización: <?= htmlspecialchars($data['po_code']) ?></h3>
 
-<!-- TABLA DE PAGO -->
-<table class="tabla-pago">
-  <thead>
-    <tr>
-      <th>Método de Pago</th>
-      <th>No. Cheque</th>
-      <th>Trabajo</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
-      <td><?= htmlspecialchars($data['num_cheque'] ?? '') ?></td>
-      <td><?= htmlspecialchars($data['trabajo'] ?? '') ?></td>
-    </tr>
-  </tbody>
+<table>
+  <tr>
+    <th style="width:40%">Cliente</th>
+    <th style="width:30%">Fecha</th>
+    <th style="width:30%">Método de Pago</th>
+  </tr>
+  <tr>
+    <td><?= htmlspecialchars($data['cliente_cotizacion'] ?? '') ?></td>
+    <td><?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></td>
+    <td><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
+  </tr>
 </table>
 
-<br>
-
-<!-- TABLA DE PRODUCTOS -->
-<table class="items">
+<table>
   <thead>
     <tr>
       <th>Cant.</th>
@@ -173,41 +150,41 @@ ob_start();
   <tbody>
     <?php foreach($items as $it): ?>
     <tr>
-      <td class="num"><?= number_format($it['quantity'], 2) ?></td>
-      <td><?= htmlspecialchars($it['unit']) ?></td>
-      <td><?= htmlspecialchars($it['description']) ?></td>
-      <td class="num">$<?= number_format($it['price'], 2) ?></td>
-      <td class="num"><?= number_format($it['discount'], 2) ?>%</td>
-      <td class="num">$<?= number_format($it['line_total'], 2) ?></td>
+      <td class="text-right"><?= number_format($it['quantity'], 2) ?></td>
+      <td class="text-center"><?= htmlspecialchars($it['unit']) ?></td>
+      <td class="text-left"><?= htmlspecialchars($it['description']) ?></td>
+      <td class="text-right">$<?= number_format($it['price'], 2) ?></td>
+      <td class="text-right"><?= number_format($it['discount'], 2) ?>%</td>
+      <td class="text-right">$<?= number_format($it['line_total'], 2) ?></td>
     </tr>
     <?php endforeach; ?>
   </tbody>
   <tfoot>
     <tr>
-      <td colspan="5" class="total-label"><strong>Subtotal</strong></td>
-      <td class="total-value">$<?= number_format($subtotal, 2) ?></td>
+      <th colspan="5" class="text-right">Subtotal</th>
+      <th class="text-right">$<?= number_format($subtotal, 2) ?></th>
     </tr>
     <tr>
-      <td colspan="5" class="total-label">Descuento (<?= $data['discount_perc'] ?? 0 ?>%)</td>
-      <td class="total-value">$<?= number_format($data['discount'] ?? 0, 2) ?></td>
+      <th colspan="5" class="text-right">Descuento (<?= $data['discount_perc'] ?? 0 ?>%)</th>
+      <th class="text-right">$<?= number_format($data['discount'] ?? 0, 2) ?></th>
     </tr>
     <tr>
-      <td colspan="5" class="total-label">Impuesto (<?= $data['tax_perc'] ?? 0 ?>%)</td>
-      <td class="total-value">$<?= number_format($data['tax'] ?? 0, 2) ?></td>
+      <th colspan="5" class="text-right">Impuesto (<?= $data['tax_perc'] ?? 0 ?>%)</th>
+      <th class="text-right">$<?= number_format($data['tax'] ?? 0, 2) ?></th>
     </tr>
-    <tr class="total">
-      <td colspan="5" class="total-label"><strong>TOTAL</strong></td>
-      <td class="total-value"><strong>$<?= number_format($data['amount'], 2) ?></strong></td>
+    <tr>
+      <th colspan="5" class="text-right">Total</th>
+      <th class="text-right"><strong>$<?= number_format($data['amount'], 2) ?></strong></th>
     </tr>
   </tfoot>
 </table>
 
 <?php if (!empty($data['remarks'])): ?>
-  <p style="margin-top:10px;"><strong>Observaciones:</strong><br><?= nl2br(htmlspecialchars($data['remarks'])) ?></p>
+  <p style="margin-top:15px;"><strong>Observaciones:</strong><br><?= nl2br(htmlspecialchars($data['remarks'])) ?></p>
 <?php endif; ?>
 
 <div class="footer">
-  <p>Gracias por su confianza.</p>
+  <p>Gracias por su preferencia. — <?= htmlspecialchars($data['name_empresa']) ?></p>
 </div>
 
 </body>
@@ -220,8 +197,14 @@ $html = ob_get_clean();
 // =====================================
 $options = new Options();
 $options->set('isRemoteEnabled', true);
-$options->set('chroot', realpath($_SERVER['DOCUMENT_ROOT'] . '/sisinventarios/'));
-$options->set('isHtml5ParserEnabled', true);
+
+// Carpeta temporal segura
+$tempDir = __DIR__ . '/../../storage/tmp';
+if (!is_dir($tempDir)) {
+    @mkdir($tempDir, 0777, true);
+}
+$options->set('tempDir', realpath($tempDir));
+$options->set('fontCache', realpath($tempDir));
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html);

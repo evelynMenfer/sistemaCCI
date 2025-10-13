@@ -1,5 +1,5 @@
 <?php
-require_once('../../config.php');
+require_once(__DIR__ . '/../../config.php'); // ✅ ruta correcta (2 niveles arriba)
 
 // =============================
 // 1️⃣ Parámetros y validaciones
@@ -7,25 +7,52 @@ require_once('../../config.php');
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $company_id = isset($_GET['company_id']) ? intval($_GET['company_id']) : 0;
 
-// Consulta principal
+if ($id <= 0) {
+    echo "<div class='alert alert-danger mt-4 text-center'>ID de cotización inválido o no especificado.</div>";
+    exit;
+}
+
+if (!isset($conn) || !$conn) {
+    echo "<div class='alert alert-danger text-center mt-5'>
+          ❌ Error de conexión a la base de datos. Verifica config.php.
+          </div>";
+    exit;
+}
+
+// =============================
+// 2️⃣ Consulta principal
+// =============================
 $qry = $conn->query("
   SELECT p.*, s.name AS supplier, c.logo AS logo_empresa, 
-         c.name AS name_empresa, c.email, c.contact, c.address 
+         c.name AS name_empresa, c.email, c.contact, c.address,
+         c.id AS id_company
   FROM purchase_order_list p 
   LEFT JOIN supplier_list s ON p.supplier_id = s.id 
   LEFT JOIN company_list c ON p.id_company = c.id 
   WHERE p.id = {$id}
 ");
 
-if (!$qry || $qry->num_rows == 0) {
+if (!$qry) {
+    echo "<div class='alert alert-danger text-center mt-5'>
+          ⚠️ Error en consulta SQL: {$conn->error}
+          </div>";
+    exit;
+}
+
+if ($qry->num_rows == 0) {
     echo "<div class='alert alert-warning mt-4 text-center'>⚠️ No se encontró la cotización.</div>";
     exit;
 }
 
 foreach ($qry->fetch_array() as $k => $v) $$k = $v;
 
+// ✅ Si el parámetro company_id no viene en la URL, lo obtenemos del registro
+if (empty($company_id) && isset($id_company)) {
+    $company_id = intval($id_company);
+}
+
 // =============================
-// 2️⃣ Obtener logo de la empresa
+// 3️⃣ Obtener logo de la empresa
 // =============================
 $logo_path = '';
 if (!empty($logo_empresa)) {
@@ -161,9 +188,8 @@ if (!empty($logo_empresa)) {
   </div>
 
   <div class="card-footer text-center">
-    <a class="btn btn-primary" href="<?php echo base_url . '/admin?page=purchase_order/manage_po&id=' . $id . '&company_id=' . $company_id; ?>">Editar</a>
-    <a class="btn btn-danger" href="<?php echo base_url . '/admin?page=purchase_order/index&company_id=' . $company_id; ?>">Volver</a>
-
+    <a class="btn btn-primary" href="<?php echo base_url . 'admin/?page=purchase_order/manage_po&id=' . $id . '&company_id=' . $company_id; ?>">Editar</a>
+    <a class="btn btn-danger" href="<?php echo base_url . 'admin/?page=purchase_order/index&company_id=' . $company_id; ?>">Volver</a>
     <a class="btn btn-success" href="<?php echo base_url; ?>admin/pdf/generate_po.php?id=<?php echo $id; ?>" target="_blank">
       Generar PDF
     </a>

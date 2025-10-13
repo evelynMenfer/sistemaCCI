@@ -266,31 +266,33 @@ class Master extends DBConnection {
 				$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
 			}
 	
-			// --- INSERTAR NUEVOS PRODUCTOS ---
-// --- INSERTAR NUEVOS PRODUCTOS ---
-$stmt = $this->conn->prepare("
-    INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
-    VALUES (?, ?, ?, ?, ?, ?)
-");
-if(!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
-
-foreach ($item_id as $key => $val) {
-    $iid = intval($val);
-    $qty = floatval($qty[$key] ?? 0);
-    $unit_val = trim($unit[$key] ?? '');
-    $price_val = floatval($price[$key] ?? 0);
-    $disc_val = floatval($discount[$key] ?? 0);
-
-    // Orden y tipos correctos:
-    // i = po_id, i = item_id, d = quantity, s = unit, d = price, d = discount
-    $stmt->bind_param('iidsdd', $id, $iid, $qty, $unit_val, $price_val, $disc_val);
-    $stmt->execute();
-}
-
+			// ===========================
+			// 🧾 INSERTAR NUEVOS PRODUCTOS
+			// ===========================
+			$stmt = $this->conn->prepare("
+				INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
+				VALUES (?, ?, ?, ?, ?, ?)
+			");
+			if(!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
+	
+			// ✅ Renombramos arrays para evitar conflicto con variables
+			$qtys = $_POST['qty'] ?? [];
+			$units = $_POST['unit'] ?? [];
+			$prices = $_POST['price'] ?? [];
+			$discounts = $_POST['discount'] ?? [];
+	
+			foreach ($item_id as $key => $val) {
+				$iid = intval($val);
+				$cantidad = floatval($qtys[$key] ?? 0);
+				$unidad = trim($units[$key] ?? '');
+				$precio = floatval($prices[$key] ?? 0);
+				$descuento = floatval($discounts[$key] ?? 0);
+	
+				$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $descuento);
+				$stmt->execute();
+			}
 	
 			$stmt->close();
-	
-			// --- SI TODO VA BIEN ---
 			$this->conn->commit();
 	
 			return json_encode([
@@ -302,7 +304,6 @@ foreach ($item_id as $key => $val) {
 			]);
 	
 		} catch (Exception $e) {
-			// ❌ REVERSIÓN EN CASO DE ERROR
 			$this->conn->rollback();
 			return json_encode([
 				'status' => 'failed',
@@ -310,6 +311,7 @@ foreach ($item_id as $key => $val) {
 			]);
 		}
 	}
+	
 	
 	
 	public function delete_po() {
