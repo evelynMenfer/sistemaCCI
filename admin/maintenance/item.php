@@ -26,7 +26,7 @@
 					<thead>
 						<tr>
 							<th>OC</th>
-							<th>Nombre</th>
+							<th>SKU</th>
 							<th>Descripción</th>
 							<th>Stock</th>
 							<th>Fecha de Compra</th>

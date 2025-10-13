@@ -31,7 +31,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
     </div>
     <div class="col-md-6">
       <div class="form-group">
-        <label for="name" class="control-label">Nombre</label>
+        <label for="name" class="control-label">SKU</label>
         <input type="text" name="name" id="name" class="form-control rounded-0"
                value="<?php echo isset($name) ? htmlspecialchars($name) : ''; ?>">
       </div>
