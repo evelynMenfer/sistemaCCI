@@ -213,6 +213,22 @@ class Master extends DBConnection {
 			return json_encode(['status' => 'failed', 'msg' => 'Debe agregar al menos un producto.']);
 	
 		// ===========================
+		// 🔹 DETERMINAR ESTADO CORRECTO
+		// ===========================
+		$status_actual = 0;
+		if (!empty($id)) {
+			$res = $this->conn->query("SELECT status FROM purchase_order_list WHERE id = {$id}");
+			if ($res && $res->num_rows > 0) {
+				$status_actual = intval($res->fetch_assoc()['status']);
+			}
+		}
+	
+		$status_final = isset($_POST['status']) && $_POST['status'] !== ''
+			? intval($_POST['status'])
+			: $status_actual;
+		if (!in_array($status_final, [0, 1, 2])) $status_final = 0; // Seguridad
+	
+		// ===========================
 		// 🧩 CAMPOS PRINCIPALES
 		// ===========================
 		$fields = [
@@ -237,9 +253,12 @@ class Master extends DBConnection {
 			'tax' => floatval($tax ?? 0),
 			'amount' => floatval($amount ?? 0),
 			'remarks' => trim($remarks ?? ''),
-			'status' => 0
+			'status' => $status_final
 		];
 	
+		// ===========================
+		// ⚙️ CONVERTIR CAMPOS A SQL
+		// ===========================
 		$data = "";
 		foreach ($fields as $k => $v) {
 			if ($v === null || $v === 'NULL') $data .= " `{$k}`=NULL, ";
@@ -261,8 +280,6 @@ class Master extends DBConnection {
 			} else {
 				$sql = "UPDATE purchase_order_list SET {$data} WHERE id={$id}";
 				$this->conn->query($sql);
-	
-				// 🔸 Eliminar ítems anteriores solo si todo va bien
 				$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
 			}
 	
@@ -275,7 +292,6 @@ class Master extends DBConnection {
 			");
 			if(!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
 	
-			// ✅ Renombramos arrays para evitar conflicto con variables
 			$qtys = $_POST['qty'] ?? [];
 			$units = $_POST['unit'] ?? [];
 			$prices = $_POST['price'] ?? [];
@@ -310,7 +326,8 @@ class Master extends DBConnection {
 				'msg' => 'Error al guardar: ' . $e->getMessage()
 			]);
 		}
-	}	
+	}
+		
 	public function delete_po() {
 		// Validar ID recibido
 		$id = isset($_POST['id']) ? intval($_POST['id']) : 0;

@@ -99,7 +99,18 @@ tfoot tr th { background:#f6f6f6; }
           </div>
           <?php endforeach; ?>
         </div>
-
+        <!-- ESTADO DE COTIZACIÓN -->
+        <div class="row mt-2">
+        <div class="col-md-4">
+          <label for="status" class="control-label text-info">Estado</label>
+          <select name="status" id="status" class="form-control rounded-0">
+            <option value="0" <?= isset($status) && $status == 0 ? 'selected' : '' ?>>Pendiente</option>
+            <option value="1" <?= isset($status) && $status == 1 ? 'selected' : '' ?>>En proceso</option>
+            <option value="2" <?= isset($status) && $status == 2 ? 'selected' : '' ?>>Aceptado</option>
+          </select>
+        </div>
+        </div>
+              
         <hr>
         <legend class="text-info">Productos</legend>
 

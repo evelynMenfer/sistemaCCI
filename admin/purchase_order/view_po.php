@@ -108,6 +108,22 @@ if (!empty($logo_empresa)) {
       <div class="col-md-4"><label class="text-info">Método de Pago</label><div><?php echo $metodo_pago ?? '—'; ?></div></div>
     </div>
 
+    <?php
+// Mostrar texto del estado según el valor
+$estado_txt = 'Pendiente';
+if (isset($status)) {
+    switch (intval($status)) {
+        case 1: $estado_txt = 'En proceso'; break;
+        case 2: $estado_txt = 'Aceptado'; break;
+        default: $estado_txt = 'Pendiente';
+    }
+}
+?>
+<div class="col-md-3">
+  <label class="control-label text-info">Estado de la cotización</label>
+  <input type="text" class="form-control rounded-0" value="<?php echo $estado_txt; ?>" readonly>
+</div>
+
     <hr>
 
     <div class="row mb-3">
