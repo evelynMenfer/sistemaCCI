@@ -198,66 +198,98 @@ class Master extends DBConnection {
      *   COTIZACIONES / PURCHASE ORDER
      * ======================================================= */
 	public function save_po() {
-		extract($_POST);
+		// No confíes en extract para números críticos
+		// extract($_POST);
 	
 		// ===========================
-		// 🔍 VALIDACIONES
+		// 🔍 VALIDACIONES BÁSICAS
 		// ===========================
-		if (!isset($id_company) || intval($id_company) <= 0)
+		$id              = isset($_POST['id']) ? intval($_POST['id']) : 0;
+		$id_company      = isset($_POST['id_company']) ? intval($_POST['id_company']) : 0;
+		$cliente_cotizacion = trim($_POST['cliente_cotizacion'] ?? '');
+	
+		if ($id_company <= 0)
 			return json_encode(['status' => 'failed', 'msg' => 'No se ha especificado la empresa.']);
-	
-		if (empty($cliente_cotizacion))
+		if ($cliente_cotizacion === '')
 			return json_encode(['status' => 'failed', 'msg' => 'Debe indicar el nombre del cliente.']);
 	
-		if (!isset($item_id) || count($item_id) == 0)
+		$item_id  = $_POST['item_id'] ?? [];
+		$qtys     = $_POST['qty'] ?? [];
+		$units    = $_POST['unit'] ?? [];
+		$prices   = $_POST['price'] ?? [];
+		$dlines   = $_POST['discount'] ?? []; // descuentos por línea (array)
+	
+		if (!is_array($item_id) || count($item_id) === 0)
 			return json_encode(['status' => 'failed', 'msg' => 'Debe agregar al menos un producto.']);
 	
 		// ===========================
 		// 🔹 DETERMINAR ESTADO CORRECTO
 		// ===========================
 		$status_actual = 0;
-		if (!empty($id)) {
+		if ($id > 0) {
 			$res = $this->conn->query("SELECT status FROM purchase_order_list WHERE id = {$id}");
-			if ($res && $res->num_rows > 0) {
-				$status_actual = intval($res->fetch_assoc()['status']);
-			}
+			if ($res && $res->num_rows > 0) $status_actual = intval($res->fetch_assoc()['status']);
+		}
+		$status_final = isset($_POST['status']) && $_POST['status'] !== '' ? intval($_POST['status']) : $status_actual;
+		if (!in_array($status_final, [0,1,2])) $status_final = 0;
+	
+		// ===========================
+		// 🧮 CALCULAR SUBTOTAL, DISCOUNT, TAX, AMOUNT EN SERVIDOR
+		// ===========================
+		$subtotal = 0.0;
+		foreach ($item_id as $k => $iid) {
+			$q = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
+			$p = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
+			$dl = isset($dlines[$k])? floatval($dlines[$k]): 0.0; // % por línea
+			$line_total = ( $p - ($p * $dl / 100.0) ) * $q;
+			$subtotal += $line_total;
 		}
 	
-		$status_final = isset($_POST['status']) && $_POST['status'] !== ''
-			? intval($_POST['status'])
-			: $status_actual;
-		if (!in_array($status_final, [0, 1, 2])) $status_final = 0; // Seguridad
+		$discount_perc = floatval($_POST['discount_perc'] ?? 0);   // %
+		$tax_perc      = floatval($_POST['tax_perc'] ?? 0);        // %
+	
+		// Descuento global (monto) calculado del % sobre el subtotal
+		$discount_calc = round($subtotal * $discount_perc / 100.0, 2);
+	
+		// Base imponible y tax (monto)
+		$base = $subtotal - $discount_calc;
+		if ($base < 0) $base = 0; // seguridad
+		$tax_calc = round($base * $tax_perc / 100.0, 2);
+	
+		// Total final
+		$amount_calc = round($base + $tax_calc, 2);
 	
 		// ===========================
-		// 🧩 CAMPOS PRINCIPALES
+		// 🧩 CAMPOS PRINCIPALES (sanitizados)
 		// ===========================
 		$fields = [
-			'id_company' => intval($id_company),
-			'supplier_id' => isset($supplier_id) ? intval($supplier_id) : 'NULL',
-			'date_exp' => $date_exp ?? date('Y-m-d'),
-			'cliente_cotizacion' => trim($cliente_cotizacion ?? ''),
-			'cliente_email' => trim($cliente_email ?? ''),
-			'trabajo' => trim($trabajo ?? ''),
-			'metodo_pago' => trim($metodo_pago ?? ''),
-			'date_pago' => !empty($date_pago) ? $date_pago : null,
-			'pago_efectivo' => !empty($pago_efectivo) ? $pago_efectivo : null,
-			'oc' => trim($oc ?? ''),
-			'num_factura' => trim($num_factura ?? ''),
-			'date_carga_portal' => !empty($date_carga_portal) ? $date_carga_portal : null,
-			'folio_fiscal' => trim($folio_fiscal ?? ''),
-			'folio_comprobante_pago' => trim($folio_comprobante_pago ?? ''),
-			'num_cheque' => trim($num_cheque ?? ''),
-			'discount_perc' => floatval($discount_perc ?? 0),
-			'discount' => floatval($discount ?? 0),
-			'tax_perc' => floatval($tax_perc ?? 0),
-			'tax' => floatval($tax ?? 0),
-			'amount' => floatval($amount ?? 0),
-			'remarks' => trim($remarks ?? ''),
-			'status' => $status_final
+			'id_company'             => $id_company,
+			'supplier_id'            => isset($_POST['supplier_id']) && $_POST['supplier_id'] !== '' ? intval($_POST['supplier_id']) : 'NULL',
+			'date_exp'               => $_POST['date_exp'] ?? date('Y-m-d'),
+			'cliente_cotizacion'     => $cliente_cotizacion,
+			'cliente_email'          => trim($_POST['cliente_email'] ?? ''),
+			'trabajo'                => trim($_POST['trabajo'] ?? ''),
+			'metodo_pago'            => trim($_POST['metodo_pago'] ?? ''),
+			'date_pago'              => !empty($_POST['date_pago']) ? $_POST['date_pago'] : null,
+			'pago_efectivo'          => !empty($_POST['pago_efectivo']) ? $_POST['pago_efectivo'] : null,
+			'oc'                     => trim($_POST['oc'] ?? ''),
+			'num_factura'            => trim($_POST['num_factura'] ?? ''),
+			'date_carga_portal'      => !empty($_POST['date_carga_portal']) ? $_POST['date_carga_portal'] : null,
+			'folio_fiscal'           => trim($_POST['folio_fiscal'] ?? ''),
+			'folio_comprobante_pago' => trim($_POST['folio_comprobante_pago'] ?? ''),
+			'num_cheque'             => trim($_POST['num_cheque'] ?? ''),
+			// 👉 Guardamos SIEMPRE los valores calculados en servidor:
+			'discount_perc'          => $discount_perc,
+			'discount'               => $discount_calc,     // monto
+			'tax_perc'               => $tax_perc,
+			'tax'                    => $tax_calc,          // monto
+			'amount'                 => $amount_calc,       // total final
+			'remarks'                => trim($_POST['remarks'] ?? ''),
+			'status'                 => $status_final
 		];
 	
 		// ===========================
-		// ⚙️ CONVERTIR CAMPOS A SQL
+		// ⚙️ CONVERSIÓN A SQL
 		// ===========================
 		$data = "";
 		foreach ($fields as $k => $v) {
@@ -267,12 +299,12 @@ class Master extends DBConnection {
 		$data = rtrim($data, ', ');
 	
 		// ===========================
-		// ⚙️ TRANSACCIÓN SEGURA
+		// 💾 TRANSACCIÓN
 		// ===========================
 		$this->conn->begin_transaction();
 		try {
-			// --- CREAR o ACTUALIZAR ENCABEZADO ---
-			if (empty($id)) {
+			// Encabezado
+			if ($id <= 0) {
 				$po_code = "COT-" . strtoupper(substr(md5(uniqid()), 0, 6));
 				$sql = "INSERT INTO purchase_order_list SET {$data}, po_code='{$po_code}', date_created=NOW()";
 				$this->conn->query($sql);
@@ -283,50 +315,38 @@ class Master extends DBConnection {
 				$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
 			}
 	
-			// ===========================
-			// 🧾 INSERTAR NUEVOS PRODUCTOS
-			// ===========================
+			// Detalle
 			$stmt = $this->conn->prepare("
 				INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
 				VALUES (?, ?, ?, ?, ?, ?)
 			");
-			if(!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
+			if (!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
 	
-			$qtys = $_POST['qty'] ?? [];
-			$units = $_POST['unit'] ?? [];
-			$prices = $_POST['price'] ?? [];
-			$discounts = $_POST['discount'] ?? [];
+			foreach ($item_id as $k => $iid) {
+				$iid       = intval($iid);
+				$cantidad  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
+				$unidad    = isset($units[$k])  ? trim($units[$k])      : '';
+				$precio    = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
+				$desc_line = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0; // %
 	
-			foreach ($item_id as $key => $val) {
-				$iid = intval($val);
-				$cantidad = floatval($qtys[$key] ?? 0);
-				$unidad = trim($units[$key] ?? '');
-				$precio = floatval($prices[$key] ?? 0);
-				$descuento = floatval($discounts[$key] ?? 0);
-	
-				$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $descuento);
+				$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $desc_line);
 				$stmt->execute();
 			}
-	
 			$stmt->close();
-			$this->conn->commit();
 	
+			$this->conn->commit();
 			return json_encode([
 				'status' => 'success',
-				'id' => $id,
-				'msg' => empty($_POST['id'])
-					? 'Cotización guardada correctamente.'
-					: 'Cotización actualizada correctamente.'
+				'id'     => $id,
+				'msg'    => ($id > 0 ? 'Cotización actualizada correctamente.' : 'Cotización guardada correctamente.')
 			]);
-	
 		} catch (Exception $e) {
 			$this->conn->rollback();
-			return json_encode([
-				'status' => 'failed',
-				'msg' => 'Error al guardar: ' . $e->getMessage()
-			]);
+			return json_encode(['status' => 'failed', 'msg' => 'Error al guardar: ' . $e->getMessage()]);
 		}
 	}
+	
+	
 		
 	public function delete_po() {
 		// Validar ID recibido

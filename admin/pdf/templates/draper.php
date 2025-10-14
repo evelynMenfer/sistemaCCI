@@ -1,6 +1,41 @@
 <?php
 // Template DRAPER - réplica exacta del formato en PDF compartido
 // Variables disponibles: $data, $items, $subtotal, $logo_path, $style
+
+// ==================================================
+// 🔹 Compatibilidad y fallbacks de datos (sin alterar estructura visual)
+// ==================================================
+$data      = $data      ?? [];
+$items     = isset($items) && is_array($items) ? $items : [];
+$subtotal  = isset($subtotal) ? floatval($subtotal) : 0;
+$tax       = floatval($data['tax'] ?? 0);
+$tax_perc  = floatval($data['tax_perc'] ?? 0);
+$amount    = floatval($data['amount'] ?? 0);
+$discount  = floatval($data['discount'] ?? 0);
+$discount_perc = floatval($data['discount_perc'] ?? 0);
+
+// 🔹 Si subtotal no vino, lo calculamos manualmente
+if ($subtotal <= 0 && !empty($items)) {
+    $subtotal = 0;
+    foreach ($items as $it) {
+        $price = floatval($it['price'] ?? 0);
+        $qty   = floatval($it['quantity'] ?? 0);
+        $disc  = floatval($it['discount'] ?? 0);
+        $subtotal += ($price - ($price * $disc / 100)) * $qty;
+    }
+}
+
+// 🔹 Si los totales guardados están vacíos, recalculamos
+if ($amount <= 0) {
+    $discount = ($discount_perc > 0) ? $subtotal * $discount_perc / 100 : $discount;
+    $tax = ($tax_perc > 0) ? (($subtotal - $discount) * $tax_perc / 100) : $tax;
+    $amount = ($subtotal - $discount) + $tax;
+}
+
+// 🔹 Seguridad contra valores nulos
+$subtotal = number_format($subtotal, 2, '.', '');
+$tax      = number_format($tax, 2, '.', '');
+$amount   = number_format($amount, 2, '.', '');
 ?>
 <html>
 <head>
@@ -66,11 +101,11 @@
   </tr>
   <tr>
     <td style="text-align:right; padding:4px;">I.V.A.:</td>
-    <td style="text-align:right; padding:4px;">$<?= number_format($data['tax'] ?? 0, 2) ?></td>
+    <td style="text-align:right; padding:4px;">$<?= number_format($tax, 2) ?></td>
   </tr>
   <tr>
     <td style="text-align:right; padding:4px; font-weight:bold;">Total:</td>
-    <td style="text-align:right; padding:4px; font-weight:bold;">$<?= number_format($data['amount'], 2) ?></td>
+    <td style="text-align:right; padding:4px; font-weight:bold;">$<?= number_format($amount, 2) ?></td>
   </tr>
 </table>
 
