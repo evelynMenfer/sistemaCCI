@@ -192,7 +192,7 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
 <?php endif; ?>
 
 <footer>
-  <p>Generado por Orbyx Technologies</p>
+  <p>Generado por MPF Mecánica Estrada de México</p>
 </footer>
 
 </body>
