@@ -1,20 +1,18 @@
 <?php
-// Template DRAPER - réplica exacta del formato en PDF compartido
-// Variables disponibles: $data, $items, $subtotal, $logo_path, $style
-
 // ==================================================
-// 🔹 Compatibilidad y fallbacks de datos (sin alterar estructura visual)
+// 🔹 TEMPLATE PDF – DRAPER
+// Mismo formato original, con descuento por producto y global
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
 $subtotal  = isset($subtotal) ? floatval($subtotal) : 0;
 $tax       = floatval($data['tax'] ?? 0);
-$tax_perc  = floatval($data['tax_perc'] ?? 0);
+$tax_perc  = floatval($data['tax_perc'] ?? 16);
 $amount    = floatval($data['amount'] ?? 0);
 $discount  = floatval($data['discount'] ?? 0);
 $discount_perc = floatval($data['discount_perc'] ?? 0);
 
-// 🔹 Si subtotal no vino, lo calculamos manualmente
+// 🔹 Calcular subtotal si no vino
 if ($subtotal <= 0 && !empty($items)) {
     $subtotal = 0;
     foreach ($items as $it) {
@@ -25,17 +23,12 @@ if ($subtotal <= 0 && !empty($items)) {
     }
 }
 
-// 🔹 Si los totales guardados están vacíos, recalculamos
+// 🔹 Recalcular totales si faltan
 if ($amount <= 0) {
     $discount = ($discount_perc > 0) ? $subtotal * $discount_perc / 100 : $discount;
     $tax = ($tax_perc > 0) ? (($subtotal - $discount) * $tax_perc / 100) : $tax;
     $amount = ($subtotal - $discount) + $tax;
 }
-
-// 🔹 Seguridad contra valores nulos
-$subtotal = number_format($subtotal, 2, '.', '');
-$tax      = number_format($tax, 2, '.', '');
-$amount   = number_format($amount, 2, '.', '');
 ?>
 <html>
 <head>
@@ -59,7 +52,7 @@ $amount   = number_format($amount, 2, '.', '');
   </tr>
   <tr>
     <td style="width:70%;"><?= htmlspecialchars($data['date_exp'] ?? '') ?></td>
-    <td style="text-align:right;"><?= htmlspecialchars($data['po_code']) ?></td>
+    <td style="text-align:right;"><?= htmlspecialchars($data['po_code'] ?? '') ?></td>
   </tr>
 </table>
 
@@ -72,22 +65,27 @@ $amount   = number_format($amount, 2, '.', '');
       <th style="border:1px solid #ccc; padding:6px;">Descripción</th>
       <th style="border:1px solid #ccc; padding:6px;">Cantidad</th>
       <th style="border:1px solid #ccc; padding:6px;">Unidad</th>
+      <th style="border:1px solid #ccc; padding:6px;">Desc. %</th>
       <th style="border:1px solid #ccc; padding:6px;">Valor Unitario</th>
       <th style="border:1px solid #ccc; padding:6px;">Valor Total</th>
     </tr>
   </thead>
   <tbody>
-    <?php $i=1; foreach($items as $it): ?>
+    <?php $i=1; foreach($items as $it): 
+      $q = floatval($it['quantity'] ?? 0);
+      $p = floatval($it['price'] ?? 0);
+      $d = floatval($it['discount'] ?? 0);
+      $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($p - ($p * $d / 100)) * $q);
+    ?>
     <tr>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $i++ ?></td>
       <td style="border:1px solid #ccc; padding:6px;"><?= htmlspecialchars($it['item_code'] ?? '') ?></td>
-      <td style="border:1px solid #ccc; padding:6px;">
-        <?= nl2br(htmlspecialchars($it['description'])) ?>
-      </td>
-      <td style="border:1px solid #ccc; padding:6px; text-align:right;"><?= number_format($it['quantity'], 2) ?></td>
+      <td style="border:1px solid #ccc; padding:6px;"><?= nl2br(htmlspecialchars($it['description'])) ?></td>
+      <td style="border:1px solid #ccc; padding:6px; text-align:right;"><?= number_format($q, 2) ?></td>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= htmlspecialchars($it['unit']) ?></td>
-      <td style="border:1px solid #ccc; padding:6px; text-align:right;">$<?= number_format($it['price'], 2) ?></td>
-      <td style="border:1px solid #ccc; padding:6px; text-align:right;">$<?= number_format($it['line_total'], 2) ?></td>
+      <td style="border:1px solid #ccc; padding:6px; text-align:right;"><?= number_format($d, 2) ?>%</td>
+      <td style="border:1px solid #ccc; padding:6px; text-align:right;">$<?= number_format($p, 2) ?></td>
+      <td style="border:1px solid #ccc; padding:6px; text-align:right;">$<?= number_format($lt, 2) ?></td>
     </tr>
     <?php endforeach; ?>
   </tbody>
@@ -99,8 +97,16 @@ $amount   = number_format($amount, 2, '.', '');
     <td style="text-align:right; padding:4px;"><strong>Subtotal:</strong></td>
     <td style="text-align:right; padding:4px;">$<?= number_format($subtotal, 2) ?></td>
   </tr>
+
+  <?php if ($discount > 0 || $discount_perc > 0): ?>
   <tr>
-    <td style="text-align:right; padding:4px;">I.V.A.:</td>
+    <td style="text-align:right; padding:4px;">Descuento <?= $discount_perc > 0 ? '(' . number_format($discount_perc, 2) . '%)' : '' ?>:</td>
+    <td style="text-align:right; padding:4px;">$<?= number_format($discount, 2) ?></td>
+  </tr>
+  <?php endif; ?>
+
+  <tr>
+    <td style="text-align:right; padding:4px;">I.V.A. (<?= number_format($tax_perc, 2) ?>%):</td>
     <td style="text-align:right; padding:4px;">$<?= number_format($tax, 2) ?></td>
   </tr>
   <tr>
@@ -113,10 +119,10 @@ $amount   = number_format($amount, 2, '.', '');
 
 <!-- DATOS INFERIORES -->
 <div class="footer-block" style="margin-top:40px; font-size:12px;">
-  <p><strong><?= strtoupper(htmlspecialchars($data['name_empresa'])) ?></strong></p>
+  <p><strong><?= strtoupper(htmlspecialchars($data['name_empresa'] ?? 'DRAPER')) ?></strong></p>
   <p>Atención: <?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?></p>
-  <p><?= strtoupper(htmlspecialchars($data['address'])) ?></p>
-  <p>Teléfono: <?= htmlspecialchars($data['contact']) ?> &nbsp;&nbsp;|&nbsp;&nbsp; Correo: <?= htmlspecialchars($data['email']) ?></p>
+  <p><?= strtoupper(htmlspecialchars($data['address'] ?? '')) ?></p>
+  <p>Teléfono: <?= htmlspecialchars($data['contact'] ?? '') ?> &nbsp;&nbsp;|&nbsp;&nbsp; Correo: <?= htmlspecialchars($data['email'] ?? '') ?></p>
 </div>
 
 </body>
