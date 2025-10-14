@@ -1,7 +1,7 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – COMERCIALIZADORA SUCCES
-// Mantiene formato original, agrega descuento por producto y global
+// Con nota dinámica (remarks) y correo del cliente (cliente_email)
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -11,6 +11,8 @@ $tax_perc  = floatval($data['tax_perc'] ?? 16);
 $amount    = floatval($data['amount'] ?? 0);
 $discount  = floatval($data['discount'] ?? 0);
 $discount_perc = floatval($data['discount_perc'] ?? 0);
+$remarks   = trim($data['remarks'] ?? ''); // ← nota dinámica
+$cliente_email = trim($data['cliente_email'] ?? ''); // ← correo del cliente
 
 // 🔹 Calcular subtotal si no vino
 if ($subtotal <= 0 && !empty($items)) {
@@ -53,7 +55,7 @@ if ($amount <= 0) {
   <tr>
     <td colspan="5" class="client">
       <strong>Atención:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?><br>
-      <strong>e-mail:</strong> <?= htmlspecialchars($data['email'] ?? '') ?>
+      <strong>e-mail:</strong> <?= htmlspecialchars($cliente_email ?: '—') ?>
     </td>
     <td colspan="3" class="fecha-box">
       <div class="fecha-title">FECHA</div>
@@ -63,7 +65,7 @@ if ($amount <= 0) {
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TABLA PRINCIPAL (agregada columna DESC. %) -->
+<!-- 🔹 TABLA PRINCIPAL -->
 <!-- ======================================= -->
 <table class="productos">
   <thead>
@@ -100,7 +102,7 @@ if ($amount <= 0) {
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TOTALES (manteniendo estructura original) -->
+<!-- 🔹 TOTALES -->
 <!-- ======================================= -->
 <table class="totals">
   <tr>
@@ -108,8 +110,8 @@ if ($amount <= 0) {
       <p><strong>FORMA DE PAGO:</strong> CRÉDITO</p>
       <p><strong>CUENTA BBVA BANCOMER:</strong> 1549488070</p>
       <p><strong>CLABE INTERBANCARIA:</strong> 012610015494880704</p>
-      <p><strong>TIEMPO DE ENTREGA:</strong> a convenir con el proveedor</p>
-      <p><strong>NOTA:</strong> vigencia de la cotización 5 días</p>
+      <p><strong>TIEMPO DE ENTREGA:</strong> A convenir con el proveedor</p>
+      <p><strong>NOTA:</strong> <?= !empty($remarks) ? nl2br(htmlspecialchars($remarks)) : '—' ?></p>
       <p><strong>HORARIO DE ATENCIÓN A CLIENTES:</strong> Lunes a Sábado 08:00 a 20:00</p>
       <p><strong>TELÉFONO:</strong> (951) 215 2725</p>
       <p>5a Privada de Vicente Guerrero #112 Colonia Candiani, Oaxaca de Juárez, Oax. C.P. 68130</p>

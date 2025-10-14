@@ -1,7 +1,7 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – OPERADORA COMERCIAL EL GRAN SURTIDOR DEL SOL NACIENTE S.A. DE C.V.
-// Actualizado con descuento por producto y descuento global
+// Final con cliente_cotizacion, nota dinámica, descuento con %, bordes suaves y SKU = name del ítem
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -11,6 +11,8 @@ $tax_perc  = floatval($data['tax_perc'] ?? 16);
 $amount    = floatval($data['amount'] ?? 0);
 $discount  = floatval($data['discount'] ?? 0);
 $discount_perc = floatval($data['discount_perc'] ?? 0);
+$remarks   = trim($data['remarks'] ?? '');
+$cliente   = trim($data['cliente_cotizacion'] ?? '—');
 
 // 🔹 Calcular subtotal si no viene
 if ($subtotal <= 0 && !empty($items)) {
@@ -33,7 +35,44 @@ if ($amount <= 0) {
 <html>
 <head>
 <meta charset="UTF-8">
-<style><?= $style ?></style>
+<style>
+<?= $style ?>
+
+/* ==== Ajustes de Sol Naciente ==== */
+body {
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #333;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th, td {
+  border: 1px solid #dddddd;
+  padding: 5px;
+}
+th {
+  background: #f4f9f4;
+  color: #006400;
+}
+tr:nth-child(even) {
+  background: #fafafa;
+}
+.company-title {
+  font-size: 14px;
+  color: #006400;
+  font-weight: bold;
+}
+.company-sub {
+  color: #555;
+}
+.footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #333;
+}
+</style>
 </head>
 <body>
 
@@ -42,12 +81,12 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <table class="company-header">
   <tr>
-    <td colspan="2" class="company-title" style="color:#006400; font-weight:bold;">
+    <td colspan="2" class="company-title">
       OPERADORA COMERCIAL EL GRAN SURTIDOR DEL SOL NACIENTE S.A. DE C.V.
     </td>
   </tr>
   <tr>
-    <td colspan="2" class="company-sub" style="font-size:12px;">
+    <td colspan="2" class="company-sub">
       Dirección: Sabinos #900 C, Reforma, Oaxaca de Juárez.<br>
       RFC: OCG171215C97<br>
       Operadora de Infraestructura de Oaxaca
@@ -60,9 +99,9 @@ if ($amount <= 0) {
       <strong>RFC</strong>
     </td>
     <td class="client-values" style="width:70%; vertical-align:top;">
-      <?= htmlspecialchars($data['cliente'] ?? '—') ?><br>
-      <?= htmlspecialchars($data['address'] ?? '—') ?><br>
-      <?= htmlspecialchars($data['rfc'] ?? '—') ?>
+      <?= htmlspecialchars($cliente) ?><br>
+      <br> <!-- Dirección vacía -->
+      <br> <!-- RFC vacío -->
     </td>
   </tr>
   <tr>
@@ -77,21 +116,21 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <!-- 🔹 TABLA PRINCIPAL -->
 <!-- ======================================= -->
-<table class="productos" style="width:100%; border-collapse:collapse; margin-top:15px; font-size:12px;">
+<table class="productos" style="margin-top:15px;">
   <thead>
-    <tr style="background:#d9ead3;">
-      <th style="border:1px solid #ccc; padding:5px;">SKU</th>
-      <th style="border:1px solid #ccc; padding:5px;">DESCRIPCIÓN</th>
-      <th style="border:1px solid #ccc; padding:5px;">UNIDAD</th>
-      <th style="border:1px solid #ccc; padding:5px;">CANTIDAD</th>
-      <th style="border:1px solid #ccc; padding:5px;">PRECIO UNITARIO</th>
-      <th style="border:1px solid #ccc; padding:5px;">DESC. %</th>
-      <th style="border:1px solid #ccc; padding:5px;">IMPORTE</th>
+    <tr>
+      <th>SKU</th>
+      <th>DESCRIPCIÓN</th>
+      <th>UNIDAD</th>
+      <th>CANTIDAD</th>
+      <th>PRECIO UNITARIO</th>
+      <th>DESC. %</th>
+      <th>IMPORTE</th>
     </tr>
   </thead>
   <tbody>
-    <?php $i=1; foreach($items as $it): 
-        $sku  = htmlspecialchars($it['sku'] ?? $i++);
+    <?php foreach($items as $it): 
+        $sku  = htmlspecialchars($it['name'] ?? '—'); // ← ahora muestra el campo name
         $desc = nl2br(htmlspecialchars($it['description'] ?? ''));
         $unit = htmlspecialchars($it['unit'] ?? '');
         $qty  = floatval($it['quantity'] ?? 0);
@@ -102,13 +141,13 @@ if ($amount <= 0) {
             : (($price - ($price * $disc / 100)) * $qty);
     ?>
     <tr>
-      <td style="border:1px solid #ccc; padding:5px; text-align:center;"><?= $sku ?></td>
-      <td style="border:1px solid #ccc; padding:5px;"><?= $desc ?></td>
-      <td style="border:1px solid #ccc; padding:5px; text-align:center;"><?= $unit ?></td>
-      <td style="border:1px solid #ccc; padding:5px; text-align:right;"><?= number_format($qty, 2) ?></td>
-      <td style="border:1px solid #ccc; padding:5px; text-align:right;">$<?= number_format($price, 2) ?></td>
-      <td style="border:1px solid #ccc; padding:5px; text-align:right;"><?= number_format($disc, 2) ?>%</td>
-      <td style="border:1px solid #ccc; padding:5px; text-align:right;">$<?= number_format($line_total, 2) ?></td>
+      <td style="text-align:center;"><?= $sku ?></td>
+      <td><?= $desc ?></td>
+      <td style="text-align:center;"><?= $unit ?></td>
+      <td style="text-align:right;"><?= number_format($qty, 2) ?></td>
+      <td style="text-align:right;">$<?= number_format($price, 2) ?></td>
+      <td style="text-align:right;"><?= number_format($disc, 2) ?>%</td>
+      <td style="text-align:right;">$<?= number_format($line_total, 2) ?></td>
     </tr>
     <?php endforeach; ?>
   </tbody>
@@ -117,26 +156,26 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <!-- 🔹 TOTALES -->
 <!-- ======================================= -->
-<table class="totals" style="width:40%; float:right; margin-top:20px; font-size:12px;">
+<table class="totals" style="width:40%; float:right; margin-top:20px;">
   <tr>
-    <td class="label" style="text-align:right; padding:4px;">SUBTOTAL:</td>
-    <td class="amount" style="text-align:right; padding:4px;">$<?= number_format($subtotal, 2) ?></td>
+    <td class="label" style="text-align:right;">SUBTOTAL:</td>
+    <td class="amount" style="text-align:right;">$<?= number_format($subtotal, 2) ?></td>
   </tr>
   <?php if ($discount_perc > 0 || $discount > 0): ?>
   <tr>
-    <td class="label" style="text-align:right; padding:4px;">
+    <td class="label" style="text-align:right;">
       DESCUENTO <?= $discount_perc > 0 ? "(" . number_format($discount_perc, 2) . "%)" : "" ?>:
     </td>
-    <td class="amount" style="text-align:right; padding:4px;">$<?= number_format($discount, 2) ?></td>
+    <td class="amount" style="text-align:right;">$<?= number_format($discount, 2) ?></td>
   </tr>
   <?php endif; ?>
   <tr>
-    <td class="label" style="text-align:right; padding:4px;">I.V.A. (<?= number_format($tax_perc, 2) ?>%):</td>
-    <td class="amount" style="text-align:right; padding:4px;">$<?= number_format($tax, 2) ?></td>
+    <td class="label" style="text-align:right;">I.V.A. (<?= number_format($tax_perc, 2) ?>%):</td>
+    <td class="amount" style="text-align:right;">$<?= number_format($tax, 2) ?></td>
   </tr>
-  <tr class="total" style="background:#e2f0d9;">
-    <td class="label" style="text-align:right; font-weight:bold; padding:6px;">TOTAL:</td>
-    <td class="amount" style="text-align:right; font-weight:bold; padding:6px;">$<?= number_format($amount, 2) ?></td>
+  <tr class="total" style="background:#f1f8f1;">
+    <td class="label" style="text-align:right; font-weight:bold;">TOTAL:</td>
+    <td class="amount" style="text-align:right; font-weight:bold;">$<?= number_format($amount, 2) ?></td>
   </tr>
 </table>
 
@@ -145,10 +184,12 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <!-- 🔹 PIE DE PÁGINA -->
 <!-- ======================================= -->
-<div class="footer" style="margin-top:50px; font-size:12px;">
-  <p><strong>Nota:</strong><br>
-    <?= nl2br(htmlspecialchars($data['nota'] ?? 'El tiempo de entrega 2-5 días hábiles partida 1 y 3, partida 2 de 2-3 semanas. La forma de pago es según el contrato del cliente.')) ?>
-  </p>
+<div class="footer">
+  <?php if (!empty($remarks)): ?>
+    <p><strong>NOTA:</strong><br><?= nl2br(htmlspecialchars($remarks)) ?></p>
+  <?php endif; ?>
+  <p><strong>HORARIO DE ATENCIÓN A CLIENTES:</strong> Lunes a Viernes de 09:00 a 18:00</p>
+  <p><strong>OAXACA DE JUÁREZ, OAXACA</strong></p>
 </div>
 
 </body>

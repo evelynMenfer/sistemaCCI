@@ -1,7 +1,7 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – PROVEEDORA COMERCIAL HELMES S.A. DE C.V.
-// Mantiene el formato original, se agrega columna de descuento y totales actualizados
+// Muestra NOTAS (remarks) y elimina el símbolo % del descuento
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -11,6 +11,8 @@ $tax_perc  = floatval($data['tax_perc'] ?? 16);
 $amount    = floatval($data['amount'] ?? 0);
 $discount  = floatval($data['discount'] ?? 0);
 $discount_perc = floatval($data['discount_perc'] ?? 0);
+$remarks   = trim($data['remarks'] ?? ''); // ← NOTAS dinámicas
+$cliente_email = trim($data['cliente_email'] ?? ''); // ← correo cliente
 
 // 🔹 Calcular subtotal si no vino
 if ($subtotal <= 0 && !empty($items)) {
@@ -60,12 +62,15 @@ if ($amount <= 0) {
     <td><strong>COTIZACIÓN:</strong> <?= htmlspecialchars($data['po_code'] ?? '—') ?></td>
   </tr>
   <tr>
-    <td colspan="2"><strong>ATENCIÓN:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? 'ING. CAROLINA ORTEGA') ?></td>
+    <td colspan="2">
+      <strong>ATENCIÓN:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?><br>
+      <strong>E-MAIL:</strong> <?= htmlspecialchars($cliente_email ?: '—') ?>
+    </td>
   </tr>
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TABLA PRINCIPAL (se agrega columna DESC. %) -->
+<!-- 🔹 TABLA PRINCIPAL (sin símbolo %) -->
 <!-- ======================================= -->
 <table class="productos">
   <thead>
@@ -75,7 +80,7 @@ if ($amount <= 0) {
       <th>DESCRIPCIÓN, MARCA Y MODELO</th>
       <th>UNIDAD</th>
       <th>CANTIDAD</th>
-      <th>DESC. %</th>
+      <th>DESC.</th>
       <th>P.U.</th>
       <th>IMPORTE</th>
     </tr>
@@ -93,7 +98,7 @@ if ($amount <= 0) {
       <td class="desc"><?= nl2br(htmlspecialchars($it['description'])) ?></td>
       <td><?= htmlspecialchars($it['unit']) ?></td>
       <td class="num"><?= number_format($qty, 2) ?></td>
-      <td class="num"><?= number_format($disc, 2) ?>%</td>
+      <td class="num"><?= number_format($disc, 2) ?></td>
       <td class="num">$<?= number_format($price, 2) ?></td>
       <td class="num">$<?= number_format($lt, 2) ?></td>
     </tr>
@@ -102,7 +107,7 @@ if ($amount <= 0) {
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TOTALES (se agrega línea de descuento global) -->
+<!-- 🔹 TOTALES -->
 <!-- ======================================= -->
 <table class="totals">
   <tr>
@@ -134,8 +139,8 @@ if ($amount <= 0) {
     <td class="right">$<?= number_format($tax, 2) ?></td>
   </tr>
   <tr class="total">
-    <td>TOTAL:</td>
-    <td class="right">$<?= number_format($amount, 2) ?></td>
+    <td><strong>TOTAL:</strong></td>
+    <td class="right"><strong>$<?= number_format($amount, 2) ?></strong></td>
   </tr>
 </table>
 
@@ -144,8 +149,10 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <div class="footer">
   <p><strong>TIEMPO DE ENTREGA:</strong> SEGÚN DISPONIBILIDAD AL MOMENTO DE FINCAR LA COMPRA</p>
-  <p><strong>NOTA:</strong></p>
-  <p>HORARIO DE ATENCIÓN A CLIENTES: LUNES - SÁBADO 08:00 A 16:00</p>
+  <?php if (!empty($remarks)): ?>
+    <p><strong>NOTAS:</strong><br><?= nl2br(htmlspecialchars($remarks)) ?></p>
+  <?php endif; ?>
+  <p><strong>HORARIO DE ATENCIÓN A CLIENTES:</strong> LUNES - SÁBADO 08:00 A 16:00</p>
   <p><strong>OAXACA DE JUÁREZ, OAXACA</strong></p>
 </div>
 

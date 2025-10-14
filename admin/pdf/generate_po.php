@@ -17,12 +17,17 @@ if ($id <= 0) {
 // 🔹 CONSULTA PRINCIPAL (COTIZACIÓN + EMPRESA + PROVEEDOR)
 // ==================================================
 $qry = $conn->query("
-  SELECT p.*, 
-         s.name AS supplier, 
-         c.name AS name_empresa, 
-         c.logo AS logo, 
-         c.address, c.email, c.contact,
-         c.idname
+  SELECT 
+      p.*, 
+      p.cliente_cotizacion,        -- Nombre del cliente
+      s.name AS supplier, 
+      c.name AS name_empresa, 
+      c.logo AS logo, 
+      c.address, 
+      c.email, 
+      c.contact,
+      c.cperson,                   -- 🔹 Atención (persona de contacto de la empresa)
+      c.idname
   FROM purchase_order_list p
   LEFT JOIN supplier_list s ON p.supplier_id = s.id
   LEFT JOIN company_list c ON p.id_company = c.id
@@ -34,6 +39,14 @@ if (!$qry || $qry->num_rows === 0) {
 }
 
 $data = $qry->fetch_assoc();
+
+// ==================================================
+// 🔹 VALIDACIÓN DE CAMPOS CLAVE
+// ==================================================
+$data['cperson'] = $data['cperson'] ?? '';
+$data['address'] = $data['address'] ?? '';
+$data['contact'] = $data['contact'] ?? '';
+$data['email']   = $data['email']   ?? '';
 
 // ==================================================
 // 🔹 DETECCIÓN AUTOMÁTICA DE ESTILO Y TEMPLATE
@@ -50,12 +63,16 @@ $templates_dir = __DIR__ . '/templates/';
 $template_file = $templates_dir . (file_exists($templates_dir . $idname . '.php') ? $idname . '.php' : 'default.php');
 
 // ==================================================
-// 🔹 CONSULTA DE ÍTEMS
+// 🔹 CONSULTA DE ÍTEMS (con foto_producto)
 // ==================================================
 $items = [];
 $subtotal = 0;
 $qry_items = $conn->query("
-  SELECT p.*, i.description
+  SELECT 
+      p.*, 
+      i.name, 
+      i.description, 
+      i.foto_producto
   FROM po_items p
   INNER JOIN item_list i ON p.item_id = i.id
   WHERE p.po_id = {$id}
@@ -67,11 +84,23 @@ while ($row = $qry_items->fetch_assoc()) {
     $quantity = floatval($row['quantity']);
     $line_total = ($price - ($price * $discount / 100)) * $quantity;
     $subtotal += $line_total;
+
+    // Embebemos imagen si existe
+    $row['foto_producto_base64'] = '';
+    if (!empty($row['foto_producto'])) {
+        $foto_path = __DIR__ . '/../../uploads/items/' . basename($row['foto_producto']);
+        if (file_exists($foto_path)) {
+            $mime = mime_content_type($foto_path);
+            $imgData = base64_encode(file_get_contents($foto_path));
+            $row['foto_producto_base64'] = 'data:' . $mime . ';base64,' . $imgData;
+        }
+    }
+
     $items[] = $row + ['line_total' => $line_total];
 }
 
 // ==================================================
-// 🔹 LOGO EN BASE64 (EMBEBIDO EN EL PDF)
+// 🔹 LOGO EN BASE64
 // ==================================================
 $logo_path = '';
 if (!empty($data['logo'])) {
@@ -94,7 +123,7 @@ if (!empty($data['logo'])) {
 // 🔹 CARGAR TEMPLATE SEGÚN LA EMPRESA
 // ==================================================
 ob_start();
-include $template_file; // ← Aquí se genera el HTML según la empresa
+include $template_file; // ← Se genera el HTML
 $html = ob_get_clean();
 
 // ==================================================

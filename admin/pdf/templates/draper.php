@@ -44,14 +44,16 @@ if ($amount <= 0) {
   </div>
 <?php endif; ?>
 
-<!-- FECHA Y FOLIO -->
+<!-- FECHA, CLIENTE Y FOLIO -->
 <table style="width:100%; font-size:12px; margin-bottom:10px;">
   <tr>
-    <td style="width:70%;"><strong>Fecha:</strong> <?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></td>
-    <td style="text-align:right;"><strong>Folio:</strong></td>
+    <td style="width:40%;"><strong>Fecha:</strong></td>
+    <td style="width:30%;"><strong>Cliente:</strong></td>
+    <td style="width:30%; text-align:right;"><strong>Folio:</strong></td>
   </tr>
   <tr>
-    <td style="width:70%;"><?= htmlspecialchars($data['date_exp'] ?? '') ?></td>
+    <td><?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></td>
+    <td><?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?></td>
     <td style="text-align:right;"><?= htmlspecialchars($data['po_code'] ?? '') ?></td>
   </tr>
 </table>
@@ -120,7 +122,7 @@ if ($amount <= 0) {
 <!-- DATOS INFERIORES -->
 <div class="footer-block" style="margin-top:40px; font-size:12px;">
   <p><strong><?= strtoupper(htmlspecialchars($data['name_empresa'] ?? 'DRAPER')) ?></strong></p>
-  <p>Atención: <?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?></p>
+  <p>Atención: <?= htmlspecialchars($data['cperson'] ?? '—') ?></p>
   <p><?= strtoupper(htmlspecialchars($data['address'] ?? '')) ?></p>
   <p>Teléfono: <?= htmlspecialchars($data['contact'] ?? '') ?> &nbsp;&nbsp;|&nbsp;&nbsp; Correo: <?= htmlspecialchars($data['email'] ?? '') ?></p>
 </div>
