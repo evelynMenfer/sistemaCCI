@@ -18,20 +18,31 @@ if ($id > 0) {
   }
 }
 
-// si no viene en GET pero el registro ya tiene empresa (edición)
+// Si no viene en GET pero el registro ya tiene empresa (edición)
 if ($company_id <= 0 && isset($id_company)) $company_id = intval($id_company);
+
+// Obtener nombre de la empresa
+$company_name = '';
+$emp = $conn->query("SELECT name FROM company_list WHERE id = {$company_id}");
+if ($emp && $emp->num_rows > 0) {
+  $company_name = $emp->fetch_assoc()['name'];
+}
 ?>
 <style>
-select[readonly].select2-hidden-accessible + .select2-container { pointer-events:none; touch-action:none; background:#eee; box-shadow:none; }
-select[readonly].select2-hidden-accessible + .select2-container .select2-selection { background:#eee; box-shadow:none; }
 .inline-edit { width: 100px; text-align: right; }
 .table td, .table th { vertical-align: middle !important; }
 tfoot tr th { background:#f6f6f6; }
+.card-header h4 { display: flex; justify-content: space-between; align-items: center; }
 </style>
 
 <div class="card card-outline card-primary">
   <div class="card-header">
-    <h4 class="card-title"><?php echo $id ? "Editar Cotización: " . htmlspecialchars($po_code) : "Nueva Cotización"; ?></h4>
+    <h4 class="card-title w-100 d-flex justify-content-between align-items-center">
+      <span>
+        <?php echo $id ? "Editar Cotización: " . htmlspecialchars($po_code ?? '') : "Nueva Cotización"; ?>
+      </span>
+      <span class="text-secondary" style="font-weight: normal;"><?php echo htmlspecialchars($company_name); ?></span>
+    </h4>
   </div>
 
   <div class="card-body">
@@ -40,35 +51,14 @@ tfoot tr th { background:#f6f6f6; }
       <input type="hidden" name="id_company" value="<?php echo $company_id ?>">
 
       <div class="container-fluid">
-        <!-- CABECERA -->
-        <div class="row">
-          <div class="col-md-3">
-            <label class="control-label text-info">Código</label>
-            <input type="text" class="form-control rounded-0" value="<?php echo $po_code ?? 'AUTO' ?>" readonly>
-          </div>
-          <div class="col-md-5">
-            <label class="control-label text-info">Empresa</label>
-            <select class="custom-select select2" disabled>
-              <?php
-              $emp = $conn->query("SELECT * FROM company_list WHERE status = 1 AND id = {$company_id} ORDER BY name ASC");
-              while ($row = $emp->fetch_assoc()):
-              ?>
-                <option value="<?php echo $row['id'] ?>" selected><?php echo $row['name'] ?></option>
-              <?php endwhile; ?>
-            </select>
+
+        <!-- DATOS DE CLIENTE -->
+        <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="text-info control-label">Cliente *</label>
+            <textarea name="cliente_cotizacion" rows="1" class="form-control rounded-0" required><?php echo $cliente_cotizacion ?? '' ?></textarea>
           </div>
           <div class="col-md-4">
-            <label class="control-label text-info">Fecha de Expedición</label>
-            <input type="date" name="date_exp" class="form-control rounded-0 text-end" value="<?php echo $date_exp ?? date('Y-m-d') ?>">
-          </div>
-        </div>
-
-        <div class="row mt-2">
-          <div class="col-md-5">
-            <label class="text-info control-label">Cliente</label>
-            <textarea name="cliente_cotizacion" rows="1" class="form-control rounded-0"><?php echo $cliente_cotizacion ?? '' ?></textarea>
-          </div>
-          <div class="col-md-3">
             <label class="control-label text-info">Email cliente</label>
             <input name="cliente_email" class="form-control rounded-0" value="<?php echo $cliente_email ?? '' ?>">
           </div>
@@ -78,40 +68,69 @@ tfoot tr th { background:#f6f6f6; }
           </div>
         </div>
 
+        <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="control-label text-info">Fecha de Expedición *</label>
+            <input type="date" name="date_exp" class="form-control rounded-0 text-end"
+              value="<?php echo $date_exp ?? date('Y-m-d') ?>" required>
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">OC</label>
+            <input type="text" name="oc" class="form-control rounded-0" value="<?php echo $oc ?? '' ?>">
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">Método de pago</label>
+            <input type="text" name="metodo_pago" class="form-control rounded-0" value="<?php echo $metodo_pago ?? '' ?>">
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="control-label text-info">Fecha de pago</label>
+            <input type="date" name="date_pago" class="form-control rounded-0" value="<?php echo $date_pago ?? '' ?>">
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">Pago en efectivo</label>
+            <input type="date" name="pago_efectivo" class="form-control rounded-0" value="<?php echo $pago_efectivo ?? '' ?>">
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">No. Factura</label>
+            <input type="text" name="num_factura" class="form-control rounded-0" value="<?php echo $num_factura ?? '' ?>">
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="control-label text-info">Fecha de carga al portal</label>
+            <input type="date" name="date_carga_portal" class="form-control rounded-0" value="<?php echo $date_carga_portal ?? '' ?>">
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">Folio Fiscal</label>
+            <input type="text" name="folio_fiscal" class="form-control rounded-0" value="<?php echo $folio_fiscal ?? '' ?>">
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">Folio Comprobante de pago</label>
+            <input type="text" name="folio_comprobante_pago" class="form-control rounded-0" value="<?php echo $folio_comprobante_pago ?? '' ?>">
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="control-label text-info">No. de cheque</label>
+            <input type="text" name="num_cheque" class="form-control rounded-0" value="<?php echo $num_cheque ?? '' ?>">
+          </div>
+          <div class="col-md-4">
+            <label for="status" class="control-label text-info">Estado</label>
+            <select name="status" id="status" class="form-control rounded-0">
+              <option value="0" <?= isset($status) && $status == 0 ? 'selected' : '' ?>>Pendiente</option>
+              <option value="1" <?= isset($status) && $status == 1 ? 'selected' : '' ?>>En proceso</option>
+              <option value="2" <?= isset($status) && $status == 2 ? 'selected' : '' ?>>Aceptado</option>
+            </select>
+          </div>
+        </div>
+
         <hr>
 
-        <!-- FACTURACIÓN -->
-        <div class="row">
-          <?php
-          $fields = [
-            ['metodo_pago','Método de pago'], ['date_pago','Fecha de pago','date'],
-            ['pago_efectivo','Pago en efectivo','date'], ['oc','OC'],
-            ['num_factura','No. Factura'], ['date_carga_portal','Fecha de carga al portal','date'],
-            ['folio_fiscal','Folio Fiscal'], ['folio_comprobante_pago','Folio Comprobante de pago'],
-            ['num_cheque','No. de cheque']
-          ];
-          foreach ($fields as $f):
-            $name=$f[0]; $label=$f[1]; $type=$f[2]??'text';
-          ?>
-          <div class="col-md-4">
-            <label class="control-label text-info"><?php echo $label ?></label>
-            <input type="<?php echo $type ?>" name="<?php echo $name ?>" class="form-control rounded-0" value="<?php echo $$name ?? '' ?>">
-          </div>
-          <?php endforeach; ?>
-        </div>
-        <!-- ESTADO DE COTIZACIÓN -->
-        <div class="row mt-2">
-        <div class="col-md-4">
-          <label for="status" class="control-label text-info">Estado</label>
-          <select name="status" id="status" class="form-control rounded-0">
-            <option value="0" <?= isset($status) && $status == 0 ? 'selected' : '' ?>>Pendiente</option>
-            <option value="1" <?= isset($status) && $status == 1 ? 'selected' : '' ?>>En proceso</option>
-            <option value="2" <?= isset($status) && $status == 2 ? 'selected' : '' ?>>Aceptado</option>
-          </select>
-        </div>
-        </div>
-              
-        <hr>
         <legend class="text-info">Productos</legend>
 
         <!-- BUSCADOR -->
@@ -122,20 +141,19 @@ tfoot tr th { background:#f6f6f6; }
               <input type="text" id="searchProduct" class="form-control" placeholder="Escribe descripción o proveedor...">
             </div>
             <table class="table table-bordered table-hover" id="productSearchTable">
-            <thead class="table-light">
-            <tr>
-                <th>SKU</th>
-                <th>Descripción</th>
-                <th>Fecha Compra</th>
-                <th>Stock</th>
-                <th>Precio Compra</th>
-                <th>Precio Venta</th>
-                <th class="text-center">Acción</th>
-            </tr>
-            </thead>
-
+              <thead class="table-light">
+                <tr>
+                  <th>SKU</th>
+                  <th>Descripción</th>
+                  <th>Fecha Compra</th>
+                  <th>Stock</th>
+                  <th>Precio Compra</th>
+                  <th>Precio Venta</th>
+                  <th class="text-center">Acción</th>
+                </tr>
+              </thead>
               <tbody>
-                <tr><td colspan="6" class="text-center text-muted">Escribe para buscar...</td></tr>
+                <tr><td colspan="7" class="text-center text-muted">Escribe para buscar...</td></tr>
               </tbody>
             </table>
           </div>
@@ -222,7 +240,7 @@ tfoot tr th { background:#f6f6f6; }
   </div>
 </div>
 
-<!-- Fila clon (opcional) -->
+<!-- Fila clon -->
 <table id="clone_list" class="d-none">
   <tr>
     <td class="text-center"><button class="btn btn-outline-danger btn-sm rem_row" type="button"><i class="fa fa-times"></i></button></td>
@@ -265,10 +283,8 @@ function calc(){
 }
 
 $(function(){
-  $('.select2').select2({ placeholder:"Selecciona aquí", width:'resolve' });
-
   // recalcular en cambios
-  $(document).on('input','.qty-input,.price-input,.discount-input,.unit-input,[name="tax_perc"],[name="discount_perc"]',calc);
+  $(document).on('input','.qty-input,.price-input,.discount-input,[name="tax_perc"],[name="discount_perc"]',calc);
 
   // quitar fila
   $(document).on('click','.rem_row',function(){ $(this).closest('tr').remove(); calc(); });
@@ -277,13 +293,27 @@ $(function(){
   $('#po-form').on('submit',function(e){
     e.preventDefault();
     $.ajax({
-      url:_base_url_ + "classes/Master.php?f=save_po", // <- fuera de /admin
+      url:_base_url_ + "classes/Master.php?f=save_po",
       data:new FormData(this), method:'POST', cache:false, contentType:false, processData:false, dataType:'json',
       success:function(resp){
-        if(resp.status=='success') {
-          location.replace(_base_url_+"admin/?page=purchase_order/view_po&id="+resp.id);
-        } else alert(resp.msg||'Error al guardar');
-      },
+  if (resp.status === 'success') {
+    // Mostrar mensaje de confirmación
+    const msg = resp.msg || 'Cotización guardada correctamente.';
+    if (typeof alert_toast === 'function') {
+      alert_toast(msg, 'success');
+    } else {
+      alert('✅ ' + msg);
+    }
+
+    // Esperar un momento antes de redirigir
+    setTimeout(() => {
+      location.replace(_base_url_ + "admin/?page=purchase_order/view_po&id=" + resp.id);
+    }, 1000);
+  } else {
+    alert(resp.msg || '❌ Error al guardar la cotización.');
+  }
+},
+
       error:function(err){ alert('Error de conexión'); console.log(err); }
     });
   });
@@ -295,7 +325,7 @@ $(function(){
   $('#searchProduct').on('keyup', function(){
     let q = $(this).val().trim();
     if(q.length < 2){
-      $('#productSearchTable tbody').html('<tr><td colspan="6" class="text-center text-muted">Escribe para buscar...</td></tr>');
+      $('#productSearchTable tbody').html('<tr><td colspan="7" class="text-center text-muted">Escribe para buscar...</td></tr>');
       return;
     }
     $.ajax({
@@ -324,10 +354,8 @@ $(function(){
                 </td>
                 </tr>`;
             });
-
-
         } else {
-          rows = `<tr><td colspan="6" class="text-center text-muted">Sin resultados</td></tr>`;
+          rows = `<tr><td colspan="7" class="text-center text-muted">Sin resultados</td></tr>`;
         }
         $('#productSearchTable tbody').html(rows);
       }
@@ -337,16 +365,14 @@ $(function(){
   // ======== AGREGAR DESDE BUSCADOR ========
   $(document).on('click', '.addFromSearch', function(){
     const $btn = $(this);
-// 🔹 Ya no validamos proveedor: se pueden mezclar libremente
-const productID = $btn.data('id');
-const name = $btn.data('name');
-const price = parseFloat($btn.data('price')) || 0;
+    const productID = $btn.data('id');
+    const name = $btn.data('name');
+    const price = parseFloat($btn.data('price')) || 0;
 
-if($('#list tbody tr[data-id="'+productID+'"]').length){
-  alert('El producto ya está en la lista.');
-  return;
-}
-
+    if($('#list tbody tr[data-id="'+productID+'"]').length){
+      alert('El producto ya está en la lista.');
+      return;
+    }
 
     $btn.prop('disabled', true).removeClass('btn-success').addClass('btn-secondary').html('<i class="fa fa-check"></i> Añadido');
 
@@ -379,9 +405,9 @@ if($('#list tbody tr[data-id="'+productID+'"]').length){
 
     // limpiar resultados
     $('#searchProduct').val('');
-    $('#productSearchTable tbody').html('<tr><td colspan="6" class="text-center text-muted">Escribe para buscar...</td></tr>');
+    $('#productSearchTable tbody').html('<tr><td colspan="7" class="text-center text-muted">Escribe para buscar...</td></tr>');
 
-    // reactivar botón por si sigue agregando más
+    // reactivar botón
     setTimeout(() => {
       $btn.prop('disabled', false).removeClass('btn-secondary').addClass('btn-success').text('Agregar');
     }, 1000);
