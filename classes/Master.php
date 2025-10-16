@@ -280,9 +280,6 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
      *   COTIZACIONES / PURCHASE ORDER
      * ======================================================= */
 	public function save_po() {
-		// No confíes en extract para números críticos
-		// extract($_POST);
-	
 		// ===========================
 		// 🔍 VALIDACIONES BÁSICAS
 		// ===========================
@@ -313,44 +310,49 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
 			if ($res && $res->num_rows > 0) $status_actual = intval($res->fetch_assoc()['status']);
 		}
 		$status_final = isset($_POST['status']) && $_POST['status'] !== '' ? intval($_POST['status']) : $status_actual;
-		if (!in_array($status_final, [0,1,2])) $status_final = 0;
+		if (!in_array($status_final, [0,1,2,3])) $status_final = 0;
 	
 		// ===========================
-		// 🧮 CALCULAR SUBTOTAL, DISCOUNT, TAX, AMOUNT EN SERVIDOR
+		// 🧮 CALCULAR SUBTOTAL, DESCUENTO Y TOTAL
 		// ===========================
 		$subtotal = 0.0;
 		foreach ($item_id as $k => $iid) {
-			$q = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
-			$p = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
-			$dl = isset($dlines[$k])? floatval($dlines[$k]): 0.0; // % por línea
-			$line_total = ( $p - ($p * $dl / 100.0) ) * $q;
+			$q  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
+			$p  = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
+			$dl = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
+			$line_total = ($p - ($p * $dl / 100.0)) * $q;
 			$subtotal += $line_total;
 		}
 	
-		$discount_perc = floatval($_POST['discount_perc'] ?? 0);   // %
-		$tax_perc      = floatval($_POST['tax_perc'] ?? 0);        // %
+		$discount_perc = floatval($_POST['discount_perc'] ?? 0);
+		$tax_perc      = floatval($_POST['tax_perc'] ?? 0);
 	
-		// Descuento global (monto) calculado del % sobre el subtotal
 		$discount_calc = round($subtotal * $discount_perc / 100.0, 2);
-	
-		// Base imponible y tax (monto)
-		$base = $subtotal - $discount_calc;
-		if ($base < 0) $base = 0; // seguridad
+		$base = max(0, $subtotal - $discount_calc);
 		$tax_calc = round($base * $tax_perc / 100.0, 2);
-	
-		// Total final
 		$amount_calc = round($base + $tax_calc, 2);
 	
 		// ===========================
-		// 🧩 CAMPOS PRINCIPALES (sanitizados)
+		// 🧩 NORMALIZAR FECHA_ENTREGA
+		// ===========================
+		$fecha_entrega_val = null;
+		if (!empty($_POST['fecha_entrega'])) {
+			$raw = trim($_POST['fecha_entrega']);
+			$dt = DateTime::createFromFormat('Y-m-d', $raw) ?: DateTime::createFromFormat('d/m/Y', $raw);
+			if ($dt) $fecha_entrega_val = $dt->format('Y-m-d');
+		}
+	
+		// ===========================
+		// 🧩 CAMPOS PRINCIPALES
 		// ===========================
 		$fields = [
 			'id_company'             => $id_company,
 			'supplier_id'            => isset($_POST['supplier_id']) && $_POST['supplier_id'] !== '' ? intval($_POST['supplier_id']) : 'NULL',
 			'date_exp'               => $_POST['date_exp'] ?? date('Y-m-d'),
+			'fecha_entrega'          => $fecha_entrega_val,
 			'cliente_cotizacion'     => $cliente_cotizacion,
 			'cliente_email'          => trim($_POST['cliente_email'] ?? ''),
-			'trabajo'                => trim($_POST['trabajo'] ?? ''),
+			'rq'                     => trim($_POST['rq'] ?? ''),
 			'metodo_pago'            => trim($_POST['metodo_pago'] ?? ''),
 			'date_pago'              => !empty($_POST['date_pago']) ? $_POST['date_pago'] : null,
 			'pago_efectivo'          => !empty($_POST['pago_efectivo']) ? $_POST['pago_efectivo'] : null,
@@ -360,12 +362,11 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
 			'folio_fiscal'           => trim($_POST['folio_fiscal'] ?? ''),
 			'folio_comprobante_pago' => trim($_POST['folio_comprobante_pago'] ?? ''),
 			'num_cheque'             => trim($_POST['num_cheque'] ?? ''),
-			// 👉 Guardamos SIEMPRE los valores calculados en servidor:
 			'discount_perc'          => $discount_perc,
-			'discount'               => $discount_calc,     // monto
+			'discount'               => $discount_calc,
 			'tax_perc'               => $tax_perc,
-			'tax'                    => $tax_calc,          // monto
-			'amount'                 => $amount_calc,       // total final
+			'tax'                    => $tax_calc,
+			'amount'                 => $amount_calc,
 			'remarks'                => trim($_POST['remarks'] ?? ''),
 			'status'                 => $status_final
 		];
@@ -385,7 +386,6 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
 		// ===========================
 		$this->conn->begin_transaction();
 		try {
-			// Encabezado
 			if ($id <= 0) {
 				$po_code = "COT-" . strtoupper(substr(md5(uniqid()), 0, 6));
 				$sql = "INSERT INTO purchase_order_list SET {$data}, po_code='{$po_code}', date_created=NOW()";
@@ -409,7 +409,7 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
 				$cantidad  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
 				$unidad    = isset($units[$k])  ? trim($units[$k])      : '';
 				$precio    = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
-				$desc_line = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0; // %
+				$desc_line = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
 	
 				$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $desc_line);
 				$stmt->execute();
@@ -427,7 +427,6 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
 			return json_encode(['status' => 'failed', 'msg' => 'Error al guardar: ' . $e->getMessage()]);
 		}
 	}
-	
 	
 		
 	public function delete_po() {

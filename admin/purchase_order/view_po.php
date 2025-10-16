@@ -69,7 +69,7 @@ if (!empty($logo_empresa)) {
 </style>
 
 <div class="card card-outline card-primary">
-<div class="card-header bg-white border-bottom pb-3">
+  <div class="card-header bg-white border-bottom pb-3">
     <div class="text-center py-2">
       <h5 class="text-info mb-1" style="font-weight:600; letter-spacing:0.5px;">
         Cotización: <?php echo htmlspecialchars($po_code ?? ''); ?>
@@ -79,7 +79,6 @@ if (!empty($logo_empresa)) {
       </h4>
     </div>
   </div>
-
 
   <div class="card-body">
     <!-- ================= DATOS GENERALES ================= -->
@@ -130,11 +129,12 @@ if (!empty($logo_empresa)) {
 
       <div class="col-md-4">
         <?php
-          $estado_txt = 'Pendiente';
+          $estado_txt = 'Por autorizar';
           if (isset($status)) {
               switch (intval($status)) {
-                  case 1: $estado_txt = 'En proceso'; break;
-                  case 2: $estado_txt = 'Aceptado'; break;
+                  case 1: $estado_txt = 'Autorizado'; break;
+                  case 2: $estado_txt = 'En proceso'; break;
+                  case 3: $estado_txt = 'Finalizado'; break;
               }
           }
         ?>
@@ -145,9 +145,8 @@ if (!empty($logo_empresa)) {
 
     <hr>
 
-
-       <!-- ================= CLIENTE ================= -->
-       <div class="row mb-3">
+    <!-- ================= CLIENTE ================= -->
+    <div class="row mb-3">
       <div class="col-md-4">
         <label class="text-info">Cliente</label>
         <div><?php echo htmlspecialchars($cliente_cotizacion ?? '—'); ?></div>
@@ -159,8 +158,8 @@ if (!empty($logo_empresa)) {
       </div>
 
       <div class="col-md-4">
-        <label class="text-info">Trabajo</label>
-        <div><?php echo htmlspecialchars($trabajo ?? '—'); ?></div>
+        <label class="text-info">RQ</label>
+        <div><?php echo htmlspecialchars($rq ?? '—'); ?></div>
       </div>
     </div>
 
@@ -171,13 +170,17 @@ if (!empty($logo_empresa)) {
       </div>
 
       <div class="col-md-4">
+        <label class="text-info">Fecha de Entrega</label>
+        <div><?php echo !empty($fecha_entrega) && $fecha_entrega != '0000-00-00' ? date("d/m/Y", strtotime($fecha_entrega)) : '—'; ?></div>
+      </div>
+
+      <div class="col-md-4">
         <label class="text-info">OC</label>
         <div><?php echo htmlspecialchars($oc ?? '—'); ?></div>
       </div>
     </div>
 
     <hr>
-
 
     <!-- ================= TABLA DE PRODUCTOS ================= -->
     <table class="table table-striped table-bordered">
@@ -216,9 +219,6 @@ if (!empty($logo_empresa)) {
       </tbody>
 
       <?php
-      // =======================
-      // 🔹 CÁLCULOS FINALES
-      // =======================
       $discount_perc = floatval($discount_perc ?? 0);
       $tax_perc      = floatval($tax_perc ?? 0);
       $discount_total = $subtotal * ($discount_perc / 100);

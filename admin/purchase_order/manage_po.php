@@ -63,8 +63,8 @@ tfoot tr th { background:#f6f6f6; }
             <input name="cliente_email" class="form-control rounded-0" value="<?php echo $cliente_email ?? '' ?>">
           </div>
           <div class="col-md-4">
-            <label class="text-info control-label">Trabajo</label>
-            <textarea name="trabajo" rows="1" class="form-control rounded-0"><?php echo $trabajo ?? '' ?></textarea>
+            <label class="text-info control-label">RQ</label>
+            <textarea name="rq" rows="1" class="form-control rounded-0"><?php echo $rq ?? '' ?></textarea>
           </div>
         </div>
 
@@ -75,16 +75,20 @@ tfoot tr th { background:#f6f6f6; }
               value="<?php echo $date_exp ?? date('Y-m-d') ?>" required>
           </div>
           <div class="col-md-4">
-            <label class="control-label text-info">OC</label>
-            <input type="text" name="oc" class="form-control rounded-0" value="<?php echo $oc ?? '' ?>">
+            <label class="control-label text-info">Fecha de Entrega</label>
+            <input type="date" name="fecha_entrega" class="form-control rounded-0" value="<?php echo $fecha_entrega ?? '' ?>">
           </div>
           <div class="col-md-4">
-            <label class="control-label text-info">Método de pago</label>
-            <input type="text" name="metodo_pago" class="form-control rounded-0" value="<?php echo $metodo_pago ?? '' ?>">
+            <label class="control-label text-info">OC</label>
+            <input type="text" name="oc" class="form-control rounded-0" value="<?php echo $oc ?? '' ?>">
           </div>
         </div>
 
         <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="control-label text-info">Método de pago</label>
+            <input type="text" name="metodo_pago" class="form-control rounded-0" value="<?php echo $metodo_pago ?? '' ?>">
+          </div>
           <div class="col-md-4">
             <label class="control-label text-info">Fecha de pago</label>
             <input type="date" name="date_pago" class="form-control rounded-0" value="<?php echo $date_pago ?? '' ?>">
@@ -93,13 +97,13 @@ tfoot tr th { background:#f6f6f6; }
             <label class="control-label text-info">Pago en efectivo</label>
             <input type="date" name="pago_efectivo" class="form-control rounded-0" value="<?php echo $pago_efectivo ?? '' ?>">
           </div>
+        </div>
+
+        <div class="row mt-2">
           <div class="col-md-4">
             <label class="control-label text-info">No. Factura</label>
             <input type="text" name="num_factura" class="form-control rounded-0" value="<?php echo $num_factura ?? '' ?>">
           </div>
-        </div>
-
-        <div class="row mt-2">
           <div class="col-md-4">
             <label class="control-label text-info">Fecha de carga al portal</label>
             <input type="date" name="date_carga_portal" class="form-control rounded-0" value="<?php echo $date_carga_portal ?? '' ?>">
@@ -108,23 +112,24 @@ tfoot tr th { background:#f6f6f6; }
             <label class="control-label text-info">Folio Fiscal</label>
             <input type="text" name="folio_fiscal" class="form-control rounded-0" value="<?php echo $folio_fiscal ?? '' ?>">
           </div>
+        </div>
+
+        <div class="row mt-2">
           <div class="col-md-4">
             <label class="control-label text-info">Folio Comprobante de pago</label>
             <input type="text" name="folio_comprobante_pago" class="form-control rounded-0" value="<?php echo $folio_comprobante_pago ?? '' ?>">
           </div>
-        </div>
-
-        <div class="row mt-2">
           <div class="col-md-4">
             <label class="control-label text-info">No. de cheque</label>
             <input type="text" name="num_cheque" class="form-control rounded-0" value="<?php echo $num_cheque ?? '' ?>">
           </div>
           <div class="col-md-4">
-            <label for="status" class="control-label text-info">Estado</label>
+          <label for="status" class="control-label text-info">Estado</label>
             <select name="status" id="status" class="form-control rounded-0">
-              <option value="0" <?= isset($status) && $status == 0 ? 'selected' : '' ?>>Pendiente</option>
-              <option value="1" <?= isset($status) && $status == 1 ? 'selected' : '' ?>>En proceso</option>
-              <option value="2" <?= isset($status) && $status == 2 ? 'selected' : '' ?>>Aceptado</option>
+              <option value="0" <?= isset($status) && $status == 0 ? 'selected' : '' ?>>Por autorizar</option>
+              <option value="1" <?= isset($status) && $status == 1 ? 'selected' : '' ?>>Autorizado</option>
+              <option value="2" <?= isset($status) && $status == 2 ? 'selected' : '' ?>>En proceso</option>
+              <option value="3" <?= isset($status) && $status == 3 ? 'selected' : '' ?>>Finalizado</option>
             </select>
           </div>
         </div>
@@ -297,15 +302,12 @@ $(function(){
       data:new FormData(this), method:'POST', cache:false, contentType:false, processData:false, dataType:'json',
       success:function(resp){
   if (resp.status === 'success') {
-    // Mostrar mensaje de confirmación
     const msg = resp.msg || 'Cotización guardada correctamente.';
     if (typeof alert_toast === 'function') {
       alert_toast(msg, 'success');
     } else {
       alert('✅ ' + msg);
     }
-
-    // Esperar un momento antes de redirigir
     setTimeout(() => {
       location.replace(_base_url_ + "admin/?page=purchase_order/view_po&id=" + resp.id);
     }, 1000);
@@ -313,7 +315,6 @@ $(function(){
     alert(resp.msg || '❌ Error al guardar la cotización.');
   }
 },
-
       error:function(err){ alert('Error de conexión'); console.log(err); }
     });
   });
@@ -403,11 +404,9 @@ $(function(){
     $('#list tbody').append(tr);
     calc();
 
-    // limpiar resultados
     $('#searchProduct').val('');
     $('#productSearchTable tbody').html('<tr><td colspan="7" class="text-center text-muted">Escribe para buscar...</td></tr>');
 
-    // reactivar botón
     setTimeout(() => {
       $btn.prop('disabled', false).removeClass('btn-secondary').addClass('btn-success').text('Agregar');
     }, 1000);
