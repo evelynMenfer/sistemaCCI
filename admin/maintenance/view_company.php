@@ -7,10 +7,11 @@ if ($qry->num_rows > 0) {
 	}
 }
 ?>
+
 <style>
-	/* ===== MODAL AMPLIADO ===== */
+	/* ===== Modal ancho ===== */
 	#uni_modal .modal-dialog {
-		max-width: 1000px !important;
+		max-width: 1100px !important;
 	}
 	#uni_modal .modal-content {
 		border-radius: 12px;
@@ -21,215 +22,246 @@ if ($qry->num_rows > 0) {
 		padding: 2rem 2.5rem;
 	}
 	#uni_modal .modal-footer {
-		display: none;
+		display: none !important;
 	}
 
-	/* ===== ESTRUCTURA GENERAL ===== */
-	.company-wrapper {
+	/* ===== Contenedor general ===== */
+	.company-container {
 		display: flex;
 		flex-wrap: wrap;
+		background: #fff;
+		border-radius: 12px;
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+		color: #2c3e50;
+		padding: 25px;
 		gap: 25px;
 	}
 
+	/* ===== Columna izquierda (logo) ===== */
 	.logo-side {
-		flex: 0 0 220px;
-		background: #f8f9fa;
-		border-radius: 10px;
-		padding: 20px;
+		flex: 0 0 280px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 		text-align: center;
+	}
+
+	.logo-box {
+		background: #f8f9fa;
 		border: 1px solid #e0e0e0;
-	}
-
-	/* 🔹 Ajuste de logo para evitar deformaciones */
-	.logo-side img {
-		max-width: 100%;
-		max-height: 150px;
-		width: auto;
-		height: auto;
-		object-fit: contain; /* 🔥 evita deformaciones y recortes */
 		border-radius: 10px;
-		background: #fff;
-		border: 1px solid #ccc;
-		padding: 6px;
-		margin-bottom: 10px;
+		height: 250px;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 15px;
+	}
+
+	.logo-box img {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+		border-radius: 10px;
+	}
+
+	.company-name {
+		font-weight: 600;
+		color: #004080;
+		margin-top: 8px;
+		font-size: 15px;
+	}
+
+	.status-badge {
 		display: inline-block;
+		padding: 7px 18px;
+		border-radius: 30px;
+		font-weight: 600;
+		font-size: 13px;
+		margin-top: 10px;
+	}
+	.status-activo {
+		background: #d4edda;
+		color: #155724;
+	}
+	.status-inactivo {
+		background: #f8d7da;
+		color: #721c24;
 	}
 
-	.logo-side small {
-		display: block;
-		color: #555;
-		margin-top: 5px;
-		font-size: 14px;
-	}
-
-	.details-side {
+	/* ===== Columna derecha (información) ===== */
+	.info-side {
 		flex: 1;
-		min-width: 300px;
+	}
+
+	.view-header h3 {
+		font-weight: 700;
+		color: #004080;
+		margin-bottom: 1rem;
 	}
 
 	.section-header {
 		font-weight: 700;
 		color: #004080;
-		margin-top: 1rem;
-		margin-bottom: .5rem;
-		font-size: 16px;
+		font-size: 15px;
+		margin-top: 1.2rem;
 		border-left: 4px solid #007bff;
 		padding-left: 10px;
 	}
 
-	dl {
-		margin-bottom: .8rem;
+	.info-row {
+		display: flex;
+		flex-wrap: wrap;
+		margin-top: 8px;
 	}
 
-	dt {
+	.info-col {
+		flex: 1 1 33%;
+		margin-bottom: 10px;
+		padding-right: 15px;
+	}
+
+	.info-label {
 		font-weight: 600;
-		color: #2c3e50;
-		margin-bottom: 2px;
+		color: #555;
 	}
 
-	dd {
-		margin-left: 0;
-		margin-bottom: .4rem;
-		color: #444;
-		word-break: break-word;
+	.info-value {
+		color: #1a1a1a;
+		font-weight: 500;
+		word-wrap: break-word;
 	}
 
-	.badge {
-		font-size: 13px;
-		padding: 6px 10px;
-		border-radius: 20px;
+	.description-box {
+		background: #f8f9fa;
+		border-radius: 8px;
+		padding: 10px 15px;
+		border: 1px solid #e0e0e0;
+		font-size: 14px;
+		color: #333;
+		min-height: 60px;
 	}
 
-	/* ===== SECCIÓN INFERIOR ===== */
-	.bottom-section {
-		border-top: 1px solid #e0e0e0;
-		margin-top: 1.5rem;
-		padding-top: 1.5rem;
+	/* ===== Botón cerrar ===== */
+	.custom-close {
+		text-align: right;
+		margin-top: 15px;
+	}
+	.btn-close-modal {
+		background: #007bff;
+		color: #fff;
+		font-weight: 600;
+		padding: 8px 24px;
+		border-radius: 8px;
+		border: none;
+		transition: all 0.2s ease;
+	}
+	.btn-close-modal:hover {
+		background: #0056b3;
 	}
 
-	/* ===== RESPONSIVE ===== */
 	@media (max-width: 768px) {
-		#uni_modal .modal-body {
-			padding: 1.2rem;
-		}
-		.company-wrapper {
+		.company-container {
 			flex-direction: column;
 		}
 		.logo-side {
-			flex: 1 1 100%;
-			max-width: 100%;
+			width: 100%;
+			align-items: center;
+		}
+		.logo-box {
+			height: 200px;
+			width: 100%;
 		}
 	}
 </style>
 
-<div class="container-fluid">
-	<div class="company-wrapper">
+<div class="company-container">
 
-		<!-- 🖼️ LOGO -->
-		<div class="logo-side">
-			<img src="<?php echo isset($logo) && !empty($logo) ? base_url.$logo : base_url.'uploads/default-logo.png'; ?>" alt="Logo">
-			<small><?php echo isset($name) ? $name : ''; ?></small>
+	<!-- 🖼️ Columna izquierda -->
+	<div class="logo-side">
+		<div class="logo-box">
+			<?php if (!empty($logo) && file_exists(base_app . $logo)): ?>
+				<img src="<?= base_url . $logo ?>" alt="Logo Empresa">
+			<?php else: ?>
+				<span class="text-muted">Sin logo</span>
+			<?php endif; ?>
 		</div>
+		<div class="company-name"><?= $name ?? '—' ?></div>
 
-		<!-- 📋 DATOS GENERALES -->
-		<div class="details-side">
-			<div class="row">
-				<div class="col-md-4 col-sm-12">
-					<dl>
-						<dt>Identificador:</dt>
-						<dd><?php echo isset($identificador) ? $identificador : '—'; ?></dd>
-					</dl>
-				</div>
-				<div class="col-md-4 col-sm-12">
-					<dl>
-						<dt>RFC:</dt>
-						<dd><?php echo isset($rfc) ? $rfc : '—'; ?></dd>
-					</dl>
-				</div>
-				<div class="col-md-4 col-sm-12">
-					<dl>
-						<dt>Email:</dt>
-						<dd><?php echo isset($email) ? $email : '—'; ?></dd>
-					</dl>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col-md-12">
-					<dl>
-						<dt>Nombre o Razón Social:</dt>
-						<dd><?php echo isset($name) ? $name : '—'; ?></dd>
-					</dl>
-				</div>
-			</div>
-
-			<div class="row">
-				<div class="col-md-12">
-					<dl>
-						<dt>Descripción / Dirección:</dt>
-						<dd><?php echo isset($address) ? nl2br($address) : '—'; ?></dd>
-					</dl>
-				</div>
-			</div>
-
-			<div class="row align-items-center">
-				<div class="col-md-4 col-sm-12">
-					<dl>
-						<dt>Persona de Contacto:</dt>
-						<dd><?php echo isset($cperson) ? $cperson : '—'; ?></dd>
-					</dl>
-				</div>
-				<div class="col-md-4 col-sm-12">
-					<dl>
-						<dt># de Contacto:</dt>
-						<dd><?php echo isset($contact) ? $contact : '—'; ?></dd>
-					</dl>
-				</div>
-				<div class="col-md-4 col-sm-12">
-					<dl>
-						<dt>Estado:</dt>
-						<dd>
-							<?php if ($status == 1): ?>
-								<span class="badge badge-success">Activo</span>
-							<?php else: ?>
-								<span class="badge badge-danger">Inactivo</span>
-							<?php endif; ?>
-						</dd>
-					</dl>
-				</div>
-			</div>
-		</div>
+		<?php if (isset($status) && $status == 1): ?>
+			<span class="status-badge status-activo">Activo</span>
+		<?php else: ?>
+			<span class="status-badge status-inactivo">Inactivo</span>
+		<?php endif; ?>
 	</div>
 
-	<!-- 🔹 SECCIÓN INFERIOR (DATOS BANCARIOS) -->
-	<div class="bottom-section">
+	<!-- 📋 Columna derecha -->
+	<div class="info-side">
+
+		<!-- 🟦 Datos generales -->
+		<div class="section-header">Datos Generales</div>
+		<div class="info-row">
+			<div class="info-col">
+				<span class="info-label">Identificador:</span><br>
+				<span class="info-value"><?= $identificador ?? '—' ?></span>
+			</div>
+			<div class="info-col">
+				<span class="info-label">RFC:</span><br>
+				<span class="info-value"><?= $rfc ?? '—' ?></span>
+			</div>
+			<div class="info-col">
+				<span class="info-label">Email:</span><br>
+				<span class="info-value"><?= $email ?? '—' ?></span>
+			</div>
+		</div>
+
+		<!-- 🟦 Razón Social -->
+		<div class="section-header">Nombre o Razón Social</div>
+		<div class="description-box">
+			<?= !empty($name) ? htmlspecialchars($name) : '<span class="text-muted">Sin nombre</span>' ?>
+		</div>
+
+		<!-- 🟦 Dirección / Descripción -->
+		<div class="section-header">Descripción / Dirección</div>
+		<div class="description-box">
+			<?= !empty($address) ? nl2br(htmlspecialchars($address)) : '<span class="text-muted">Sin descripción</span>' ?>
+		</div>
+
+		<!-- 🟦 Contacto -->
+		<div class="section-header">Contacto</div>
+		<div class="info-row">
+			<div class="info-col">
+				<span class="info-label">Persona de contacto:</span><br>
+				<span class="info-value"><?= $cperson ?? '—' ?></span>
+			</div>
+			<div class="info-col">
+				<span class="info-label">Teléfono / Contacto:</span><br>
+				<span class="info-value"><?= $contact ?? '—' ?></span>
+			</div>
+		</div>
+
+		<!-- 🟦 Datos Bancarios -->
 		<div class="section-header">Datos Bancarios</div>
-		<div class="row">
-			<div class="col-md-4 col-sm-12">
-				<dl>
-					<dt>Banco:</dt>
-					<dd><?php echo isset($banco) ? $banco : '—'; ?></dd>
-				</dl>
+		<div class="info-row">
+			<div class="info-col">
+				<span class="info-label">Banco:</span><br>
+				<span class="info-value"><?= $banco ?? '—' ?></span>
 			</div>
-			<div class="col-md-4 col-sm-12">
-				<dl>
-					<dt>CLABE Interbancaria:</dt>
-					<dd><?php echo isset($cuenta_clabe) ? $cuenta_clabe : '—'; ?></dd>
-				</dl>
+			<div class="info-col">
+				<span class="info-label">CLABE Interbancaria:</span><br>
+				<span class="info-value"><?= $cuenta_clabe ?? '—' ?></span>
 			</div>
-			<div class="col-md-4 col-sm-12">
-				<dl>
-					<dt>Número de Cuenta:</dt>
-					<dd><?php echo isset($ncuenta) ? $ncuenta : '—'; ?></dd>
-				</dl>
+			<div class="info-col">
+				<span class="info-label">Número de Cuenta:</span><br>
+				<span class="info-value"><?= $ncuenta ?? '—' ?></span>
 			</div>
 		</div>
 	</div>
+</div>
 
-	<!-- 🔴 Botón de cierre -->
-	<div class="text-right mt-4">
-		<button class="btn btn-danger btn-flat px-4" type="button" data-dismiss="modal">
-			Cerrar
-		</button>
-	</div>
+<!-- 🔵 Botón de cierre -->
+<div class="custom-close">
+	<button type="button" class="btn-close-modal" data-dismiss="modal">
+		<i class="fa fa-times"></i> Cerrar
+	</button>
 </div>

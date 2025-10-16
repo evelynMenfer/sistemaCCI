@@ -194,6 +194,29 @@ class Master extends DBConnection {
 			}
 		}
 	
+		// --- Manejo de Ficha Técnica (PDF) ---
+if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
+    $upload_dir = "uploads/pdf/";
+    if (!is_dir(base_app . $upload_dir)) mkdir(base_app . $upload_dir, 0777, true);
+    $filename = time() . '_' . basename($_FILES['pdf_path']['name']);
+    $filepath = $upload_dir . $filename;
+
+    if (move_uploaded_file($_FILES['pdf_path']['tmp_name'], base_app . $filepath)) {
+        $_POST['pdf_path'] = $filepath;
+
+        // Eliminar PDF anterior si existe
+        if (!empty($old['pdf_path']) && file_exists(base_app . $old['pdf_path'])) {
+            @unlink(base_app . $old['pdf_path']);
+        }
+    }
+} else {
+    // Mantener PDF anterior si no se carga uno nuevo
+    if (!empty($old['pdf_path'])) {
+        $_POST['pdf_path'] = $old['pdf_path'];
+    }
+}
+
+
 		// 🔹 Preparar campos
 		$fields = []; 
 		$types = ''; 

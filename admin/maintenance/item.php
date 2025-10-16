@@ -1,129 +1,153 @@
-<div class="card card-outline card-primary">
-	<div class="card-header">
-		<h3 class="card-title">Lista de Productos</h3>
-		<div class="card-tools">
-			<a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary"><span class="fas fa-plus"></span> Nuevo</a>
-		</div>
-	</div>
-	<div class="card-body">
-		<div class="container-fluid">
-			<div class="container-fluid">
-				<table class="table table-hovered table-striped">
-					<colgroup>
-						<col width="10%">
-						<col width="25%">
-						<col width="25%">
-						<col width="10%">
-						<col width="15%">
-						<col width="10%">
-						<col width="10%">
-						<col width="10%">
-						<col width="15%">
-						<col width="15%">
-						<col width="20%">
-						<col width="20%">
-					</colgroup>
-					<thead>
-						<tr>
-							<th>OC</th>
-							<th>SKU</th>
-							<th>Descripción</th>
-							<th>Stock</th>
-							<th>Fecha de Compra</th>
-							<th>Precio Venta</th>
-							<th>Precio Compra</th>
-							<th>Extras</th>
-							<th>Proveedor</th>
-							<th>Empresa</th>
-							<th>Estado</th>
-							<th>Acción</th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php
-						$i = 1;
-						$qry = $conn->query("SELECT i.*,s.name as supplier, c.name as company from `item_list` i inner join supplier_list s on i.supplier_id = s.id inner join company_list c on i.company_id = c.id order by i.name asc,s.name asc, c.name asc");
-						while ($row = $qry->fetch_assoc()) :
-						?>
-							<tr>
-								<td><?php echo $row['oc'] ?></td>
-								<td><?php echo $row['name'] ?></td>
-								<td><?php echo $row['description'] ?></td>
-								<td><?php echo $row['stock'] ?></td>
-								<td><?php echo date("Y-m-d H:i", strtotime($row['date_purchase'])) ?></td>
-								<td><?php echo $row['cost'] ?></td>
-								<td><?php echo $row['product_cost'] ?></td>
-								<td><?php echo $row['shipping_or_extras'] ?></td>
-								<td><?php echo $row['supplier'] ?></td>
-								<td><?php echo $row['company'] ?></td>
-								<td class="text-center">
-									<?php if ($row['status'] == 1) : ?>
-										<span class="badge badge-success rounded-pill">Activo</span>
-									<?php else : ?>
-										<span class="badge badge-danger rounded-pill">Inactivo</span>
-									<?php endif; ?>
-								</td>
-								<td align="center">
-									<button type="button" class="btn btn-flat btn-default btn-sm dropdown-toggle dropdown-icon" data-toggle="dropdown">
-										Acción
-										<span class="sr-only">Toggle Dropdown</span>
-									</button>
-									<div class="dropdown-menu" role="menu">
-										<a class="dropdown-item view_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-eye text-dark"></span> Ver</a>
-										<div class="dropdown-divider"></div>
-										<a class="dropdown-item edit_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-edit text-primary"></span> Editar</a>
-										<div class="dropdown-divider"></div>
-										<a class="dropdown-item delete_data" href="javascript:void(0)" data-id="<?php echo $row['id'] ?>"><span class="fa fa-trash text-danger"></span> Eliminar</a>
-									</div>
-								</td>
-							</tr>
-						<?php endwhile; ?>
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
-</div>
-<script>
-	$(document).ready(function() {
-		$('.delete_data').click(function() {
-			_conf("Deseas eliminar este producto permanentemente?", "delete_category", [$(this).attr('data-id')])
-		})
-		$('#create_new').click(function() {
-			uni_modal("<i class='fa fa-plus'></i> Agregar nuevo Producto", "maintenance/manage_item.php", "mid-large")
-		})
-		$('.edit_data').click(function() {
-			uni_modal("<i class='fa fa-edit'></i> Editar información de Producto", "maintenance/manage_item.php?id=" + $(this).attr('data-id'), "mid-large")
-		})
-		$('.view_data').click(function() {
-			uni_modal("<i class='fa fa-box'></i> Información de Producto", "maintenance/view_item.php?id=" + $(this).attr('data-id'), "")
-		})
-		$('.table td,.table th').addClass('py-1 px-2 align-middle')
-		$('.table').dataTable();
-	})
+<div class="card card-outline card-primary shadow-sm border-0">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title mb-0"><i class="fa fa-boxes me-2"></i> Lista de Productos</h3>
+    <div class="card-tools">
+      <a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary">
+        <span class="fas fa-plus"></span> Nuevo Producto
+      </a>
+    </div>
+  </div>
 
-	function delete_category($id) {
-		start_loader();
-		$.ajax({
-			url: _base_url_ + "classes/Master.php?f=delete_item",
-			method: "POST",
-			data: {
-				id: $id
-			},
-			dataType: "json",
-			error: err => {
-				console.log(err)
-				alert_toast("Ocurrió un error", 'error');
-				end_loader();
-			},
-			success: function(resp) {
-				if (typeof resp == 'object' && resp.status == 'success') {
-					location.reload();
-				} else {
-					alert_toast("Ocurrió un error", 'error');
-					end_loader();
-				}
-			}
-		})
-	}
+  <div class="card-body">
+    <div class="table-responsive" style="overflow-x:auto;">
+      <table class="table table-bordered table-hover align-middle w-100" id="itemTable">
+        <thead class="bg-light">
+          <tr class="text-center text-secondary">
+            <th>OC</th>
+            <th>SKU</th>
+            <th>Descripción</th>
+            <th>Stock</th>
+            <th>Fecha Compra</th>
+            <th>Precio Venta</th>
+            <th>Precio Compra</th>
+            <th>Proveedor</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php
+          $qry = $conn->query("
+            SELECT i.*, s.name AS supplier
+            FROM `item_list` i
+            INNER JOIN supplier_list s ON i.supplier_id = s.id
+            ORDER BY i.name ASC, s.name ASC
+          ");
+          while ($row = $qry->fetch_assoc()):
+          ?>
+          <tr>
+            <td class="fw-bold text-dark text-start"><?= htmlspecialchars($row['oc']) ?></td>
+            <td class="fw-semibold"><?= htmlspecialchars($row['name']) ?></td>
+            <td><?= htmlspecialchars($row['description']) ?></td>
+            <td class="text-center fw-bold text-primary"><?= (int)$row['stock'] ?></td>
+            <td><?= date("Y-m-d", strtotime($row['date_purchase'])) ?></td>
+            <td>$<?= number_format($row['cost'], 2) ?></td>
+            <td>$<?= number_format($row['product_cost'], 2) ?></td>
+            <td><?= htmlspecialchars($row['supplier']) ?></td>
+            <td class="text-center">
+              <?php if ($row['status'] == 1): ?>
+                <span class="badge bg-success px-3 py-2">Activo</span>
+              <?php else: ?>
+                <span class="badge bg-danger px-3 py-2">Inactivo</span>
+              <?php endif; ?>
+            </td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary view_data" data-id="<?= $row['id'] ?>" title="Ver">
+                  <i class="fa fa-eye"></i>
+                </button>
+                <button class="btn btn-outline-primary edit_data" data-id="<?= $row['id'] ?>" title="Editar">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn btn-outline-danger delete_data" data-id="<?= $row['id'] ?>" title="Eliminar">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          <?php endwhile; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 🎨 Estilos -->
+<style>
+  .table {
+    width: 100% !important;
+    min-width: 1100px; /* Evita que se comprima */
+  }
+  .table thead th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+  }
+  .table td, .table th {
+    vertical-align: middle !important;
+    padding: 10px 12px !important;
+  }
+  .table tbody tr:hover {
+    background-color: #f1f5ff !important;
+  }
+  .btn-group .btn {
+    border-radius: 6px !important;
+  }
+  .text-dark {
+    color: #000 !important;
+  }
+</style>
+
+<!-- ⚙️ Script -->
+<script>
+$(document).ready(function() {
+  // ✅ Inicializar DataTable
+  $('#itemTable').DataTable({
+    scrollX: true,
+    autoWidth: false,
+    responsive: false,
+    language: { url: '//cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json' },
+    pageLength: 10
+  });
+
+  // ✅ Eventos de botones
+  $('.delete_data').click(function() {
+    _conf("¿Deseas eliminar este producto permanentemente?", "delete_item", [$(this).attr('data-id')]);
+  });
+  $('#create_new').click(function() {
+    uni_modal("<i class='fa fa-plus'></i> Agregar Producto", "maintenance/manage_item.php", "mid-large");
+  });
+  $('.edit_data').click(function() {
+    uni_modal("<i class='fa fa-edit'></i> Editar Producto", "maintenance/manage_item.php?id=" + $(this).attr('data-id'), "mid-large");
+  });
+  $('.view_data').click(function() {
+    uni_modal("<i class='fa fa-box'></i> Información del Producto", "maintenance/view_item.php?id=" + $(this).attr('data-id'), "extra-large");
+  });
+});
+
+// 🗑️ Eliminar producto
+function delete_item(id) {
+  start_loader();
+  $.ajax({
+    url: _base_url_ + "classes/Master.php?f=delete_item",
+    method: "POST",
+    data: { id: id },
+    dataType: "json",
+    error: err => {
+      console.log(err);
+      alert_toast("Ocurrió un error", 'error');
+      end_loader();
+    },
+    success: function(resp) {
+      if (typeof resp == 'object' && resp.status == 'success') {
+        location.reload();
+      } else {
+        alert_toast("Ocurrió un error", 'error');
+        end_loader();
+      }
+    }
+  });
+}
 </script>
