@@ -35,11 +35,11 @@
                             </li>
 
                             <!-- ==============================
-                                EMPRESAS DINÁMICAS (usando idname)
+                                EMPRESAS DINÁMICAS (usando identificador)
                                 ============================== -->
                                 <li class="nav-header text-uppercase text-light">Empresas</li>
                             <?php
-                            $companies = $conn->query("SELECT id, name, idname FROM company_list WHERE status = 1 ORDER BY name ASC");
+                            $companies = $conn->query("SELECT id, name, identificador FROM company_list WHERE status = 1 ORDER BY name ASC");
                             while ($row = $companies->fetch_assoc()):
                                 $is_active = (isset($_GET['company_id']) && $_GET['company_id'] == $row['id']);
                             ?>
@@ -48,7 +48,7 @@
                                 class="nav-link <?php echo $is_active ? 'active bg-blue' : ''; ?>"
                                 title="<?php echo htmlspecialchars($row['name']); ?>">
                                     <i class="nav-icon fas fa-th-list"></i>
-                                    <p class="text-uppercase"><?php echo htmlspecialchars($row['idname']); ?></p>
+                                    <p class="text-uppercase"><?php echo htmlspecialchars($row['identificador']); ?></p>
                                 </a>
                             </li>
                             <?php endwhile; ?>

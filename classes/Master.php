@@ -57,26 +57,85 @@ class Master extends DBConnection {
     }
 
     // --- GUARDAR EMPRESA ---
-    function save_company(){ 
-        extract($_POST);
-        $data = "";
-        foreach ($_POST as $k => $v) {
-            if ($k=='id') continue;
-            if (!empty($data)) $data .= ",";
-            $data .= " `{$k}`='{$v}' ";
-        }
-        $check = $this->conn->query("SELECT * FROM `company_list` WHERE `name` = '{$name}' ".(!empty($id)?" AND id != {$id} ":""))->num_rows;
-        if ($this->capture_err()) return $this->capture_err();
-        if ($check > 0) return json_encode(['status'=>'failed','msg'=>'Nombre de empresa ya existe.']);
-
-        $sql = empty($id) ? "INSERT INTO `company_list` SET {$data}" : "UPDATE `company_list` SET {$data} WHERE id='{$id}'";
-        $save = $this->conn->query($sql);
-        if ($save){
-            $this->settings->set_flashdata('success', empty($id)?"Empresa guardada.":"Empresa actualizada.");
-            return json_encode(['status'=>'success']);
-        }
-        return json_encode(['status'=>'failed','err'=>$this->conn->error." [{$sql}]"]);
-    }
+	function save_company() { 
+		extract($_POST);
+		$id = intval($_POST['id'] ?? 0);
+		$identificador = trim($_POST['identificador'] ?? '');
+		$name = trim($_POST['name'] ?? '');
+	
+		// ===== Validación mínima =====
+		if ($identificador === '' || $name === '') {
+			return json_encode([
+				'status'=>'failed',
+				'msg'=>'Por favor completa los campos obligatorios: Identificador y Nombre de la empresa.'
+			]);
+		}
+	
+		// ===== Validar duplicados de nombre o identificador =====
+		$check = $this->conn->query("
+			SELECT id FROM company_list 
+			WHERE (name = '{$this->conn->real_escape_string($name)}' 
+				   OR identificador = '{$this->conn->real_escape_string($identificador)}')
+			" . (!empty($id) ? "AND id != {$id}" : "") . "
+		")->num_rows;
+	
+		if ($check > 0) {
+			return json_encode(['status'=>'failed','msg'=>'Ya existe una empresa con ese identificador o nombre.']);
+		}
+	
+		// ===== Manejo del LOGO =====
+		if (isset($_FILES['logo']) && $_FILES['logo']['tmp_name'] != '') {
+			$upload_dir = "uploads/empresas/";
+			if (!is_dir(base_app . $upload_dir)) mkdir(base_app . $upload_dir, 0777, true);
+	
+			// 🔹 Normalizar a minúsculas y limpiar caracteres
+			$ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
+			$clean_identificador = strtolower(preg_replace('/[^A-Za-z0-9_\-]/', '_', $identificador));
+			$filename = $clean_identificador . '.' . strtolower($ext);
+			$filepath = $upload_dir . $filename;
+	
+			// 🔹 Si ya existe un logo con ese nombre, eliminarlo
+			if (file_exists(base_app . $filepath)) {
+				@unlink(base_app . $filepath);
+			}
+	
+			// 🔹 Guardar el nuevo archivo
+			if (move_uploaded_file($_FILES['logo']['tmp_name'], base_app . $filepath)) {
+				$_POST['logo'] = $filepath;
+			}
+		}
+	
+		// ===== Preparar datos para SQL =====
+		$data = "";
+		foreach ($_POST as $k => $v) {
+			if ($k == 'id') continue;
+			if ($v === null) $v = '';
+			if (!empty($data)) $data .= ", ";
+			$data .= " `{$k}` = '{$this->conn->real_escape_string($v)}' ";
+		}
+	
+		$sql = empty($id)
+			? "INSERT INTO `company_list` SET {$data}"
+			: "UPDATE `company_list` SET {$data} WHERE id = '{$id}'";
+	
+		// ===== Guardar =====
+		$save = $this->conn->query($sql);
+	
+		if ($save) {
+			$this->settings->set_flashdata('success', empty($id)
+				? "Empresa registrada correctamente."
+				: "Empresa actualizada correctamente."
+			);
+			return json_encode(['status'=>'success']);
+		} else {
+			return json_encode([
+				'status'=>'failed',
+				'msg'=>'Error al guardar empresa: '.$this->conn->error
+			]);
+		}
+	}
+	
+	
     function delete_company(){
         $id = intval($_POST['id'] ?? 0);
         if ($id<=0) return json_encode(['status'=>'failed','msg'=>'ID inválido']);

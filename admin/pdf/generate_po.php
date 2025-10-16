@@ -27,7 +27,7 @@ $qry = $conn->query("
       c.email, 
       c.contact,
       c.cperson,                   -- 🔹 Atención (persona de contacto de la empresa)
-      c.idname
+      c.identificador
   FROM purchase_order_list p
   LEFT JOIN supplier_list s ON p.supplier_id = s.id
   LEFT JOIN company_list c ON p.id_company = c.id
@@ -51,16 +51,16 @@ $data['email']   = $data['email']   ?? '';
 // ==================================================
 // 🔹 DETECCIÓN AUTOMÁTICA DE ESTILO Y TEMPLATE
 // ==================================================
-$idname = strtolower(trim($data['idname'] ?? ''));
+$identificador = strtolower(trim($data['identificador'] ?? ''));
 
 // --- Estilo CSS ---
 $styles_dir = __DIR__ . '/styles/';
-$style_file = $styles_dir . (file_exists($styles_dir . $idname . '.css') ? $idname . '.css' : 'default.css');
+$style_file = $styles_dir . (file_exists($styles_dir . $identificador . '.css') ? $identificador . '.css' : 'default.css');
 $style = file_get_contents($style_file);
 
 // --- Template HTML ---
 $templates_dir = __DIR__ . '/templates/';
-$template_file = $templates_dir . (file_exists($templates_dir . $idname . '.php') ? $idname . '.php' : 'default.php');
+$template_file = $templates_dir . (file_exists($templates_dir . $identificador . '.php') ? $identificador . '.php' : 'default.php');
 
 // ==================================================
 // 🔹 CONSULTA DE ÍTEMS (con foto_producto)

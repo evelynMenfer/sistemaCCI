@@ -77,14 +77,14 @@ CREATE TABLE `company_list` (
   `email` varchar(50) NOT NULL,
   `rfc` varchar(30) NOT NULL,
   `logo` text DEFAULT NULL,
-  `idname` varchar(50) NOT NULL
+  `identificador` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Volcado de datos para la tabla `company_list`
 --
 
-INSERT INTO `company_list` (`id`, `name`, `address`, `contact`, `cperson`, `date_created`, `date_update`, `status`, `email`, `rfc`, `logo`, `idname`) VALUES
+INSERT INTO `company_list` (`id`, `name`, `address`, `contact`, `cperson`, `date_created`, `date_update`, `status`, `email`, `rfc`, `logo`, `identificador`) VALUES
 (3, 'INGENIERIA Y SERVICIOS CENIT S.A DE C.V.', 'Guadalupe Victoria # 606, Colonia Presidentes de México. Oaxaca de Juárez, Oaxaca. Código Postal. 68274.', '9512020060', '', '2023-10-11 03:51:50', '2023-10-11 03:51:50', 1, 'ingenieriayservicioscenit13@gmail.com', '', 'cenit.png', 'cenit'),
 (4, 'SUCCES', '5A PRIVADA DE VICENTE GUERRERO #112 COLONIA CANDIANI. OAXACA DE JUÁREZ, OAXACA. C.P. 68130', '(01951) 2152725', 'WESERV', '2023-10-11 03:58:47', '2023-10-11 03:58:47', 1, 'succes@gmail.com', '', 'succes.png', 'succes'),
 (6, 'PROVEEDORA COMERCIAL HELMES S.A. DE C.V.', 'EMILIO CARRANZA 811 INT 4, REFORMA CH C.P 68050, OAXACA DE JUAREZ, OAX.', '', ' ING. CAROLINA ORTEGA', '2023-10-17 18:50:05', '2023-10-17 18:50:05', 1, 'carolina.ortega.gia.mx', '', 'helmes.png', 'helmes'),
