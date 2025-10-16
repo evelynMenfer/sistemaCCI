@@ -119,10 +119,7 @@ tfoot tr th { background:#f6f6f6; }
             <label class="control-label text-info">Folio Comprobante de pago</label>
             <input type="text" name="folio_comprobante_pago" class="form-control rounded-0" value="<?php echo $folio_comprobante_pago ?? '' ?>">
           </div>
-          <div class="col-md-4">
-            <label class="control-label text-info">No. de cheque</label>
-            <input type="text" name="num_cheque" class="form-control rounded-0" value="<?php echo $num_cheque ?? '' ?>">
-          </div>
+         
           <div class="col-md-4">
           <label for="status" class="control-label text-info">Estado</label>
             <select name="status" id="status" class="form-control rounded-0">

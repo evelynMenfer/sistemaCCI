@@ -386,73 +386,66 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
 		// ===========================
 		$this->conn->begin_transaction();
 		try {
-			if ($id <= 0) {
-				// ==============================
-				// DATOS DE EMPRESA Y PREFIJO
-				// ==============================
-				$company_id = isset($_POST['id_company']) ? intval($_POST['id_company']) : 0;
-				$empresa = $this->conn->query("SELECT name, identificador FROM company_list WHERE id = {$company_id}")->fetch_assoc();
-			
-				// Prefijo del nombre (máx 5 letras, sin espacios)
-				$prefijo = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['name'], 0, 5))) : 'COT';
-				// Identificador recortado a 5 caracteres
-				$identificador = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['identificador'], 0, 5))) : 'EMP';
-			
-				// ==============================
-				// BLOQUEO SEGURO PARA EVITAR DUPLICADOS
-				// ==============================
-				$this->conn->begin_transaction();
-				$this->conn->query("LOCK TABLES purchase_order_list WRITE");
-			
-				// ==============================
-				// CALCULAR SIGUIENTE FOLIO
-				// ==============================
-				$res = $this->conn->query("SELECT COUNT(*) as total FROM purchase_order_list WHERE id_company = {$company_id}");
-				$num = $res ? ($res->fetch_assoc()['total'] + 1) : 1;
-			
-				// ==============================
-				// FORMATEAR CÓDIGO SEGÚN PARIDAD
-				// ==============================
-				$anio = date("y"); // Ejemplo: 2025 -> "25"
-				if ($company_id % 2 === 0) {
-					// Empresa PAR → CENIT-00125C
-					$po_code = "{$prefijo}-" . str_pad($num, 3, '0', STR_PAD_LEFT) . $anio . "C";
-				} else {
-					// Empresa IMPAR → C001ORBY (C al inicio + num + 5 primeras letras del identificador)
-					$po_code = "C" . str_pad($num, 3, '0', STR_PAD_LEFT) . $identificador;
-				}
-			
-				// ==============================
-				// INSERTAR NUEVA COTIZACIÓN
-				// ==============================
-				$sql = "INSERT INTO purchase_order_list 
-						SET {$data}, po_code='{$po_code}', date_created=NOW()";
-			
-				if (!$this->conn->query($sql)) {
-					$this->conn->rollback();
-					$this->conn->query("UNLOCK TABLES");
-					return json_encode([
-						'status' => 'failed',
-						'error' => "Error al crear la cotización: " . $this->conn->error
-					]);
-				}
-			
-				$id = $this->conn->insert_id;
-			
-				// ==============================
-				// CONFIRMAR Y DESBLOQUEAR
-				// ==============================
-				$this->conn->commit();
-				$this->conn->query("UNLOCK TABLES");
-			
-			} else {
-				// ==============================
-				// ACTUALIZAR COTIZACIÓN EXISTENTE
-				// ==============================
-				$sql = "UPDATE purchase_order_list SET {$data} WHERE id={$id}";
-				$this->conn->query($sql);
-				$this->conn->query("DELETE FROM po_items WHERE po_id={$id}");
-			}
+			// ==============================
+// DATOS DE EMPRESA Y PREFIJO
+// ==============================
+$company_id = intval($_POST['id_company'] ?? 0);
+$empresa = $this->conn->query("SELECT name, identificador FROM company_list WHERE id = {$company_id}")->fetch_assoc();
+
+// Prefijo del nombre (máx 5 letras, sin espacios)
+$prefijo = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['name'], 0, 5))) : 'COT';
+// Identificador recortado a 5 caracteres
+$identificador = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['identificador'], 0, 5))) : 'EMP';
+
+// ==============================
+// BLOQUEO SEGURO PARA EVITAR DUPLICADOS
+// ==============================
+$this->conn->query("LOCK TABLES purchase_order_list WRITE");
+
+// ==============================
+// CALCULAR SIGUIENTE FOLIO
+// ==============================
+$res = $this->conn->query("SELECT COUNT(*) as total FROM purchase_order_list WHERE id_company = {$company_id}");
+$num = $res ? ($res->fetch_assoc()['total'] + 1) : 1;
+
+// ==============================
+// FORMATEAR CÓDIGO SEGÚN PARIDAD
+// ==============================
+$anio = date("y");
+if ($company_id % 2 === 0) {
+    // Empresa PAR → CENIT-00125C
+    $po_code = "{$prefijo}-" . str_pad($num, 3, '0', STR_PAD_LEFT) . $anio . "C";
+} else {
+    // Empresa IMPAR → C001ORBY (C al inicio + num + 5 primeras letras del identificador)
+    $po_code = "C" . str_pad($num, 3, '0', STR_PAD_LEFT) . $identificador;
+}
+
+// Normalizar caracteres
+$po_code = preg_replace('/[^A-Z0-9\-]/', '', strtoupper($po_code));
+
+// ==============================
+// INSERTAR NUEVA COTIZACIÓN
+// ==============================
+$sql = "INSERT INTO purchase_order_list 
+        SET {$data}, po_code='{$po_code}', date_created=NOW()";
+
+if (!$this->conn->query($sql)) {
+    $this->conn->rollback();
+    $this->conn->query("UNLOCK TABLES");
+    return json_encode([
+        'status' => 'failed',
+        'error' => "Error al crear la cotización: " . $this->conn->error
+    ]);
+}
+
+$id = $this->conn->insert_id;
+
+// ==============================
+// CONFIRMAR Y DESBLOQUEAR
+// ==============================
+$this->conn->commit();
+$this->conn->query("UNLOCK TABLES");
+
 			
 			// Detalle
 			$stmt = $this->conn->prepare("

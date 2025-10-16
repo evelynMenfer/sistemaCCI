@@ -123,11 +123,6 @@ if (!empty($logo_empresa)) {
       </div>
 
       <div class="col-md-4">
-        <label class="text-info">No. Cheque</label>
-        <div><?php echo htmlspecialchars($num_cheque ?? '—'); ?></div>
-      </div>
-
-      <div class="col-md-4">
         <?php
           $estado_txt = 'Por autorizar';
           if (isset($status)) {
