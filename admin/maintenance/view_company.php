@@ -227,6 +227,20 @@ if ($qry->num_rows > 0) {
 			<?= !empty($address) ? nl2br(htmlspecialchars($address)) : '<span class="text-muted">Sin descripción</span>' ?>
 		</div>
 
+		<!-- 🟦 Nota al pie -->
+<?php if (!empty($nota)): ?>
+	<div class="section-header">Nota al pie</div>
+	<div class="description-box">
+		<?= nl2br(htmlspecialchars($nota)) ?>
+	</div>
+<?php else: ?>
+	<div class="section-header">Nota al pie</div>
+	<div class="description-box">
+		<span class="text-muted">Sin nota</span>
+	</div>
+<?php endif; ?>
+
+
 		<!-- 🟦 Contacto -->
 		<div class="section-header">Contacto</div>
 		<div class="info-row">

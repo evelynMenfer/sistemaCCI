@@ -120,6 +120,17 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 			</div>
 		</div>
 
+		<!-- 🟦 Nueva Fila 3.1: Nota al pie -->
+<div class="row">
+	<div class="col-md-12">
+		<div class="form-group">
+			<label for="nota">Nota al pie</label>
+			<textarea name="nota" id="nota" cols="30" rows="2" class="form-control"
+				placeholder="Ej. Información adicional o mensaje breve al pie de documentos"><?php echo isset($nota) ? $nota : ''; ?></textarea>
+		</div>
+	</div>
+</div>
+
 		<!-- 🟦 Fila 4: Contacto -->
 		<div class="row">
 			<div class="col-md-6">
