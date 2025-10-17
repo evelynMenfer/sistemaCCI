@@ -72,10 +72,6 @@ if ($amount <= 0) {
     <td colspan="3"><?= htmlspecialchars($data['cliente_cotizacion'] ?? '') ?></td>
   </tr>
   <tr>
-    <td class="labels"><strong>PROVEEDOR:</strong></td>
-    <td colspan="3"><?= htmlspecialchars($data['supplier'] ?? '') ?></td>
-  </tr>
-  <tr>
   <td class="labels"><strong>ENTREGA:</strong></td>
   <td colspan="3">
     <?= !empty($data['fecha_entrega'])
