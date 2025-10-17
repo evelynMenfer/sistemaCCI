@@ -56,14 +56,14 @@
 
                             <!-- ==============================
                                  GESTIÓN GENERAL
-                                 ============================== -->
+                                 ============================== 
                             <li class="nav-header text-uppercase text-light">Gestión</li>
                             <li class="nav-item">
-                                <a href="<?php echo base_url ?>admin/?page=receiving" class="nav-link nav-receiving">
+                                <a href="<php echo base_url ?>admin/?page=receiving" class="nav-link nav-receiving">
                                     <i class="nav-icon fas fa-boxes"></i>
                                     <p>Aceptadas</p>
                                 </a>
-                            </li>
+                            </li>-->
 
                             <!-- ==============================
                                  SECCIÓN MANTENIMIENTO
