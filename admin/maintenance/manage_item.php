@@ -110,38 +110,49 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 	</div>
 </div>
 
-		<!-- 🟦 Fila 3: Marca / Modelo / Ficha técnica -->
-		<div class="row">
-			<div class="col-md-4">
-				<div class="form-group">
-					<label for="marca">Marca</label>
-					<input type="text" name="marca" id="marca" class="form-control"
-						value="<?= htmlspecialchars($marca ?? '') ?>"
-						placeholder="Ej. Samsung, LG, Bosch...">
-				</div>
-			</div>
-
-			<div class="col-md-4">
-				<div class="form-group">
-					<label for="modelo">Modelo</label>
-					<input type="text" name="modelo" id="modelo" class="form-control"
-						value="<?= htmlspecialchars($modelo ?? '') ?>"
-						placeholder="Ej. XR5000, Pro Max, T-300...">
-				</div>
-			</div>
-
-			<div class="col-md-4">
-				<div class="form-group">
-					<label for="pdf_path">Ficha Técnica (PDF)</label>
-					<input type="file" name="pdf_path" id="pdf_path" accept="application/pdf" class="form-control mb-2">
-					<?php if (!empty($pdf_path)): ?>
-						<a href="<?= base_url . $pdf_path ?>" target="_blank" class="btn btn-outline-primary btn-sm w-100">
-							<i class="fa fa-file-pdf me-1"></i> Ver PDF actual
-						</a>
-					<?php endif; ?>
-				</div>
-			</div>
+		<!-- 🟦 Fila 3: Marca / Modelo / Talla / Ficha técnica -->
+<div class="row">
+	<div class="col-md-3">
+		<div class="form-group">
+			<label for="marca">Marca</label>
+			<input type="text" name="marca" id="marca" class="form-control"
+				value="<?= htmlspecialchars($marca ?? '') ?>"
+				placeholder="Ej. Samsung, LG, Bosch...">
 		</div>
+	</div>
+
+	<div class="col-md-3">
+		<div class="form-group">
+			<label for="modelo">Modelo</label>
+			<input type="text" name="modelo" id="modelo" class="form-control"
+				value="<?= htmlspecialchars($modelo ?? '') ?>"
+				placeholder="Ej. XR5000, Pro Max, T-300...">
+		</div>
+	</div>
+
+	<!-- 🆕 Nuevo campo: Talla -->
+	<div class="col-md-3">
+		<div class="form-group">
+			<label for="talla">Talla</label>
+			<input type="text" name="talla" id="talla" class="form-control"
+				value="<?= htmlspecialchars($talla ?? '') ?>"
+				placeholder="Ej. S, M, L, 42, 7.5...">
+		</div>
+	</div>
+
+	<div class="col-md-3">
+		<div class="form-group">
+			<label for="pdf_path">Ficha Técnica (PDF)</label>
+			<input type="file" name="pdf_path" id="pdf_path" accept="application/pdf" class="form-control mb-2">
+			<?php if (!empty($pdf_path)): ?>
+				<a href="<?= base_url . $pdf_path ?>" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+					<i class="fa fa-file-pdf me-1"></i> Ver PDF actual
+				</a>
+			<?php endif; ?>
+		</div>
+	</div>
+</div>
+
 
 		<!-- 🟦 Fila 4: Precios y Stock -->
 		<div class="section-header mt-3">Precios y Stock</div>

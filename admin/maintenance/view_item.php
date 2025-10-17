@@ -262,28 +262,36 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 			</div>
 		</div>
 
-		<!-- 🟦 Nueva fila: Marca, Modelo y Ficha Técnica -->
-		<div class="section-header">Detalles Técnicos</div>
-		<div class="info-row">
-			<div class="info-col">
-				<span class="info-label">Marca:</span><br>
-				<span class="info-value"><?= !empty($marca) ? htmlspecialchars($marca) : '—' ?></span>
-			</div>
-			<div class="info-col">
-				<span class="info-label">Modelo:</span><br>
-				<span class="info-value"><?= !empty($modelo) ? htmlspecialchars($modelo) : '—' ?></span>
-			</div>
-			<div class="info-col">
-				<span class="info-label">Ficha Técnica:</span><br>
-				<?php if (!empty($pdf_path) && file_exists(base_app . $pdf_path)): ?>
-					<a href="<?= base_url . $pdf_path ?>" target="_blank" class="text-primary fw-bold">
-						<i class="fa fa-file-pdf"></i> Ver PDF
-					</a>
-				<?php else: ?>
-					<span class="text-muted">No disponible</span>
-				<?php endif; ?>
-			</div>
-		</div>
+		<!-- 🟦 Nueva fila: Marca, Modelo, Talla y Ficha Técnica -->
+<div class="section-header">Detalles Técnicos</div>
+<div class="info-row">
+	<div class="info-col">
+		<span class="info-label">Marca:</span><br>
+		<span class="info-value"><?= !empty($marca) ? htmlspecialchars($marca) : '—' ?></span>
+	</div>
+	<div class="info-col">
+		<span class="info-label">Modelo:</span><br>
+		<span class="info-value"><?= !empty($modelo) ? htmlspecialchars($modelo) : '—' ?></span>
+	</div>
+	<div class="info-col">
+		<span class="info-label">Talla:</span><br>
+		<span class="info-value"><?= !empty($talla) ? htmlspecialchars($talla) : '—' ?></span>
+	</div>
+</div>
+
+<div class="info-row">
+	<div class="info-col">
+		<span class="info-label">Ficha Técnica:</span><br>
+		<?php if (!empty($pdf_path) && file_exists(base_app . $pdf_path)): ?>
+			<a href="<?= base_url . $pdf_path ?>" target="_blank" class="text-primary fw-bold">
+				<i class="fa fa-file-pdf"></i> Ver PDF
+			</a>
+		<?php else: ?>
+			<span class="text-muted">No disponible</span>
+		<?php endif; ?>
+	</div>
+</div>
+
 
 		<!-- 🟦 Precios -->
 		<div class="section-header">Precios</div>
