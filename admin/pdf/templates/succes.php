@@ -107,15 +107,21 @@ if ($amount <= 0) {
 <table class="totals">
   <tr>
     <td colspan="5" rowspan="7" class="payment-info">
-      <p><strong>FORMA DE PAGO:</strong> CRÉDITO</p>
-      <p><strong>CUENTA BBVA BANCOMER:</strong> 1549488070</p>
-      <p><strong>CLABE INTERBANCARIA:</strong> 012610015494880704</p>
-      <p><strong>TIEMPO DE ENTREGA:</strong> A convenir con el proveedor</p>
-      <p><strong>NOTA:</strong> <?= !empty($remarks) ? nl2br(htmlspecialchars($remarks)) : '—' ?></p>
-      <p><strong>HORARIO DE ATENCIÓN A CLIENTES:</strong> Lunes a Sábado 08:00 a 20:00</p>
-      <p><strong>TELÉFONO:</strong> (951) 215 2725</p>
-      <p>5a Privada de Vicente Guerrero #112 Colonia Candiani, Oaxaca de Juárez, Oax. C.P. 68130</p>
-    </td>
+  <p><strong>FORMA DE PAGO:</strong> <?= htmlspecialchars($data['metodo_pago'] ?? '—') ?></p>
+  <p><strong>BANCO:</strong> <?= htmlspecialchars($data['banco'] ?? '—') ?></p>
+  <p><strong>NO. DE CUENTA:</strong> <?= htmlspecialchars($data['ncuenta'] ?? '—') ?></p>
+  <p><strong>CLABE INTERBANCARIA:</strong> <?= htmlspecialchars($data['cuenta_clabe'] ?? '—') ?></p>
+  <p><strong>FECHA DE ENTREGA:</strong>
+    <?= !empty($data['fecha_entrega'])
+      ? date("d/m/Y", strtotime($data['fecha_entrega']))
+      : 'A convenir con el proveedor' ?>
+  </p>
+  <p><strong>NOTA:</strong> <?= htmlspecialchars($data['remarks'] ?? '') ?></p>
+  <p><strong>HORARIO DE ATENCIÓN A CLIENTES:</strong> Lunes a Sábado 08:00 a 20:00</p>
+  <p><strong>TELÉFONO:</strong> <?= htmlspecialchars($data['contact'] ?? '—') ?></p>
+  <p><?= htmlspecialchars($data['address'] ?? '—') ?></p>
+</td>
+
     <td class="label">SUBTOTAL</td>
     <td class="amount">$<?= number_format($subtotal, 2) ?></td>
   </tr>
