@@ -426,6 +426,11 @@ $po_code = preg_replace('/[^A-Z0-9\-]/', '', strtoupper($po_code));
 // ==============================
 // INSERTAR NUEVA COTIZACIÓN
 // ==============================
+// 🔹 Si es una actualización, limpiar los ítems anteriores
+if ($id > 0) {
+    $this->conn->query("DELETE FROM po_items WHERE po_id = {$id}");
+}
+
 if ($id > 0) {
     // 🔄 ACTUALIZAR EXISTENTE
     $sql = "UPDATE purchase_order_list 
