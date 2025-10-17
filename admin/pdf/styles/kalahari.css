@@ -17,29 +17,33 @@
     padding: 0;
   }
   
-  /* ---------- ENCABEZADO ---------- */
-  .header {
-    width: 100%;
-  }
-  
-  .header img {
-    width: 70%;
-    height: auto;
-    max-height: 300px;
-    object-fit: contain;
-    display: block;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .header-line {
-    width: 100%;
-    height: 2px;
-    background-color: #d9b48c;
-    margin: 0;              /* Sin separación arriba ni abajo */
-    position: relative;
-    top: -100px;              /* Sube la línea para pegarla justo al borde del logo */
-  }
+/* ---------- ENCABEZADO ---------- */
+.header {
+  width: 100%;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  line-height: 0; /* elimina el aire visual del flujo del <img> */
+}
+
+.header img {
+  width: 70%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.header-line {
+  width: 100%;
+  height: 2px;
+  background-color: #d9b48c;
+  margin-top: 5px;   /* separa un poco sin exagerar */
+  margin-bottom: 10px;
+}
+
   
   
   .header-info {

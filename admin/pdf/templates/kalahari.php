@@ -1,7 +1,6 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – KALAHARI DISTRIBUIDORA COMERCIAL
-// Actualizado con descuento por producto y descuento global
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -12,7 +11,7 @@ $amount    = floatval($data['amount'] ?? 0);
 $discount  = floatval($data['discount'] ?? 0);
 $discount_perc = floatval($data['discount_perc'] ?? 0);
 
-// 🔹 Calcular subtotal desde los ítems si no viene
+// 🔹 Calcular subtotal si no viene
 if ($subtotal <= 0 && !empty($items)) {
     $subtotal = 0;
     foreach ($items as $it) {
@@ -38,38 +37,57 @@ if ($amount <= 0) {
 <body>
 
 <!-- ======================================= -->
-<!-- 🔹 ENCABEZADO CON LOGO A TODO EL ANCHO -->
+<!-- 🔹 ENCABEZADO CON LOGO Y DATOS DE EMPRESA -->
 <!-- ======================================= -->
 <div class="header">
-  <?php if ($logo_path): ?>
-    <img src="<?= $logo_path ?>" alt="Logo Kalahari">
+  <?php if (!empty($logo_path)): ?>
+    <img src="<?= $logo_path ?>" alt="Logo <?= htmlspecialchars($data['name_empresa'] ?? '') ?>">
   <?php endif; ?>
 </div>
 
-<div class="header-line"></div>
+<div class="company-info">
+  <p>
+    <strong>RFC:</strong> <?= htmlspecialchars($data['rfc'] ?? '') ?><br>
+    <strong>Dirección:</strong> <?= htmlspecialchars($data['address'] ?? '') ?><br>
+    <strong>Contacto:</strong> <?= htmlspecialchars($data['contact'] ?? '') ?><br>
+    <strong>Atención:</strong> <?= htmlspecialchars($data['cperson'] ?? '') ?><br>
+    <strong>Email:</strong> <?= htmlspecialchars($data['email'] ?? '') ?>
+  </p>
+</div>
 
-<!-- DATOS ENCABEZADO DERECHO -->
+<hr class="header-line">
+
+<!-- ======================================= -->
+<!-- 🔹 ENCABEZADO DE COTIZACIÓN -->
+<!-- ======================================= -->
 <table class="header-info">
   <tr>
-    <td class="spacer"></td>
-    <td class="labels"><strong>FECHA</strong> &nbsp;&nbsp; <strong>FOLIO</strong></td>
+    <td class="labels"><strong>FECHA:</strong></td>
+    <td><?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></td>
+    <td class="labels"><strong>FOLIO:</strong></td>
+    <td><?= htmlspecialchars($data['po_code'] ?? '') ?></td>
   </tr>
   <tr>
-    <td></td>
-    <td class="values">
-      <?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?>
-      &nbsp;&nbsp;&nbsp;
-      <?= htmlspecialchars($data['po_code'] ?? '') ?>
-    </td>
+    <td class="labels"><strong>CLIENTE:</strong></td>
+    <td colspan="3"><?= htmlspecialchars($data['cliente_cotizacion'] ?? '') ?></td>
   </tr>
   <tr>
-    <td></td>
-    <td class="delivery">Tiempo de entrega: 1 semana</td>
+    <td class="labels"><strong>PROVEEDOR:</strong></td>
+    <td colspan="3"><?= htmlspecialchars($data['supplier'] ?? '') ?></td>
   </tr>
+  <tr>
+  <td class="labels"><strong>ENTREGA:</strong></td>
+  <td colspan="3">
+    <?= !empty($data['fecha_entrega'])
+        ? date("d/m/Y", strtotime($data['fecha_entrega']))
+        : '—' ?>
+  </td>
+</tr>
+
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TABLA PRINCIPAL DE PRODUCTOS -->
+<!-- 🔹 TABLA DE PRODUCTOS -->
 <!-- ======================================= -->
 <table class="productos">
   <thead>
@@ -87,8 +105,8 @@ if ($amount <= 0) {
   </thead>
   <tbody>
     <?php $i=1; foreach($items as $it): 
-        $brand = htmlspecialchars($it['brand'] ?? '');
-        $model = htmlspecialchars($it['model'] ?? '');
+        $brand = htmlspecialchars($it['marca'] ?? '');
+        $model = htmlspecialchars($it['modelo'] ?? '');
         $desc  = nl2br(htmlspecialchars($it['description'] ?? ''));
         $unit  = htmlspecialchars($it['unit'] ?? '');
         $qty   = floatval($it['quantity'] ?? 0);
@@ -117,44 +135,36 @@ if ($amount <= 0) {
 <!-- 🔹 TOTALES -->
 <!-- ======================================= -->
 <table class="totals">
-  <tr>
-    <td>SUBTOTAL:</td>
-    <td>$<?= number_format($subtotal, 2) ?></td>
-  </tr>
+  <tr><td>SUBTOTAL:</td><td>$<?= number_format($subtotal, 2) ?></td></tr>
   <?php if ($discount_perc > 0 || $discount > 0): ?>
-  <tr>
-    <td>DESCUENTO <?= $discount_perc > 0 ? "(" . number_format($discount_perc, 2) . "%)" : "" ?>:</td>
-    <td>$<?= number_format($discount, 2) ?></td>
-  </tr>
+  <tr><td>DESCUENTO <?= $discount_perc > 0 ? "(" . number_format($discount_perc, 2) . "%)" : "" ?>:</td>
+      <td>$<?= number_format($discount, 2) ?></td></tr>
   <?php endif; ?>
-  <tr>
-    <td>I.V.A. (<?= number_format($tax_perc, 2) ?>%):</td>
-    <td>$<?= number_format($tax, 2) ?></td>
-  </tr>
-  <tr class="total">
-    <td><strong>TOTAL:</strong></td>
-    <td><strong>$<?= number_format($amount, 2) ?></strong></td>
-  </tr>
+  <tr><td>I.V.A. (<?= number_format($tax_perc, 2) ?>%):</td><td>$<?= number_format($tax, 2) ?></td></tr>
+  <tr class="total"><td><strong>TOTAL:</strong></td><td><strong>$<?= number_format($amount, 2) ?></strong></td></tr>
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 PIE DE PÁGINA -->
+<!-- 🔹 PIE DE PÁGINA CON DATOS Y NOTA -->
 <!-- ======================================= -->
-<div class="footer">
-  <p class="bank-info">
-    <strong>BANCO:</strong> HSBC &nbsp;&nbsp;
-    <strong>No. DE CUENTA:</strong> 4065384711 &nbsp;&nbsp;
-    <strong>CUENTA CLAVE:</strong> 4065384711
+<div class="footer" style="margin-top: 25px; font-size: 12px;">
+
+  <p class="bank-info" style="margin-bottom: 8px;">
+    <strong>BANCO:</strong> <?= htmlspecialchars($data['banco'] ?? '') ?> &nbsp;&nbsp;
+    <strong>No. DE CUENTA:</strong> <?= htmlspecialchars($data['ncuenta'] ?? '') ?> &nbsp;&nbsp;
+    <strong>CUENTA CLABE:</strong> <?= htmlspecialchars($data['cuenta_clabe'] ?? '') ?>
   </p>
 
-  <p class="contact"><strong>ATENCIÓN A CLIENTES</strong><br>
-  OAXACA DE JUÁREZ, OAXACA</p>
-
-  <p class="terms">
-    LA FECHA DE ENTREGA ES SEGÚN DISPONIBILIDAD AL MOMENTO DE FINCAR LA COMPRA<br>
-    PRECIOS SUJETOS A CAMBIO SIN PREVIO AVISO,<br>
-    VIGENCIA DE COTIZACIÓN 15 DÍAS.
+  <p class="contact" style="margin-bottom: 6px;">
+    <strong>DIRECCIÓN:</strong> <?= htmlspecialchars($data['address'] ?? '') ?>
   </p>
+
+  <?php if (!empty($data['nota']) || !empty($nota)): ?>
+  <div class="note" style="margin-top:10px; padding:8px; border-top:1px solid #aaa; font-size:11.5px;">
+    <?= nl2br(htmlspecialchars($data['nota'] ?? $nota)) ?>
+  </div>
+  <?php endif; ?>
+
 </div>
 
 </body>
