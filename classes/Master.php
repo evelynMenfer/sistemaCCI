@@ -426,19 +426,33 @@ $po_code = preg_replace('/[^A-Z0-9\-]/', '', strtoupper($po_code));
 // ==============================
 // INSERTAR NUEVA COTIZACIÓN
 // ==============================
-$sql = "INSERT INTO purchase_order_list 
-        SET {$data}, po_code='{$po_code}', date_created=NOW()";
-
-if (!$this->conn->query($sql)) {
-    $this->conn->rollback();
-    $this->conn->query("UNLOCK TABLES");
-    return json_encode([
-        'status' => 'failed',
-        'error' => "Error al crear la cotización: " . $this->conn->error
-    ]);
+if ($id > 0) {
+    // 🔄 ACTUALIZAR EXISTENTE
+    $sql = "UPDATE purchase_order_list 
+            SET {$data}, date_updated = NOW()
+            WHERE id = {$id}";
+    if (!$this->conn->query($sql)) {
+        $this->conn->rollback();
+        $this->conn->query("UNLOCK TABLES");
+        return json_encode([
+            'status' => 'failed',
+            'error' => "Error al actualizar la cotización: " . $this->conn->error
+        ]);
+    }
+} else {
+    // 🆕 INSERTAR NUEVA
+    $sql = "INSERT INTO purchase_order_list 
+            SET {$data}, po_code='{$po_code}', date_created=NOW()";
+    if (!$this->conn->query($sql)) {
+        $this->conn->rollback();
+        $this->conn->query("UNLOCK TABLES");
+        return json_encode([
+            'status' => 'failed',
+            'error' => "Error al crear la cotización: " . $this->conn->error
+        ]);
+    }
+    $id = $this->conn->insert_id;
 }
-
-$id = $this->conn->insert_id;
 
 // ==============================
 // CONFIRMAR Y DESBLOQUEAR
