@@ -141,16 +141,23 @@ while ($row = $qry_items->fetch_assoc()) {
     $line_total = ($price - ($price * $discount / 100)) * $quantity;
     $subtotal += $line_total;
 
-    // Embebemos imagen si existe
-    $row['foto_producto_base64'] = '';
-    if (!empty($row['foto_producto'])) {
-        $foto_path = __DIR__ . '/../../uploads/items/' . basename($row['foto_producto']);
-        if (file_exists($foto_path)) {
-            $mime = mime_content_type($foto_path);
-            $imgData = base64_encode(file_get_contents($foto_path));
-            $row['foto_producto_base64'] = 'data:' . $mime . ';base64,' . $imgData;
+    // Embebemos imagen si existe (carpeta correcta: uploads/productos/)
+$row['foto_producto_base64'] = '';
+if (!empty($row['foto_producto'])) {
+    // La BD puede traer 'uploads/productos/archivo.jpg' o solo 'archivo.jpg'
+    $filename  = basename($row['foto_producto']);
+    $foto_path = __DIR__ . '/../../uploads/productos/' . $filename;
+
+    if (is_file($foto_path)) {
+        // mime_content_type puede no existir en algunos hosts, ponemos fallback
+        $mime = function_exists('mime_content_type') ? mime_content_type($foto_path) : null;
+        if (!$mime || !preg_match('~^image/~', $mime)) {
+            $mime = 'image/jpeg';
         }
+        $imgData = base64_encode(file_get_contents($foto_path));
+        $row['foto_producto_base64'] = 'data:' . $mime . ';base64,' . $imgData;
     }
+}
 
     $items[] = $row + ['line_total' => $line_total];
 }
