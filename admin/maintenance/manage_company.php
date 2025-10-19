@@ -129,7 +129,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 				placeholder="Ej. Información adicional o mensaje breve al pie de documentos"><?php echo isset($nota) ? $nota : ''; ?></textarea>
 		</div>
 	</div>
-</div>
+</div> 
 
 		<!-- 🟦 Fila 4: Contacto -->
 		<div class="row">
