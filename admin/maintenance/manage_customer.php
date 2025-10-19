@@ -61,9 +61,9 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 	<form id="customer-form" enctype="multipart/form-data">
 		<input type="hidden" name="id" value="<?= isset($id) ? $id : '' ?>">
 
-		<!-- 🟦 Fila 1: Nombre y Email -->
+		<!-- 🟦 Fila 1: Nombre, RFC y Email -->
 		<div class="row">
-			<div class="col-md-6">
+			<div class="col-md-4">
 				<div class="form-group">
 					<label for="name">Nombre del Cliente</label>
 					<input type="text" name="name" id="name" class="form-control"
@@ -71,7 +71,15 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 						placeholder="Ej. Juan Pérez o Empresa XYZ" required>
 				</div>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-4">
+				<div class="form-group">
+					<label for="rfc">RFC</label>
+					<input type="text" name="rfc" id="rfc" class="form-control"
+						value="<?= isset($rfc) ? htmlspecialchars($rfc) : ''; ?>"
+						placeholder="Ej. ABC123456789" required>
+				</div>
+			</div>
+			<div class="col-md-4">
 				<div class="form-group">
 					<label for="email">Correo Electrónico</label>
 					<input type="email" name="email" id="email" class="form-control"
@@ -99,6 +107,20 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 				</div>
 			</div>
 		</div>
+
+		<!-- 🟦 Fila 3: Estado -->
+		<div class="row">
+			<div class="col-md-6">
+				<div class="form-group">
+					<label for="status">Estado</label>
+					<select name="status" id="status" class="custom-select">
+						<option value="1" <?= isset($status) && $status == 1 ? 'selected' : '' ?>>Activo</option>
+						<option value="0" <?= isset($status) && $status == 0 ? 'selected' : '' ?>>Inactivo</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
 	</form>
 </div>
 

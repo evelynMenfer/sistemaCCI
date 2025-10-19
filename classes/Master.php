@@ -867,38 +867,51 @@ function delete_sale()
 	// --- CLIENTES ---
 	function save_customer(){
 		try {
-			// Validación mínima
+			// === Validaciones y sanitización ===
 			$id      = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 			$name    = trim($_POST['name'] ?? '');
+			$rfc     = trim($_POST['rfc'] ?? '');
 			$email   = trim($_POST['email'] ?? '');
 			$contact = trim($_POST['contact'] ?? '');
 			$address = trim($_POST['address'] ?? '');
+			$status  = isset($_POST['status']) ? (int)$_POST['status'] : 1;
 	
 			if ($name === '') {
 				return json_encode(['status'=>'failed','msg'=>'El nombre es obligatorio']);
 			}
+			if ($rfc === '') {
+				return json_encode(['status'=>'failed','msg'=>'El RFC es obligatorio']);
+			}
 	
-			// INSERT o UPDATE con prepared statements
+			// === INSERT o UPDATE ===
 			if ($id > 0) {
-				$stmt = $this->conn->prepare("UPDATE `customer_list` 
-					SET `name`=?, `email`=?, `contact`=?, `address`=? 
+				// 🟦 UPDATE
+				$stmt = $this->conn->prepare("UPDATE `customer_list`
+					SET `name`=?, `rfc`=?, `email`=?, `contact`=?, `address`=?, `status`=? 
 					WHERE `id`=?");
-				$stmt->bind_param("ssssi", $name, $email, $contact, $address, $id);
+				$stmt->bind_param("ssssssi", $name, $rfc, $email, $contact, $address, $status, $id);
 			} else {
-				$stmt = $this->conn->prepare("INSERT INTO `customer_list` (`name`,`email`,`contact`,`address`) 
-					VALUES (?,?,?,?)");
-				$stmt->bind_param("ssss", $name, $email, $contact, $address);
+				// 🟩 INSERT
+				$stmt = $this->conn->prepare("INSERT INTO `customer_list`
+					(`name`,`rfc`,`email`,`contact`,`address`,`status`)
+					VALUES (?,?,?,?,?,?)");
+				$stmt->bind_param("sssssi", $name, $rfc, $email, $contact, $address, $status);
 			}
 	
 			if (!$stmt->execute()) {
 				return json_encode(['status'=>'failed','msg'=>'Error al guardar el cliente']);
 			}
 	
-			return json_encode(['status'=>'success']);
+			return json_encode([
+				'status' => 'success',
+				'msg' => $id > 0 ? 'Cliente actualizado correctamente' : 'Cliente agregado correctamente'
+			]);
+	
 		} catch (Throwable $e) {
-			return json_encode(['status'=>'failed','msg'=>$e->getMessage()]);
+			return json_encode(['status'=>'failed','msg'=>'Error interno: '.$e->getMessage()]);
 		}
 	}
+	
 	
 	function delete_customer(){
 		try {

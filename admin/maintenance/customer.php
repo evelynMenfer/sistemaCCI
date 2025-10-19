@@ -1,6 +1,6 @@
 <div class="card card-outline card-primary">
-  <div class="card-header">
-    <h3 class="card-title">Lista de Clientes</h3>
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="card-title mb-0">Lista de Clientes</h3>
     <div class="card-tools">
       <a href="javascript:void(0)" id="create_new" class="btn btn-flat btn-primary">
         <span class="fas fa-plus"></span> Nuevo cliente
@@ -12,18 +12,22 @@
     <div class="container-fluid">
       <table class="table table-bordered table-hover align-middle" id="customerTable">
         <colgroup>
-          <col width="25%">
-          <col width="25%">
-          <col width="20%">
-          <col width="20%">
+          <col width="18%">
+          <col width="15%">
+          <col width="15%">
+          <col width="15%">
+          <col width="17%">
+          <col width="10%">
           <col width="10%">
         </colgroup>
         <thead class="bg-light">
           <tr class="text-center text-secondary">
             <th>Nombre</th>
+            <th>RFC</th>
             <th>Email</th>
             <th>Contacto</th>
             <th>Dirección</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -34,9 +38,17 @@
           ?>
           <tr>
             <td class="fw-semibold text-dark text-start"><?= htmlspecialchars($row['name']) ?></td>
+            <td class="text-center"><?= htmlspecialchars($row['rfc']) ?></td>
             <td><?= htmlspecialchars($row['email']) ?></td>
             <td><?= htmlspecialchars($row['contact']) ?></td>
             <td><?= htmlspecialchars($row['address']) ?></td>
+            <td class="text-center">
+              <?php if ($row['status'] == 1): ?>
+                <span class="badge badge-success px-3 py-2">Activo</span>
+              <?php else: ?>
+                <span class="badge badge-danger px-3 py-2">Inactivo</span>
+              <?php endif; ?>
+            </td>
             <td class="text-center">
               <div class="btn-group btn-group-sm">
                 <button class="btn btn-outline-secondary view_data" data-id="<?= $row['id'] ?>" title="Ver">
@@ -73,6 +85,11 @@
     vertical-align: middle !important;
     padding: 10px 12px !important;
   }
+  .badge {
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+  }
   .btn-group .btn {
     border-radius: 6px !important;
   }
@@ -94,7 +111,7 @@ $(document).ready(function() {
     pageLength: 10,
     responsive: true,
     columnDefs: [
-      { orderable: false, targets: 4 }
+      { orderable: false, targets: [6] } // Desactiva orden en la columna Acciones
     ]
   });
 

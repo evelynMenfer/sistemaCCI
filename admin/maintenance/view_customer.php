@@ -126,6 +126,26 @@ if ($qry->num_rows > 0) {
 		<h3><?= htmlspecialchars($name ?? 'Cliente sin nombre') ?></h3>
 	</div>
 
+	<!-- 🟦 Datos generales -->
+	<div class="section-header">Datos Generales</div>
+	<div class="info-row">
+		<div class="info-col">
+			<span class="info-label">RFC:</span><br>
+			<span class="info-value"><?= !empty($rfc) ? htmlspecialchars($rfc) : '—' ?></span>
+		</div>
+		<div class="info-col">
+			<span class="info-label">Estado:</span><br>
+			<?php
+				$estado = isset($status) ? intval($status) : 0;
+				$estadoTexto = $estado === 1 ? 'Activo' : 'Inactivo';
+				$estadoColor = $estado === 1 ? '#28a745' : '#dc3545';
+			?>
+			<span class="info-value" style="color: <?= $estadoColor ?>; font-weight:600;">
+				<?= $estadoTexto ?>
+			</span>
+		</div>
+	</div>
+
 	<!-- 🟦 Información de contacto -->
 	<div class="section-header">Datos de Contacto</div>
 	<div class="info-row">
