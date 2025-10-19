@@ -47,7 +47,7 @@
                                 <a href="<?php echo base_url ?>admin/?page=purchase_order/index&company_id=<?php echo $row['id']; ?>"
                                 class="nav-link <?php echo $is_active ? 'active bg-blue' : ''; ?>"
                                 title="<?php echo htmlspecialchars($row['name']); ?>">
-                                    <i class="nav-icon fas fa-th-list"></i>
+                                    <i class="nav-icon fa fa-building"></i>
                                     <p class="text-uppercase"><?php echo htmlspecialchars($row['identificador']); ?></p>
                                 </a>
                             </li>
