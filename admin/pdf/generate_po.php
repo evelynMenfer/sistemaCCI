@@ -163,19 +163,28 @@ if (!empty($row['foto_producto'])) {
 }
 
 // ==================================================
-// 🔹 LOGO EN BASE64 (igual que tu versión)
+// 🔹 LOGO EN BASE64 (carpeta empresas, ruta flexible)
 // ==================================================
 $logo_path = '';
-if (!empty($data['logo'])) {
-    $logo_file = basename(trim($data['logo']));
-    $absolute_logo_path = __DIR__ . '/../../uploads/logos/' . $logo_file;
 
-    if (file_exists($absolute_logo_path)) {
+if (!empty($data['logo'])) {
+    // Limpia la ruta si viene como 'uploads/empresas/cenit.png'
+    $logo_file = basename(trim($data['logo']));
+    $absolute_logo_path = __DIR__ . '/../../uploads/empresas/' . $logo_file;
+
+    // Si no existe, intenta con la ruta completa (por si ya incluye 'uploads/empresas/')
+    if (!file_exists($absolute_logo_path)) {
+        $absolute_logo_path = realpath(__DIR__ . '/../../' . ltrim($data['logo'], '/'));
+    }
+
+    if ($absolute_logo_path && file_exists($absolute_logo_path)) {
+        $mime = function_exists('mime_content_type') ? mime_content_type($absolute_logo_path) : 'image/png';
+        if (!$mime || !preg_match('~^image/~', $mime)) $mime = 'image/png';
         $imgData = base64_encode(file_get_contents($absolute_logo_path));
-        $mime = mime_content_type($absolute_logo_path);
         $logo_path = 'data:' . $mime . ';base64,' . $imgData;
     }
 }
+
 
 // ==================================================
 // 🔹 PASAR VARIABLES EXTRA AL TEMPLATE (compatibilidad total)
