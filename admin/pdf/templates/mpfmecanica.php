@@ -125,7 +125,7 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
 <section>
   <h3>Cliente</h3>
   <p>
-    <strong><?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?></strong><br>
+    <strong><?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?></strong><br>
     <?= htmlspecialchars($data['cliente_email'] ?? '') ?>
   </p>
 </section>

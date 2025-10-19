@@ -53,7 +53,7 @@ if ($amount <= 0) {
   </tr>
   <tr>
     <td colspan="5" class="client">
-      <strong>Atención:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?><br>
+      <strong>Atención:</strong> <?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?><br>
       <strong>e-mail:</strong> <?= htmlspecialchars($cliente_email ?: '—') ?>
     </td>
     <td colspan="3" class="fecha-box">

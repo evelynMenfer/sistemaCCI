@@ -50,7 +50,7 @@ $e   = fn($s) => htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 
 // Campos principales
 $po_code   = $data['po_code'] ?? '—';
-$cliente   = $data['cliente_cotizacion'] ?? '—';
+$cliente   = $data['cliente_nombre'] ?? '—';
 $email_cli = $data['cliente_email'] ?? '';
 $fecha     = !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—';
 $empresa   = $data['name_empresa'] ?? '—';

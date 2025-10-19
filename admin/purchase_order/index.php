@@ -73,12 +73,18 @@ if (!$empresa) {
                     <?php
                     $i = 1;
                     $qry = $conn->query("
-                        SELECT p.*, c.name AS company 
-                        FROM purchase_order_list p 
-                        INNER JOIN company_list c ON c.id = p.id_company 
+                        SELECT 
+                            p.*, 
+                            c.name AS company,
+                            cl.name AS cliente_nombre,
+                            cl.rfc AS cliente_rfc
+                        FROM purchase_order_list p
+                        INNER JOIN company_list c ON c.id = p.id_company
+                        LEFT JOIN customer_list cl ON cl.id = p.customer_id
                         WHERE c.id = {$company_id}
                         ORDER BY p.date_created DESC
                     ");
+
                     if ($qry && $qry->num_rows > 0):
                         while ($row = $qry->fetch_assoc()):
                             $row['items'] = $conn->query("SELECT COUNT(item_id) AS items FROM po_items WHERE po_id = '{$row['id']}'")->fetch_assoc()['items'];
@@ -90,7 +96,14 @@ if (!$empresa) {
                         <td><?php echo date("Y-m-d H:i", strtotime($row['date_created'])) ?></td>
                         <td><?php echo !empty($row['fecha_entrega']) ? date("Y-m-d", strtotime($row['fecha_entrega'])) : '—'; ?></td>
                         <td><?php echo htmlspecialchars($row['po_code']) ?></td>
-                        <td><?php echo htmlspecialchars($row['cliente_cotizacion'] ?? '—') ?></td>
+                        <td>
+                            <?php 
+                                echo htmlspecialchars($row['cliente_nombre'] ?? $row['cliente_cotizacion'] ?? '—'); 
+                                if (!empty($row['cliente_rfc'])) {
+                                    echo "<br><small class='text-muted'>RFC: " . htmlspecialchars($row['cliente_rfc']) . "</small>";
+                                }
+                            ?>
+                            </td>
                         <td class="text-center"><?php echo number_format($row['items']) ?></td>
                         <td class="text-center">
                             <span class="estado-text d-none"><?php echo $estadoTexto; ?></span>

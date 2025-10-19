@@ -9,7 +9,7 @@ $items          = isset($items) && is_array($items) ? $items : [];
 $style          = $style          ?? '';
 $logo_path      = $logo_path      ?? '';
 
-$cliente        = trim($data['cliente_cotizacion'] ?? '');
+$cliente        = trim($data['cliente_nombre'] ?? '');
 $cliente_email  = trim($data['cliente_email'] ?? '');
 $date_exp       = $date_exp       ?? ($data['date_exp'] ?? date('Y-m-d'));
 $po_code        = $data['po_code'] ?? '';

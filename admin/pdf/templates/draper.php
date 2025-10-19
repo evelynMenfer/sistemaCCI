@@ -53,7 +53,7 @@ if ($amount <= 0) {
   </tr>
   <tr>
     <td><?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></td>
-    <td><?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?></td>
+    <td><?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?></td>
     <td style="text-align:right;"><?= htmlspecialchars($data['po_code'] ?? '') ?></td>
   </tr>
 </table>

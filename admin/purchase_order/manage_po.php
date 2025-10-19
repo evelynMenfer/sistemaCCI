@@ -7,10 +7,20 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $company_id = isset($_GET['company_id']) ? intval($_GET['company_id']) : 0;
 
 if ($id > 0) {
+  // 🔹 Si la cotización ya existe, también trae los datos del cliente
   $qry = $conn->query("
-      SELECT p.*, s.name as supplier 
+      SELECT 
+        p.*, 
+        s.name as supplier,
+        cl.id AS customer_id,
+        cl.name AS cliente_nombre,
+        cl.email AS cliente_email,
+        cl.contact AS cliente_contact,
+        cl.address AS cliente_address,
+        cl.rfc AS cliente_rfc
       FROM purchase_order_list p 
       LEFT JOIN supplier_list s ON p.supplier_id = s.id  
+      LEFT JOIN customer_list cl ON cl.id = p.customer_id
       WHERE p.id = {$id}
   ");
   if ($qry && $qry->num_rows > 0) {
@@ -52,23 +62,64 @@ tfoot tr th { background:#f6f6f6; }
 
       <div class="container-fluid">
 
+      <!-- ===================================== -->
+      <!-- 🔹 BUSCADOR DE CLIENTES ACTIVOS -->
+      <!-- ===================================== -->
+      <div class="card mb-3 border-info">
+        <div class="card-header bg-info text-white"><strong>Buscar clientes</strong></div>
+        <div class="card-body">
+          <div class="form-group mb-3">
+            <input type="text" id="searchCustomer" class="form-control" placeholder="Escribe nombre, correo o contacto...">
+          </div>
+          <table class="table table-bordered table-hover" id="customerSearchTable">
+            <thead class="table-light">
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Contacto</th>
+                <th>Dirección</th>
+                <th>RFC</th>
+                <th class="text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="6" class="text-center text-muted">Escribe para buscar...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <input type="hidden" name="customer_id" id="customer_id" value="<?php echo $customer_id ?? ''; ?>">
+
         <!-- DATOS DE CLIENTE -->
         <div class="row mt-2">
           <div class="col-md-4">
-            <label class="text-info control-label">Cliente *</label>
-            <textarea name="cliente_cotizacion" rows="1" class="form-control rounded-0" required><?php echo $cliente_cotizacion ?? '' ?></textarea>
+            <label class="text-info control-label">Cliente</label>
+            <textarea name="cliente_nombre" rows="1" class="form-control rounded-0" readonly><?php echo $cliente_nombre ?? '' ?></textarea>
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">RFC</label>
+            <input name="cliente_rfc" class="form-control rounded-0" value="<?php echo $cliente_rfc ?? '' ?>" readonly>
+          </div>
+          <div class="col-md-4">
+            <label class="control-label text-info">Contacto</label>
+            <input name="cliente_contact" class="form-control rounded-0" value="<?php echo $cliente_contact ?? '' ?>" readonly>
           </div>
           <div class="col-md-4">
             <label class="control-label text-info">Email cliente</label>
-            <input name="cliente_email" class="form-control rounded-0" value="<?php echo $cliente_email ?? '' ?>">
+            <input name="cliente_email" class="form-control rounded-0" value="<?php echo $cliente_email ?? '' ?>" readonly>
           </div>
           <div class="col-md-4">
-            <label class="text-info control-label">RQ</label>
-            <textarea name="rq" rows="1" class="form-control rounded-0"><?php echo $rq ?? '' ?></textarea>
+            <label class="control-label text-info">Dirección</label>
+            <input name="cliente_address" class="form-control rounded-0" value="<?php echo $cliente_address ?? '' ?>" readonly>
           </div>
         </div>
 
         <div class="row mt-2">
+          <div class="col-md-4">
+            <label class="text-info control-label">RQ</label>
+            <textarea name="rq" rows="1" class="form-control rounded-0"><?php echo $rq ?? '' ?></textarea>
+          </div>
           <div class="col-md-4">
             <label class="control-label text-info">Fecha de Expedición *</label>
             <input type="date" name="date_exp" class="form-control rounded-0 text-end"
@@ -77,10 +128,6 @@ tfoot tr th { background:#f6f6f6; }
           <div class="col-md-4">
             <label class="control-label text-info">Fecha de Entrega</label>
             <input type="date" name="fecha_entrega" class="form-control rounded-0" value="<?php echo $fecha_entrega ?? '' ?>">
-          </div>
-          <div class="col-md-4">
-            <label class="control-label text-info">OC</label>
-            <input type="text" name="oc" class="form-control rounded-0" value="<?php echo $oc ?? '' ?>">
           </div>
         </div>
 
@@ -119,7 +166,10 @@ tfoot tr th { background:#f6f6f6; }
             <label class="control-label text-info">Folio Comprobante de pago</label>
             <input type="text" name="folio_comprobante_pago" class="form-control rounded-0" value="<?php echo $folio_comprobante_pago ?? '' ?>">
           </div>
-         
+          <div class="col-md-4">
+            <label class="control-label text-info">OC</label>
+            <input type="text" name="oc" class="form-control rounded-0" value="<?php echo $oc ?? '' ?>">
+          </div>
           <div class="col-md-4">
           <label for="status" class="control-label text-info">Estado</label>
             <select name="status" id="status" class="form-control rounded-0">
@@ -137,7 +187,7 @@ tfoot tr th { background:#f6f6f6; }
 
         <!-- BUSCADOR -->
         <div class="card mb-3 border-primary">
-          <div class="card-header bg-primary text-white"><strong>Buscar productos activos</strong></div>
+          <div class="card-header bg-primary text-white"><strong>Buscar productos</strong></div>
           <div class="card-body">
             <div class="form-group mb-3">
               <input type="text" id="searchProduct" class="form-control" placeholder="Escribe descripción o proveedor...">
@@ -409,4 +459,69 @@ $(function(){
     }, 1000);
   });
 });
+
+// ======== BUSCADOR DE CLIENTES ACTIVOS ========
+$('#searchCustomer').on('keyup', function(){
+  let q = $(this).val().trim();
+  if(q.length < 2){
+    $('#customerSearchTable tbody').html('<tr><td colspan="6  " class="text-center text-muted">Escribe para buscar...</td></tr>');
+    return;
+  }
+
+  $.ajax({
+    url: _base_url_ + "classes/Master.php?f=search_customers",
+    data: { q },
+    dataType: 'json',
+    success: function(data){
+      let rows = '';
+      if(data && data.length > 0){
+        data.forEach(c => {
+          rows += `
+            <tr>
+              <td>${c.name ?? ''}</td>
+              <td>${c.email ?? ''}</td>
+              <td>${c.contact ?? ''}</td>
+              <td>${c.address ?? ''}</td>
+              <td>${c.rfc ?? ''}</td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-success addCustomer"
+                        data-id="${c.id}"
+                        data-name="${c.name ?? ''}"
+                        data-email="${c.email ?? ''}"
+                        data-contact="${c.contact ?? ''}"
+                        data-address="${c.address ?? ''}"
+                        data-rfc="${c.rfc ?? ''}">
+                  Agregar
+                </button>
+              </td>
+            </tr>`;
+        });
+      } else {
+        rows = `<tr><td colspan="6" class="text-center text-muted">Sin resultados</td></tr>`;
+      }
+      $('#customerSearchTable tbody').html(rows);
+    }
+  });
+});
+
+// ======== AGREGAR CLIENTE AL FORMULARIO ========
+$(document).on('click', '.addCustomer', function(){
+  const id = $(this).data('id') || '';
+  const name = $(this).data('name');
+  const email = $(this).data('email');
+  const contact = $(this).data('contact');
+  const address = $(this).data('address');
+  const rfc = $(this).data('rfc');
+
+  $('[name="customer_id"]').val(id);
+  $('[name="cliente_nombre"]').val(name);
+  $('[name="cliente_email"]').val(email);
+  $('[name="cliente_contact"]').val(contact);
+  $('[name="cliente_address"]').val(address);
+  $('[name="cliente_rfc"]').val(rfc);
+
+  $('#searchCustomer').val('');
+  $('#customerSearchTable tbody').html('<tr><td colspan="5" class="text-center text-muted">Escribe para buscar...</td></tr>');
+});
+
 </script>

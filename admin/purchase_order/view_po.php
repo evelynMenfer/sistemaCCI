@@ -23,16 +23,25 @@ if (!isset($conn) || !$conn) {
 // 🔹 CONSULTA PRINCIPAL
 // =============================
 $qry = $conn->query("
-  SELECT p.*, s.name AS supplier, 
-         c.logo AS logo_empresa, 
-         c.name AS name_empresa, 
-         c.email, c.contact, c.address, 
-         c.id AS id_company
+  SELECT 
+      p.*, 
+      s.name AS supplier,
+      c.logo AS logo_empresa,
+      c.name AS name_empresa,
+      c.email, c.contact, c.address,
+      c.id AS id_company,
+      cl.name AS cliente_nombre,
+      cl.email AS cliente_email,
+      cl.contact AS cliente_contact,
+      cl.address AS cliente_address,
+      cl.rfc AS cliente_rfc
   FROM purchase_order_list p
   LEFT JOIN supplier_list s ON p.supplier_id = s.id
   LEFT JOIN company_list c ON p.id_company = c.id
+  LEFT JOIN customer_list cl ON cl.id = p.customer_id
   WHERE p.id = {$id}
 ");
+
 
 if (!$qry || $qry->num_rows === 0) {
     echo "<div class='alert alert-warning text-center mt-5'>⚠️ Cotización no encontrada.</div>";
@@ -141,17 +150,38 @@ if (!empty($logo_empresa)) {
     <hr>
 
     <!-- ================= CLIENTE ================= -->
+
     <div class="row mb-3">
-      <div class="col-md-4">
-        <label class="text-info">Cliente</label>
-        <div><?php echo htmlspecialchars($cliente_cotizacion ?? '—'); ?></div>
-      </div>
+  <div class="col-md-4">
+    <label class="text-info">Cliente</label>
+    <div>
+      <?php echo htmlspecialchars($cliente_nombre ?? $cliente_cotizacion ?? '—'); ?>
+      <?php if (!empty($cliente_rfc)): ?>
+        <br><small class="text-muted">RFC: <?php echo htmlspecialchars($cliente_rfc); ?></small>
+      <?php endif; ?>
+    </div>
+  </div>
 
-      <div class="col-md-4">
-        <label class="text-info">Email</label>
-        <div><?php echo htmlspecialchars($cliente_email ?? '—'); ?></div>
-      </div>
+  <div class="col-md-4">
+    <label class="text-info">Email</label>
+    <div><?php echo htmlspecialchars($cliente_email ?? $cliente_email ?? '—'); ?></div>
+  </div>
 
+  <div class="col-md-4">
+    <label class="text-info">Contacto</label>
+    <div><?php echo htmlspecialchars($cliente_contact ?? '—'); ?></div>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-md-12">
+    <label class="text-info">Dirección</label>
+    <div><?php echo htmlspecialchars($cliente_address ?? '—'); ?></div>
+  </div>
+</div>
+
+    
+    <div class="row mb-3">
       <div class="col-md-4">
         <label class="text-info">RQ</label>
         <div><?php echo htmlspecialchars($rq ?? '—'); ?></div>

@@ -69,7 +69,7 @@ if ($amount <= 0) {
   </tr>
   <tr>
     <td class="labels"><strong>CLIENTE:</strong></td>
-    <td colspan="3"><?= htmlspecialchars($data['cliente_cotizacion'] ?? '') ?></td>
+    <td colspan="3"><?= htmlspecialchars($data['cliente_nombre'] ?? '') ?></td>
   </tr>
   <tr>
   <td class="labels"><strong>ENTREGA:</strong></td>

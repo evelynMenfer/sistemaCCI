@@ -276,227 +276,179 @@ if (isset($_FILES['pdf_path']) && $_FILES['pdf_path']['tmp_name'] != '') {
         return $del ? json_encode(['status'=>'success']) : json_encode(['status'=>'failed','error'=>$this->conn->error]);
     }
 
-    /* =======================================================
-     *   COTIZACIONES / PURCHASE ORDER
-     * ======================================================= */
-	public function save_po() {
-		// ===========================
-		// 🔍 VALIDACIONES BÁSICAS
-		// ===========================
-		$id              = isset($_POST['id']) ? intval($_POST['id']) : 0;
-		$id_company      = isset($_POST['id_company']) ? intval($_POST['id_company']) : 0;
-		$cliente_cotizacion = trim($_POST['cliente_cotizacion'] ?? '');
-	
-		if ($id_company <= 0)
-			return json_encode(['status' => 'failed', 'msg' => 'No se ha especificado la empresa.']);
-		if ($cliente_cotizacion === '')
-			return json_encode(['status' => 'failed', 'msg' => 'Debe indicar el nombre del cliente.']);
-	
-		$item_id  = $_POST['item_id'] ?? [];
-		$qtys     = $_POST['qty'] ?? [];
-		$units    = $_POST['unit'] ?? [];
-		$prices   = $_POST['price'] ?? [];
-		$dlines   = $_POST['discount'] ?? []; // descuentos por línea (array)
-	
-		if (!is_array($item_id) || count($item_id) === 0)
-			return json_encode(['status' => 'failed', 'msg' => 'Debe agregar al menos un producto.']);
-	
-		// ===========================
-		// 🔹 DETERMINAR ESTADO CORRECTO
-		// ===========================
-		$status_actual = 0;
-		if ($id > 0) {
-			$res = $this->conn->query("SELECT status FROM purchase_order_list WHERE id = {$id}");
-			if ($res && $res->num_rows > 0) $status_actual = intval($res->fetch_assoc()['status']);
-		}
-		$status_final = isset($_POST['status']) && $_POST['status'] !== '' ? intval($_POST['status']) : $status_actual;
-		if (!in_array($status_final, [0,1,2,3])) $status_final = 0;
-	
-		// ===========================
-		// 🧮 CALCULAR SUBTOTAL, DESCUENTO Y TOTAL
-		// ===========================
-		$subtotal = 0.0;
-		foreach ($item_id as $k => $iid) {
-			$q  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
-			$p  = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
-			$dl = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
-			$line_total = ($p - ($p * $dl / 100.0)) * $q;
-			$subtotal += $line_total;
-		}
-	
-		$discount_perc = floatval($_POST['discount_perc'] ?? 0);
-		$tax_perc      = floatval($_POST['tax_perc'] ?? 0);
-	
-		$discount_calc = round($subtotal * $discount_perc / 100.0, 2);
-		$base = max(0, $subtotal - $discount_calc);
-		$tax_calc = round($base * $tax_perc / 100.0, 2);
-		$amount_calc = round($base + $tax_calc, 2);
-	
-		// ===========================
-		// 🧩 NORMALIZAR FECHA_ENTREGA
-		// ===========================
-		$fecha_entrega_val = null;
-		if (!empty($_POST['fecha_entrega'])) {
-			$raw = trim($_POST['fecha_entrega']);
-			$dt = DateTime::createFromFormat('Y-m-d', $raw) ?: DateTime::createFromFormat('d/m/Y', $raw);
-			if ($dt) $fecha_entrega_val = $dt->format('Y-m-d');
-		}
-	
-		// ===========================
-		// 🧩 CAMPOS PRINCIPALES
-		// ===========================
-		$fields = [
-			'id_company'             => $id_company,
-			'supplier_id'            => isset($_POST['supplier_id']) && $_POST['supplier_id'] !== '' ? intval($_POST['supplier_id']) : 'NULL',
-			'date_exp'               => $_POST['date_exp'] ?? date('Y-m-d'),
-			'fecha_entrega'          => $fecha_entrega_val,
-			'cliente_cotizacion'     => $cliente_cotizacion,
-			'cliente_email'          => trim($_POST['cliente_email'] ?? ''),
-			'rq'                     => trim($_POST['rq'] ?? ''),
-			'metodo_pago'            => trim($_POST['metodo_pago'] ?? ''),
-			'date_pago'              => !empty($_POST['date_pago']) ? $_POST['date_pago'] : null,
-			'pago_efectivo'          => !empty($_POST['pago_efectivo']) ? $_POST['pago_efectivo'] : null,
-			'oc'                     => trim($_POST['oc'] ?? ''),
-			'num_factura'            => trim($_POST['num_factura'] ?? ''),
-			'date_carga_portal'      => !empty($_POST['date_carga_portal']) ? $_POST['date_carga_portal'] : null,
-			'folio_fiscal'           => trim($_POST['folio_fiscal'] ?? ''),
-			'folio_comprobante_pago' => trim($_POST['folio_comprobante_pago'] ?? ''),
-			'num_cheque'             => trim($_POST['num_cheque'] ?? ''),
-			'discount_perc'          => $discount_perc,
-			'discount'               => $discount_calc,
-			'tax_perc'               => $tax_perc,
-			'tax'                    => $tax_calc,
-			'amount'                 => $amount_calc,
-			'remarks'                => trim($_POST['remarks'] ?? ''),
-			'status'                 => $status_final
-		];
-	
-		// ===========================
-		// ⚙️ CONVERSIÓN A SQL
-		// ===========================
-		$data = "";
-		foreach ($fields as $k => $v) {
-			if ($v === null || $v === 'NULL') $data .= " `{$k}`=NULL, ";
-			else $data .= " `{$k}`='" . $this->conn->real_escape_string($v) . "', ";
-		}
-		$data = rtrim($data, ', ');
-	
-		// ===========================
-		// 💾 TRANSACCIÓN
-		// ===========================
-		$this->conn->begin_transaction();
-		try {
-			// ==============================
-// DATOS DE EMPRESA Y PREFIJO
-// ==============================
-$company_id = intval($_POST['id_company'] ?? 0);
-$empresa = $this->conn->query("SELECT name, identificador FROM company_list WHERE id = {$company_id}")->fetch_assoc();
+/* =======================================================
+ *   COTIZACIONES / PURCHASE ORDER
+ * ======================================================= */
+public function save_po() {
+	// ===========================
+	// 🔍 VALIDACIONES BÁSICAS
+	// ===========================
+	$id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
+	$id_company = isset($_POST['id_company']) ? intval($_POST['id_company']) : 0;
+	$customer_id = isset($_POST['customer_id']) ? intval($_POST['customer_id']) : 0;
 
-// Prefijo del nombre (máx 5 letras, sin espacios)
-$prefijo = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['name'], 0, 5))) : 'COT';
-// Identificador recortado a 5 caracteres
-$identificador = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['identificador'], 0, 5))) : 'EMP';
+	if ($id_company <= 0)
+		return json_encode(['status' => 'failed', 'msg' => 'No se ha especificado la empresa.']);
+	if ($customer_id <= 0)
+		return json_encode(['status' => 'failed', 'msg' => 'Debe seleccionar un cliente.']);
 
-// ==============================
-// BLOQUEO SEGURO PARA EVITAR DUPLICADOS
-// ==============================
-$this->conn->query("LOCK TABLES purchase_order_list WRITE");
+	$item_id = $_POST['item_id'] ?? [];
+	$qtys    = $_POST['qty'] ?? [];
+	$units   = $_POST['unit'] ?? [];
+	$prices  = $_POST['price'] ?? [];
+	$dlines  = $_POST['discount'] ?? [];
 
-// ==============================
-// CALCULAR SIGUIENTE FOLIO
-// ==============================
-$res = $this->conn->query("SELECT COUNT(*) as total FROM purchase_order_list WHERE id_company = {$company_id}");
-$num = $res ? ($res->fetch_assoc()['total'] + 1) : 1;
+	if (!is_array($item_id) || count($item_id) === 0)
+		return json_encode(['status' => 'failed', 'msg' => 'Debe agregar al menos un producto.']);
 
-// ==============================
-// FORMATEAR CÓDIGO SEGÚN PARIDAD
-// ==============================
-$anio = date("y");
-if ($company_id % 2 === 0) {
-    // Empresa PAR → CENIT-00125C
-    $po_code = "{$prefijo}-" . str_pad($num, 3, '0', STR_PAD_LEFT) . $anio . "C";
-} else {
-    // Empresa IMPAR → C001ORBY (C al inicio + num + 5 primeras letras del identificador)
-    $po_code = "C" . str_pad($num, 3, '0', STR_PAD_LEFT) . $identificador;
-}
-
-// Normalizar caracteres
-$po_code = preg_replace('/[^A-Z0-9\-]/', '', strtoupper($po_code));
-
-// ==============================
-// INSERTAR NUEVA COTIZACIÓN
-// ==============================
-// 🔹 Si es una actualización, limpiar los ítems anteriores
-if ($id > 0) {
-    $this->conn->query("DELETE FROM po_items WHERE po_id = {$id}");
-}
-
-if ($id > 0) {
-    // 🔄 ACTUALIZAR EXISTENTE
-    $sql = "UPDATE purchase_order_list 
-            SET {$data}, date_updated = NOW()
-            WHERE id = {$id}";
-    if (!$this->conn->query($sql)) {
-        $this->conn->rollback();
-        $this->conn->query("UNLOCK TABLES");
-        return json_encode([
-            'status' => 'failed',
-            'error' => "Error al actualizar la cotización: " . $this->conn->error
-        ]);
-    }
-} else {
-    // 🆕 INSERTAR NUEVA
-    $sql = "INSERT INTO purchase_order_list 
-            SET {$data}, po_code='{$po_code}', date_created=NOW()";
-    if (!$this->conn->query($sql)) {
-        $this->conn->rollback();
-        $this->conn->query("UNLOCK TABLES");
-        return json_encode([
-            'status' => 'failed',
-            'error' => "Error al crear la cotización: " . $this->conn->error
-        ]);
-    }
-    $id = $this->conn->insert_id;
-}
-
-// ==============================
-// CONFIRMAR Y DESBLOQUEAR
-// ==============================
-$this->conn->commit();
-$this->conn->query("UNLOCK TABLES");
-
-			
-			// Detalle
-			$stmt = $this->conn->prepare("
-				INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
-				VALUES (?, ?, ?, ?, ?, ?)
-			");
-			if (!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
-	
-			foreach ($item_id as $k => $iid) {
-				$iid       = intval($iid);
-				$cantidad  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
-				$unidad    = isset($units[$k])  ? trim($units[$k])      : '';
-				$precio    = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
-				$desc_line = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
-	
-				$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $desc_line);
-				$stmt->execute();
-			}
-			$stmt->close();
-	
-			$this->conn->commit();
-			return json_encode([
-				'status' => 'success',
-				'id'     => $id,
-				'msg'    => ($id > 0 ? 'Cotización actualizada correctamente.' : 'Cotización guardada correctamente.')
-			]);
-		} catch (Exception $e) {
-			$this->conn->rollback();
-			return json_encode(['status' => 'failed', 'msg' => 'Error al guardar: ' . $e->getMessage()]);
-		}
+	// ===========================
+	// 🔹 DETERMINAR ESTADO
+	// ===========================
+	$status_actual = 0;
+	if ($id > 0) {
+		$res = $this->conn->query("SELECT status FROM purchase_order_list WHERE id = {$id}");
+		if ($res && $res->num_rows > 0) $status_actual = intval($res->fetch_assoc()['status']);
 	}
-	
+	$status_final = isset($_POST['status']) && $_POST['status'] !== '' ? intval($_POST['status']) : $status_actual;
+	if (!in_array($status_final, [0,1,2,3])) $status_final = 0;
+
+	// ===========================
+	// 🧮 CALCULAR SUBTOTAL, DESCUENTO Y TOTAL
+	// ===========================
+	$subtotal = 0.0;
+	foreach ($item_id as $k => $iid) {
+		$q  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
+		$p  = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
+		$dl = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
+		$subtotal += ($p - ($p * $dl / 100.0)) * $q;
+	}
+
+	$discount_perc = floatval($_POST['discount_perc'] ?? 0);
+	$tax_perc      = floatval($_POST['tax_perc'] ?? 0);
+
+	$discount_calc = round($subtotal * $discount_perc / 100.0, 2);
+	$base = max(0, $subtotal - $discount_calc);
+	$tax_calc = round($base * $tax_perc / 100.0, 2);
+	$amount_calc = round($base + $tax_calc, 2);
+
+	// ===========================
+	// 🧩 NORMALIZAR FECHA_ENTREGA
+	// ===========================
+	$fecha_entrega_val = null;
+	if (!empty($_POST['fecha_entrega'])) {
+		$raw = trim($_POST['fecha_entrega']);
+		$dt = DateTime::createFromFormat('Y-m-d', $raw) ?: DateTime::createFromFormat('d/m/Y', $raw);
+		if ($dt) $fecha_entrega_val = $dt->format('Y-m-d');
+	}
+
+	// ===========================
+	// 🧩 CAMPOS PRINCIPALES
+	// ===========================
+	$fields = [
+		'id_company'             => $id_company,
+		'customer_id'            => $customer_id,
+		'supplier_id'            => isset($_POST['supplier_id']) && $_POST['supplier_id'] !== '' ? intval($_POST['supplier_id']) : 'NULL',
+		'date_exp'               => $_POST['date_exp'] ?? date('Y-m-d'),
+		'fecha_entrega'          => $fecha_entrega_val,
+		'rq'                     => trim($_POST['rq'] ?? ''),
+		'metodo_pago'            => trim($_POST['metodo_pago'] ?? ''),
+		'date_pago'              => !empty($_POST['date_pago']) ? $_POST['date_pago'] : null,
+		'pago_efectivo'          => !empty($_POST['pago_efectivo']) ? $_POST['pago_efectivo'] : null,
+		'oc'                     => trim($_POST['oc'] ?? ''),
+		'num_factura'            => trim($_POST['num_factura'] ?? ''),
+		'date_carga_portal'      => !empty($_POST['date_carga_portal']) ? $_POST['date_carga_portal'] : null,
+		'folio_fiscal'           => trim($_POST['folio_fiscal'] ?? ''),
+		'folio_comprobante_pago' => trim($_POST['folio_comprobante_pago'] ?? ''),
+		'num_cheque'             => trim($_POST['num_cheque'] ?? ''),
+		'discount_perc'          => $discount_perc,
+		'discount'               => $discount_calc,
+		'tax_perc'               => $tax_perc,
+		'tax'                    => $tax_calc,
+		'amount'                 => $amount_calc,
+		'remarks'                => trim($_POST['remarks'] ?? ''),
+		'status'                 => $status_final
+	];
+
+	// ===========================
+	// ⚙️ CONVERSIÓN A SQL
+	// ===========================
+	$data = "";
+	foreach ($fields as $k => $v) {
+		if ($v === null || $v === 'NULL') $data .= " `{$k}`=NULL, ";
+		else $data .= " `{$k}`='" . $this->conn->real_escape_string($v) . "', ";
+	}
+	$data = rtrim($data, ', ');
+
+	// ===========================
+	// 💾 TRANSACCIÓN
+	// ===========================
+	$this->conn->begin_transaction();
+	try {
+		// ==============================
+		// DATOS DE EMPRESA Y PREFIJO
+		// ==============================
+		$empresa = $this->conn->query("SELECT name, identificador FROM company_list WHERE id = {$id_company}")->fetch_assoc();
+		$prefijo = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['name'], 0, 5))) : 'COT';
+		$identificador = $empresa ? strtoupper(preg_replace('/\s+/', '', substr($empresa['identificador'], 0, 5))) : 'EMP';
+
+		$this->conn->query("LOCK TABLES purchase_order_list WRITE");
+
+		$res = $this->conn->query("SELECT COUNT(*) as total FROM purchase_order_list WHERE id_company = {$id_company}");
+		$num = $res ? ($res->fetch_assoc()['total'] + 1) : 1;
+
+		$anio = date("y");
+		if ($id_company % 2 === 0) {
+			$po_code = "{$prefijo}-" . str_pad($num, 3, '0', STR_PAD_LEFT) . $anio . "C";
+		} else {
+			$po_code = "C" . str_pad($num, 3, '0', STR_PAD_LEFT) . $identificador;
+		}
+		$po_code = preg_replace('/[^A-Z0-9\-]/', '', strtoupper($po_code));
+
+		if ($id > 0) {
+			$this->conn->query("DELETE FROM po_items WHERE po_id = {$id}");
+			$sql = "UPDATE purchase_order_list SET {$data}, date_updated = NOW() WHERE id = {$id}";
+			if (!$this->conn->query($sql)) throw new Exception("Error al actualizar: " . $this->conn->error);
+		} else {
+			$sql = "INSERT INTO purchase_order_list SET {$data}, po_code='{$po_code}', date_created=NOW()";
+			if (!$this->conn->query($sql)) throw new Exception("Error al crear: " . $this->conn->error);
+			$id = $this->conn->insert_id;
+		}
+
+		$this->conn->commit();
+		$this->conn->query("UNLOCK TABLES");
+
+		// ==============================
+		// GUARDAR PRODUCTOS
+		// ==============================
+		$stmt = $this->conn->prepare("
+			INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
+			VALUES (?, ?, ?, ?, ?, ?)
+		");
+		if (!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
+
+		foreach ($item_id as $k => $iid) {
+			$iid       = intval($iid);
+			$cantidad  = isset($qtys[$k])   ? floatval($qtys[$k])   : 0.0;
+			$unidad    = isset($units[$k])  ? trim($units[$k])      : '';
+			$precio    = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
+			$desc_line = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
+			$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $desc_line);
+			$stmt->execute();
+		}
+		$stmt->close();
+
+		$this->conn->commit();
+		return json_encode([
+			'status' => 'success',
+			'id'     => $id,
+			'msg'    => ($id > 0 ? 'Cotización actualizada correctamente.' : 'Cotización guardada correctamente.')
+		]);
+	} catch (Exception $e) {
+		$this->conn->rollback();
+		return json_encode(['status' => 'failed', 'msg' => 'Error al guardar: ' . $e->getMessage()]);
+	}
+}
+
 		
 	public function delete_po() {
 		// Validar ID recibido
@@ -964,6 +916,69 @@ function delete_sale()
 			return json_encode(['status'=>'failed','msg'=>$e->getMessage()]);
 		}
 	}
+
+/* =======================================================
+ *   BUSCADOR DE CLIENTES ACTIVOS
+ * ======================================================= */
+function search_customers(){
+    $q = trim($_GET['q'] ?? '');
+    if(strlen($q) < 2){
+        return json_encode([]); // mínimo 2 caracteres
+    }
+
+    // ===============================
+    // BUSCAR CLIENTES ACTIVOS POR NOMBRE, EMAIL, CONTACTO O DIRECCIÓN
+    // ===============================
+    $sql = "
+        SELECT 
+            c.id,
+            c.name,
+            c.email,
+            c.contact,
+            c.address,
+			c.rfc
+        FROM customer_list c
+        WHERE c.status = 1
+          AND (
+                c.name LIKE CONCAT('%', ?, '%') 
+			 OR c.email LIKE CONCAT('%', ?, '%')
+             OR c.contact LIKE CONCAT('%', ?, '%')
+             OR c.address LIKE CONCAT('%', ?, '%')
+			 OR c.rfc LIKE CONCAT('%', ?, '%')
+          )
+        ORDER BY c.name ASC
+        LIMIT 50
+    ";
+
+    $stmt = $this->conn->prepare($sql);
+    if(!$stmt){
+        return json_encode(['status'=>'failed','msg'=>$this->conn->error]);
+    }
+
+    // Se pasan cuatro parámetros porque hay cuatro condiciones LIKE
+    $stmt->bind_param('sssss', $q, $q, $q, $q, $q);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    $data = [];
+    while($row = $res->fetch_assoc()){
+        $data[] = [
+            'id' => (int)$row['id'],
+            'name' => $row['name'] ?: '',
+			'email' => $row['email'] ?: '',
+            'contact' => $row['contact'] ?: '',
+            'address' => $row['address'] ?: '',
+			'rfc' => $row['rfc'] ?: ''
+        ];
+    }
+
+    $stmt->close();
+    header('Content-Type: application/json; charset=utf-8');
+    return json_encode($data);
+}
+
+
+	
 	
 }
 
@@ -994,6 +1009,7 @@ try {
     case 'search_products': $out = $Master->search_products(); break;
 	case 'save_customer':	$out = $Master->save_customer(); break;
 	case 'delete_customer':	$out = $Master->delete_customer(); break;
+	case 'search_customers': $out = $Master->search_customers(); break;
     default:                $out = json_encode(['status'=>'failed','msg'=>'Acción no válida']);
   }
 } catch (Throwable $e) {

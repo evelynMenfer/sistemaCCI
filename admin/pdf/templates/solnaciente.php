@@ -12,7 +12,10 @@ $amount    = floatval($data['amount'] ?? 0);
 $discount  = floatval($data['discount'] ?? 0);
 $discount_perc = floatval($data['discount_perc'] ?? 0);
 $remarks   = trim($data['remarks'] ?? '');
-$cliente   = trim($data['cliente_cotizacion'] ?? '—');
+$cliente   = trim($data['cliente_nombre'] ?? '—');
+$rfc       = trim($data['cliente_rfc'] ?? '—');
+$direccion = trim($data['cliente_address'] ?? '—');
+
 
 // 🔹 Calcular subtotal si no viene
 if ($subtotal <= 0 && !empty($items)) {
@@ -100,8 +103,8 @@ tr:nth-child(even) {
     </td>
     <td class="client-values" style="width:70%; vertical-align:top;">
       <?= htmlspecialchars($cliente) ?><br>
-      <br> <!-- Dirección vacía -->
-      <br> <!-- RFC vacío -->
+      <?= htmlspecialchars($direccion) ?><br>
+      <?= htmlspecialchars($rfc) ?><br> 
     </td>
   </tr>
   <tr>

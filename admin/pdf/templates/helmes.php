@@ -63,7 +63,7 @@ if ($amount <= 0) {
   </tr>
   <tr>
     <td colspan="2">
-      <strong>ATENCIÓN:</strong> <?= htmlspecialchars($data['cliente_cotizacion'] ?? '—') ?><br>
+      <strong>ATENCIÓN:</strong> <?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?><br>
       <strong>E-MAIL:</strong> <?= htmlspecialchars($cliente_email ?: '—') ?>
     </td>
   </tr>
