@@ -85,14 +85,15 @@ tr:nth-child(even) {
 <table class="company-header">
   <tr>
     <td colspan="2" class="company-title">
-      OPERADORA COMERCIAL EL GRAN SURTIDOR DEL SOL NACIENTE S.A. DE C.V.
+      <?= htmlspecialchars($data['name_empresa'] ?? '') ?>
     </td>
   </tr>
   <tr>
     <td colspan="2" class="company-sub">
-      Dirección: Sabinos #900 C, Reforma, Oaxaca de Juárez.<br>
-      RFC: OCG171215C97<br>
-      Operadora de Infraestructura de Oaxaca
+    <strong>Dirección:</strong> <?= htmlspecialchars($data['address'] ?? '') ?><br>
+    <strong>RFC:</strong> <?= htmlspecialchars($data['rfc'] ?? '') ?>
+    <strong>Contacto:</strong> <?= htmlspecialchars($data['contact'] ?? '') ?>
+    <strong>Email:</strong> <?= htmlspecialchars($data['email'] ?? '') ?>
     </td>
   </tr>
   <tr>
@@ -191,8 +192,12 @@ tr:nth-child(even) {
   <?php if (!empty($remarks)): ?>
     <p><strong>NOTA:</strong><br><?= nl2br(htmlspecialchars($remarks)) ?></p>
   <?php endif; ?>
-  <p><strong>HORARIO DE ATENCIÓN A CLIENTES:</strong> Lunes a Viernes de 09:00 a 18:00</p>
-  <p><strong>OAXACA DE JUÁREZ, OAXACA</strong></p>
+  <?php if (!empty($data['nota']) || !empty($nota)): ?>
+  <div class="note" style="margin-top:10px; padding:8px; border-top:1px solid #aaa; font-size:11.5px;">
+    <?= nl2br(htmlspecialchars($data['nota'] ?? $nota)) ?>
+  </div>
+  <?php endif; ?>
+
 </div>
 
 </body>

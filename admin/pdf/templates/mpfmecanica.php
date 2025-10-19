@@ -123,9 +123,8 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
 <hr>
 
 <section>
-  <h3>Cliente</h3>
   <p>
-    <strong><?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?></strong><br>
+    <strong>Cliente:</strong> <?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?><br>
     <?= htmlspecialchars($data['cliente_email'] ?? '') ?>
   </p>
 </section>

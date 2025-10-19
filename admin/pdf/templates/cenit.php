@@ -55,6 +55,7 @@ $supplier_name = $data['supplier']           ?? '—';
 $fecha_exp     = !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—';
 $metodo_pago   = $data['metodo_pago']        ?? '—';
 $remarks       = $data['remarks']            ?? '';
+
 ?>
 <html>
 <head>
@@ -182,7 +183,7 @@ $remarks       = $data['remarks']            ?? '';
 <!-- ========================================================= -->
 <div class="footer">
   <p><strong>Observaciones:</strong> <?= nl2br($e($remarks)) ?></p>
-  <p class="thanks">Gracias por su preferencia. — <?= $e($data['name_empresa'] ?? '') ?></p>
+  <p class="thanks"><?= $e($data['nota'] ?? '') ?></p>
 </div>
 
 </body>

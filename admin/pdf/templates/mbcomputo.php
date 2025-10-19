@@ -41,7 +41,7 @@ if ($amount <= 0) {
 <!-- 🔹 ENCABEZADO -->
 <!-- ======================================= -->
 <div class="header">
-  <h1 class="company-name">MB CÓMPUTO</h1>
+  <h1><?= htmlspecialchars($data['name_empresa'] ?? '') ?></h1>
   <h2 class="company-sub">Soluciones Tecnológicas y Soporte Profesional</h2>
 </div>
 
@@ -51,7 +51,7 @@ if ($amount <= 0) {
 <table class="header-info">
   <tr>
     <td class="spacer"></td>
-    <td class="labels"><strong>FECHA</strong> &nbsp;&nbsp; <strong>FOLIO</strong></td>
+    <td class="labels"><strong>FECHA</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>FOLIO</strong></td>
   </tr>
   <tr>
     <td></td>
@@ -63,7 +63,7 @@ if ($amount <= 0) {
   </tr>
   <tr>
     <td></td>
-    <td class="delivery">Tiempo de entrega: 1 semana</td>
+    <td class="delivery">Fecha de entrega: <?= !empty($data['fecha_entrega'])? date("d/m/Y", strtotime($data['fecha_entrega'])): '—' ?></td>
   </tr>
 </table>
 
@@ -143,21 +143,21 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <div class="footer">
   <p class="bank-info">
-    <strong>BANCO:</strong> BBVA &nbsp;&nbsp;
-    <strong>No. DE CUENTA:</strong> 0123456789 &nbsp;&nbsp;
-    <strong>CUENTA CLABE:</strong> 012180001234567891
+  <strong>BANCO:</strong> <?= htmlspecialchars($data['banco'] ?? '') ?> &nbsp;&nbsp;
+  <strong>No. DE CUENTA:</strong> <?= htmlspecialchars($data['ncuenta'] ?? '') ?> &nbsp;&nbsp;
+  <strong>CUENTA CLABE:</strong> <?= htmlspecialchars($data['cuenta_clabe'] ?? '') ?>
   </p>
 
   <p class="contact">
     <strong>ATENCIÓN A CLIENTES</strong><br>
-    soporte@mbcomputo.com.mx &nbsp;|&nbsp; Tel. (951) 000 0000
+    <?= htmlspecialchars($data['email'] ?? '') ?> &nbsp;|&nbsp;  <?= htmlspecialchars($data['contact'] ?? '') ?>
   </p>
 
-  <p class="terms">
-    Todos los precios están sujetos a cambios sin previo aviso.<br>
-    Equipos y servicios garantizados conforme a políticas del fabricante.<br>
-    Vigencia de cotización: 15 días.
-  </p>
+  <?php if (!empty($data['nota']) || !empty($nota)): ?>
+  <div class="note" style="margin-top:10px; padding:8px; border-top:1px solid #aaa; font-size:11.5px;">
+    <?= nl2br(htmlspecialchars($data['nota'] ?? $nota)) ?>
+  </div>
+  <?php endif; ?>
 </div>
 
 </body>

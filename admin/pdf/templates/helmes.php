@@ -47,9 +47,9 @@ if ($amount <= 0) {
     <img src="<?= $logo_path ?>" alt="Logo Helmes" class="logo">
   <?php endif; ?>
   <div class="header-info">
-    <h1>PROVEEDORA COMERCIAL HELMES S.A. DE C.V.</h1>
-    <p>Emilio Carranza 811 Int. 4, Reforma, Oaxaca de Juárez, Oaxaca C.P. 68050</p>
-    <p><strong>Correo:</strong> carolina.ortega@helmes.mx</p>
+    <h1><?= htmlspecialchars($data['name_empresa'] ?? '') ?></h1>
+    <strong>Dirección:</strong> <?= htmlspecialchars($data['address'] ?? '') ?><br>
+    <strong>Correo:</strong> <?= htmlspecialchars($data['email'] ?? '') ?>
   </div>
 </div>
 
@@ -112,15 +112,15 @@ if ($amount <= 0) {
 <table class="totals">
   <tr>
     <td>FORMA DE PAGO:</td>
-    <td class="right">A CONVENIR CON EL CLIENTE</td>
+    <td class="right"><?= htmlspecialchars($data['metodo_pago'] ?? '') ?></td>
   </tr>
   <tr>
     <td>CUENTA DE BANCO:</td>
-    <td class="right">BANAMEX 9889602164</td>
+    <td class="right"><?= htmlspecialchars($data['ncuenta'] ?? '') ?> &nbsp;&nbsp;</td>
   </tr>
   <tr>
     <td>CLABE INTERBANCARIA:</td>
-    <td class="right">002610701764615091</td>
+    <td class="right"><?= htmlspecialchars($data['cuenta_clabe'] ?? '') ?></td>
   </tr>
   <tr>
     <td>SUBTOTAL:</td>
@@ -148,7 +148,12 @@ if ($amount <= 0) {
 <!-- 🔹 PIE DE PÁGINA -->
 <!-- ======================================= -->
 <div class="footer">
-  <p><strong>TIEMPO DE ENTREGA:</strong> SEGÚN DISPONIBILIDAD AL MOMENTO DE FINCAR LA COMPRA</p>
+  <?php if (!empty($data['nota']) || !empty($nota)): ?>
+  <div class="note" style="margin-top:10px; padding:8px; border-top:1px solid #aaa; font-size:11.5px;">
+    <?= nl2br(htmlspecialchars($data['nota'] ?? $nota)) ?>
+  </div>
+  <?php endif; ?> 
+  
   <?php if (!empty($remarks)): ?>
     <p><strong>NOTAS:</strong><br><?= nl2br(htmlspecialchars($remarks)) ?></p>
   <?php endif; ?>
