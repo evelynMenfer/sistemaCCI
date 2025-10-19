@@ -3,7 +3,7 @@
 <div class="row">
     <div class="col-12 col-sm-6 col-md-3">
         <div class="info-box bg-dark shadow">
-            <span class="info-box-icon bg-primary elevation-1"><i class="fas fa-th-list"></i></span>
+            <span class="info-box-icon bg-primary elevation-1"><i class="fa fa-file"></i></span>
 
             <div class="info-box-content">
                 <span class="info-box-text">Cotizaciones</span>
@@ -19,7 +19,7 @@
     </div>
     <div class="col-12 col-sm-6 col-md-3">
         <div class="info-box bg-dark shadow">
-            <span class="info-box-icon bg-info elevation-1"><i class="fas fa-boxes"></i></span>
+            <span class="info-box-icon bg-teal elevation-1"><i class="fas fa-th-list"></i></span>
 
             <div class="info-box-content">
                 <span class="info-box-text">Finalizadas</span>
@@ -114,8 +114,7 @@
     </div>
     <div class="col-12 col-sm-6 col-md-3">
         <div class="info-box bg-dark shadow">
-            <span class="info-box-icon bg-purple elevation-1"><i class="fas fa-th-list"></i></span>
-
+            <span class="info-box-icon bg-purple elevation-1"><i class="fas fa-boxes"></i></span>
             <div class="info-box-content">
                 <span class="info-box-text">Productos</span>
                 <span class="info-box-number text-right">
@@ -148,13 +147,32 @@
     <?php if ($_settings->userdata('type') == 1) : ?>
         <div class="col-12 col-sm-6 col-md-3">
             <div class="info-box bg-dark shadow">
-                <span class="info-box-icon bg-maroon elevation-1"><i class="fas fa-users"></i></span>
+                <span class="info-box-icon bg-olive elevation-1"><i class="fas fa-users"></i></span>
 
                 <div class="info-box-content">
                     <span class="info-box-text">Clientes</span>
                     <span class="info-box-number text-right">
                         <?php
                         echo $conn->query("SELECT * FROM `customer_list` where `status` = 1")->num_rows;
+                        ?>
+                    </span>
+                </div>
+                <!-- /.info-box-content -->
+            </div>
+            <!-- /.info-box -->
+        </div>
+    <?php endif; ?>
+
+    <?php if ($_settings->userdata('type') == 1) : ?>
+        <div class="col-12 col-sm-6 col-md-3">
+            <div class="info-box bg-dark shadow">
+                <span class="info-box-icon bg-maroon elevation-1"><i class="fas fa-user"></i></span>
+
+                <div class="info-box-content">
+                    <span class="info-box-text">Usuarios</span>
+                    <span class="info-box-number text-right">
+                        <?php
+                        echo $conn->query("SELECT * FROM `users` where `id` != 1")->num_rows;
                         ?>
                     </span>
                 </div>
