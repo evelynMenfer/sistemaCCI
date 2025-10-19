@@ -912,6 +912,58 @@ function delete_sale()
 		return json_encode($data);
 	}
 	
+	// --- CLIENTES ---
+	function save_customer(){
+		try {
+			// Validación mínima
+			$id      = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+			$name    = trim($_POST['name'] ?? '');
+			$email   = trim($_POST['email'] ?? '');
+			$contact = trim($_POST['contact'] ?? '');
+			$address = trim($_POST['address'] ?? '');
+	
+			if ($name === '') {
+				return json_encode(['status'=>'failed','msg'=>'El nombre es obligatorio']);
+			}
+	
+			// INSERT o UPDATE con prepared statements
+			if ($id > 0) {
+				$stmt = $this->conn->prepare("UPDATE `customer_list` 
+					SET `name`=?, `email`=?, `contact`=?, `address`=? 
+					WHERE `id`=?");
+				$stmt->bind_param("ssssi", $name, $email, $contact, $address, $id);
+			} else {
+				$stmt = $this->conn->prepare("INSERT INTO `customer_list` (`name`,`email`,`contact`,`address`) 
+					VALUES (?,?,?,?)");
+				$stmt->bind_param("ssss", $name, $email, $contact, $address);
+			}
+	
+			if (!$stmt->execute()) {
+				return json_encode(['status'=>'failed','msg'=>'Error al guardar el cliente']);
+			}
+	
+			return json_encode(['status'=>'success']);
+		} catch (Throwable $e) {
+			return json_encode(['status'=>'failed','msg'=>$e->getMessage()]);
+		}
+	}
+	
+	function delete_customer(){
+		try {
+			$id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+			if ($id <= 0) {
+				return json_encode(['status'=>'failed','msg'=>'ID inválido']);
+			}
+			$stmt = $this->conn->prepare("DELETE FROM `customer_list` WHERE `id`=?");
+			$stmt->bind_param("i", $id);
+			if (!$stmt->execute()) {
+				return json_encode(['status'=>'failed','msg'=>'No se pudo eliminar']);
+			}
+			return json_encode(['status'=>'success']);
+		} catch (Throwable $e) {
+			return json_encode(['status'=>'failed','msg'=>$e->getMessage()]);
+		}
+	}
 	
 }
 
@@ -940,6 +992,8 @@ try {
     case 'save_sale':       $out = $Master->save_sale(); break;
     case 'delete_sale':     $out = $Master->delete_sale(); break;
     case 'search_products': $out = $Master->search_products(); break;
+	case 'save_customer':	$out = $Master->save_customer(); break;
+	case 'delete_customer':	$out = $Master->delete_customer(); break;
     default:                $out = json_encode(['status'=>'failed','msg'=>'Acción no válida']);
   }
 } catch (Throwable $e) {

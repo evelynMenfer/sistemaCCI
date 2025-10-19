@@ -70,6 +70,22 @@
                                  ============================== -->
                             <?php if ($_settings->userdata('type') == 1) : ?>
                             <li class="nav-header text-uppercase text-light">Mantenimiento</li>
+                            
+                            <li class="nav-item dropdown">
+                                <a href="<?php echo base_url ?>admin/?page=maintenance/company"
+                                    class="nav-link nav-maintenance_company">
+                                    <i class="nav-icon fa fa-building"></i>
+                                    <p>Empresas</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a href="<?php echo base_url ?>admin/?page=maintenance/customer"
+                                    class="nav-link nav-maintenance_customer">
+                                    <i class="nav-icon fa fa-users"></i>
+                                    <p>Clientes</p>
+                                </a>
+                            </li>
 
                             <li class="nav-item dropdown">
                                 <a href="<?php echo base_url ?>admin/?page=maintenance/item"
@@ -86,18 +102,10 @@
                                     <p>Proveedores</p>
                                 </a>
                             </li>
-
-                            <li class="nav-item dropdown">
-                                <a href="<?php echo base_url ?>admin/?page=maintenance/company"
-                                    class="nav-link nav-maintenance_company">
-                                    <i class="nav-icon fa fa-building"></i>
-                                    <p>Empresas</p>
-                                </a>
-                            </li>
                             
                             <li class="nav-item dropdown">
                                 <a href="<?php echo base_url ?>admin/?page=user/list" class="nav-link nav-user_list">
-                                    <i class="nav-icon fas fa-users"></i>
+                                    <i class="nav-icon fas fa-user"></i>
                                     <p>Usuarios</p>
                                 </a>
                             </li>
