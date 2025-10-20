@@ -879,9 +879,7 @@ function delete_sale()
 			if ($name === '') {
 				return json_encode(['status'=>'failed','msg'=>'El nombre es obligatorio']);
 			}
-			if ($rfc === '') {
-				return json_encode(['status'=>'failed','msg'=>'El RFC es obligatorio']);
-			}
+			
 	
 			// === INSERT o UPDATE ===
 			if ($id > 0) {
