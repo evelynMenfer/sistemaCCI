@@ -283,8 +283,8 @@ public function save_po() {
 	// ===========================
 	// 🔍 VALIDACIONES BÁSICAS
 	// ===========================
-	$id         = isset($_POST['id']) ? intval($_POST['id']) : 0;
-	$id_company = isset($_POST['id_company']) ? intval($_POST['id_company']) : 0;
+	$id          = isset($_POST['id']) ? intval($_POST['id']) : 0;
+	$id_company  = isset($_POST['id_company']) ? intval($_POST['id_company']) : 0;
 	$customer_id = isset($_POST['customer_id']) ? intval($_POST['customer_id']) : 0;
 
 	if ($id_company <= 0)
@@ -292,11 +292,14 @@ public function save_po() {
 	if ($customer_id <= 0)
 		return json_encode(['status' => 'failed', 'msg' => 'Debe seleccionar un cliente.']);
 
-	$item_id = $_POST['item_id'] ?? [];
-	$qtys    = $_POST['qty'] ?? [];
-	$units   = $_POST['unit'] ?? [];
-	$prices  = $_POST['price'] ?? [];
-	$dlines  = $_POST['discount'] ?? [];
+	$item_id  = $_POST['item_id'] ?? [];
+	$qtys     = $_POST['qty'] ?? [];
+	$units    = $_POST['unit'] ?? [];
+	$prices   = $_POST['price'] ?? [];
+	$dlines   = $_POST['discount'] ?? [];
+	$marcas   = $_POST['marca'] ?? [];
+	$modelos  = $_POST['modelo'] ?? [];
+	$tallas   = $_POST['talla'] ?? [];
 
 	if (!is_array($item_id) || count($item_id) === 0)
 		return json_encode(['status' => 'failed', 'msg' => 'Debe agregar al menos un producto.']);
@@ -418,11 +421,11 @@ public function save_po() {
 		$this->conn->query("UNLOCK TABLES");
 
 		// ==============================
-		// GUARDAR PRODUCTOS
+		// GUARDAR PRODUCTOS (con marca, modelo, talla)
 		// ==============================
 		$stmt = $this->conn->prepare("
-			INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount)
-			VALUES (?, ?, ?, ?, ?, ?)
+			INSERT INTO po_items (po_id, item_id, quantity, unit, price, discount, marca, modelo, talla)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		");
 		if (!$stmt) throw new Exception("Error al preparar statement: " . $this->conn->error);
 
@@ -432,7 +435,11 @@ public function save_po() {
 			$unidad    = isset($units[$k])  ? trim($units[$k])      : '';
 			$precio    = isset($prices[$k]) ? floatval($prices[$k]) : 0.0;
 			$desc_line = isset($dlines[$k]) ? floatval($dlines[$k]) : 0.0;
-			$stmt->bind_param('iidsdd', $id, $iid, $cantidad, $unidad, $precio, $desc_line);
+			$marca     = isset($marcas[$k]) ? trim($marcas[$k])     : '';
+			$modelo    = isset($modelos[$k]) ? trim($modelos[$k])   : '';
+			$talla     = isset($tallas[$k]) ? trim($tallas[$k])     : '';
+
+			$stmt->bind_param('iidsddsss', $id, $iid, $cantidad, $unidad, $precio, $desc_line, $marca, $modelo, $talla);
 			$stmt->execute();
 		}
 		$stmt->close();
@@ -448,6 +455,7 @@ public function save_po() {
 		return json_encode(['status' => 'failed', 'msg' => 'Error al guardar: ' . $e->getMessage()]);
 	}
 }
+
 
 		
 	public function delete_po() {
@@ -808,61 +816,72 @@ function delete_sale()
 	$this->conn->query("DELETE FROM sales_list WHERE id={$id}");
 	return json_encode(['status'=>'success','msg'=>'Venta eliminada correctamente']);
 }
-    // --- BUSCAR PRODUCTOS ---
-	function search_products(){
-		$q = trim($_GET['q'] ?? '');
-		if(strlen($q) < 2){
-			return json_encode([]); // mínimo 2 caracteres
-		}
-	
-		// ===============================
-		// BUSCAR PRODUCTOS ACTIVOS POR SKU (name) O DESCRIPCIÓN
-		// ===============================
-		$sql = "
-			SELECT 
-				i.id,
-				i.name AS name,              -- SKU
-				i.description AS description, -- Descripción
-				i.date_purchase,             -- Fecha de compra
-				i.stock,
-				i.product_cost AS precio_compra,
-				i.cost AS precio_venta
-			FROM item_list i
-			WHERE i.status = 1
-			  AND (
-					i.name LIKE CONCAT('%', ?, '%') 
-				 OR i.description LIKE CONCAT('%', ?, '%')
-			  )
-			ORDER BY i.description ASC
-			LIMIT 50
-		";
-	
-		$stmt = $this->conn->prepare($sql);
-		if(!$stmt){
-			return json_encode(['status'=>'failed','msg'=>$this->conn->error]);
-		}
-	
-		$stmt->bind_param('ss', $q, $q);
-		$stmt->execute();
-		$res = $stmt->get_result();
-	
-		$data = [];
-		while($row = $res->fetch_assoc()){
-			$data[] = [
-				'id' => (int)$row['id'],
-				'sku' => $row['name'] ?: '—',                       // SKU
-				'descripcion' => $row['description'] ?: '',         // Descripción
-				'fecha_compra' => $row['date_purchase'] ?: '—',     // Fecha de compra
-				'stock' => (float)$row['stock'],
-				'precio_compra' => (float)$row['precio_compra'],
-				'precio_venta' => (float)$row['precio_venta']
-			];
-		}
-	
-		$stmt->close();
-		header('Content-Type: application/json; charset=utf-8');
-		return json_encode($data);
-	}
+	// --- BUSCAR PRODUCTOS ---
+function search_products(){
+    $q = trim($_GET['q'] ?? '');
+    if(strlen($q) < 2){
+        return json_encode([]); // mínimo 2 caracteres
+    }
+
+    // ===============================
+    // BUSCAR PRODUCTOS ACTIVOS POR SKU, DESCRIPCIÓN, MARCA, MODELO O TALLA
+    // ===============================
+    $sql = "
+        SELECT 
+            i.id,
+            i.name AS sku,
+            i.description AS descripcion,
+            i.marca,
+            i.modelo,
+            i.talla,
+            i.date_purchase AS fecha_compra,
+            i.stock,
+            i.product_cost AS precio_compra,
+            i.cost AS precio_venta
+        FROM item_list i
+        WHERE i.status = 1
+          AND (
+                i.name LIKE CONCAT('%', ?, '%') 
+             OR i.description LIKE CONCAT('%', ?, '%')
+             OR i.marca LIKE CONCAT('%', ?, '%')
+             OR i.modelo LIKE CONCAT('%', ?, '%')
+             OR i.talla LIKE CONCAT('%', ?, '%')
+          )
+        ORDER BY i.description ASC
+        LIMIT 50
+    ";
+
+    $stmt = $this->conn->prepare($sql);
+    if(!$stmt){
+        return json_encode(['status'=>'failed','msg'=>$this->conn->error]);
+    }
+
+    // ✅ Se deben pasar 5 parámetros porque hay 5 placeholders
+    $stmt->bind_param('sssss', $q, $q, $q, $q, $q);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    $data = [];
+    while($row = $res->fetch_assoc()){
+        $data[] = [
+            'id'             => (int)$row['id'],
+            'sku'            => $row['sku'] ?? '—',
+            'descripcion'    => $row['descripcion'] ?? '',
+            'marca'          => $row['marca'] ?? '',
+            'modelo'         => $row['modelo'] ?? '',
+            'talla'          => $row['talla'] ?? '',
+            'fecha_compra'   => $row['fecha_compra'] ?? '—',
+            'stock'          => (float)$row['stock'],
+            'precio_compra'  => (float)$row['precio_compra'],
+            'precio_venta'   => (float)$row['precio_venta']
+        ];
+    }
+
+    $stmt->close();
+    header('Content-Type: application/json; charset=utf-8');
+    return json_encode($data);
+}
+
 	
 	// --- CLIENTES ---
 	function save_customer(){

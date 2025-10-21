@@ -80,6 +80,7 @@ $remarks       = $data['remarks']            ?? '';
   </tr>
 </table>
 <br>
+
 <!-- ========================================================= -->
 <!-- 🔹 INFORMACIÓN EMPRESA -->
 <!-- ========================================================= -->
@@ -107,6 +108,7 @@ $remarks       = $data['remarks']            ?? '';
 
 <hr class="line">
 <br>
+
 <!-- ========================================================= -->
 <!-- 🔹 DATOS GENERALES -->
 <!-- ========================================================= -->
@@ -118,7 +120,7 @@ $remarks       = $data['remarks']            ?? '';
 </div>
 
 <!-- ========================================================= -->
-<!-- 🔹 TABLA PRINCIPAL -->
+<!-- 🔹 TABLA PRINCIPAL (AHORA CON MARCA, MODELO Y TALLA) -->
 <!-- ========================================================= -->
 <table class="productos">
   <thead>
@@ -126,6 +128,9 @@ $remarks       = $data['remarks']            ?? '';
       <th>Cant.</th>
       <th>Unidad</th>
       <th>Descripción</th>
+      <th>Marca</th>
+      <th>Modelo</th>
+      <th>Talla</th>
       <th>Precio Unit.</th>
       <th>Desc %</th>
       <th>Total</th>
@@ -136,6 +141,9 @@ $remarks       = $data['remarks']            ?? '';
       $qty   = isset($it['quantity']) ? floatval($it['quantity']) : 0.0;
       $unit  = $it['unit']        ?? '';
       $descL = $it['description'] ?? '';
+      $marca  = $it['marca']  ?? '';
+      $modelo = $it['modelo'] ?? '';
+      $talla  = $it['talla']  ?? '';
       $price = isset($it['price']) ? floatval($it['price']) : 0.0;
       $dLine = isset($it['discount']) ? floatval($it['discount']) : 0.0;
       $line_total = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $dLine / 100)) * $qty);
@@ -144,6 +152,9 @@ $remarks       = $data['remarks']            ?? '';
       <td class="num"><?= $fmt($qty) ?></td>
       <td class="center"><?= $e($unit) ?></td>
       <td class="desc"><?= nl2br($e($descL)) ?></td>
+      <td class="center"><?= $e($marca) ?></td>
+      <td class="center"><?= $e($modelo) ?></td>
+      <td class="center"><?= $e($talla) ?></td>
       <td class="num">$<?= $fmt($price) ?></td>
       <td class="num"><?= $fmt($dLine) ?>%</td>
       <td class="num">$<?= $fmt($line_total) ?></td>

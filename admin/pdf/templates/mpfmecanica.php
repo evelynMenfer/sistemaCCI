@@ -1,7 +1,7 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – MPF MECÁNICA
-// Estructura original conservada — totales normalizados correctamente
+// Estructura original conservada + columnas Marca / Modelo / Talla
 // ==================================================
 
 // Entradas y fallbacks sin alterar la vista
@@ -10,7 +10,7 @@ $items     = (isset($items) && is_array($items)) ? $items : [];
 $logo_path = $logo_path ?? '';
 $style     = $style     ?? '';
 
-// Helpers para distinguir “0” de “no vino”
+// Helpers
 $hasKey = function(array $a, $k){ return array_key_exists($k, $a); };
 $toNum  = function($v, $fallback = null){
   if ($v === 0 || $v === '0' || $v === '0.0' || $v === '0.00') return 0.0;
@@ -18,7 +18,7 @@ $toNum  = function($v, $fallback = null){
   return (float)$v;
 };
 
-// ===== Subtotal (usa line_total si existe; si no, precio con desc. de línea) =====
+// ===== Subtotal =====
 if (!isset($subtotal)) {
   $subtotal = $toNum($data['subtotal'] ?? null, null);
 }
@@ -30,7 +30,7 @@ if ($subtotal === null) {
     } else {
       $q  = (float)($it['quantity'] ?? 0);
       $p  = (float)($it['price'] ?? 0);
-      $dl = (float)($it['discount'] ?? 0); // % por línea
+      $dl = (float)($it['discount'] ?? 0);
       $st += ($p - $p*$dl/100) * $q;
     }
   }
@@ -39,9 +39,7 @@ if ($subtotal === null) {
   $subtotal = (float)$subtotal;
 }
 
-// ===== Descuento GLOBAL (monto) =====
-// Si BD trae la clave 'discount', se respeta SIEMPRE (aunque sea 0.00).
-// Solo si NO está la clave, se calcula desde discount_perc.
+// ===== Descuento global =====
 if (!isset($discount_perc)) {
   $discount_perc = $toNum($data['discount_perc'] ?? null, 0.0);
 } else {
@@ -49,18 +47,15 @@ if (!isset($discount_perc)) {
 }
 
 if ($hasKey($data, 'discount')) {
-  // Vino desde BD
   $discount = $toNum($data['discount'], 0.0);
 } elseif (isset($discount)) {
-  // Vino desde el contexto externo
   $discount = $toNum($discount, 0.0);
 } else {
-  // No hay monto: calcular desde %
   $discount = $discount_perc > 0 ? round($subtotal * ($discount_perc/100), 2) : 0.0;
 }
-$discount = max($discount, 0.0); // seguridad
+$discount = max($discount, 0.0);
 
-// ===== IVA (monto) =====
+// ===== IVA =====
 if (!isset($tax_perc)) {
   $tax_perc = $toNum($data['tax_perc'] ?? null, 16.0);
 } else {
@@ -89,7 +84,6 @@ if ($amount === null) {
   $amount = round($base + $tax, 2);
 }
 
-// Otros textos
 $remarks = $remarks ?? ($data['remarks'] ?? '');
 ?>
 <!DOCTYPE html>
@@ -129,12 +123,17 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
   </p>
 </section>
 
-<!-- TABLA DE PRODUCTOS (vista intacta) -->
+<!-- ======================================================= -->
+<!-- 🔹 TABLA DE PRODUCTOS (ahora con Marca, Modelo, Talla) -->
+<!-- ======================================================= -->
 <table class="items">
   <thead>
     <tr>
       <th>Cantidad</th>
       <th>Unidad</th>
+      <th>Marca</th>
+      <th>Modelo</th>
+      <th>Talla</th>
       <th>Descripción</th>
       <th>Precio</th>
       <th>Desc %</th>
@@ -143,14 +142,20 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
   </thead>
   <tbody>
   <?php foreach($items as $it):
-    $q  = (float)($it['quantity'] ?? 0);
-    $p  = (float)($it['price'] ?? 0);
-    $d  = (float)($it['discount'] ?? 0);
-    $lt = $hasKey($it,'line_total') ? (float)$it['line_total'] : (($p - ($p * $d / 100)) * $q);
+    $q   = (float)($it['quantity'] ?? 0);
+    $p   = (float)($it['price'] ?? 0);
+    $d   = (float)($it['discount'] ?? 0);
+    $lt  = $hasKey($it,'line_total') ? (float)$it['line_total'] : (($p - ($p * $d / 100)) * $q);
+    $marca  = htmlspecialchars($it['marca'] ?? '');
+    $modelo = htmlspecialchars($it['modelo'] ?? '');
+    $talla  = htmlspecialchars($it['talla'] ?? '');
   ?>
     <tr>
       <td class="center"><?= number_format($q, 2) ?></td>
       <td class="center"><?= htmlspecialchars($it['unit'] ?? '') ?></td>
+      <td class="center"><?= $marca ?></td>
+      <td class="center"><?= $modelo ?></td>
+      <td class="center"><?= $talla ?></td>
       <td><?= htmlspecialchars($it['description'] ?? '') ?></td>
       <td class="right">$<?= number_format($p, 2) ?></td>
       <td class="right"><?= number_format($d, 2) ?>%</td>
@@ -161,23 +166,23 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
 
   <tfoot>
     <tr>
-      <th colspan="5" class="right">Subtotal</th>
+      <th colspan="8" class="right">Subtotal</th>
       <th class="right">$<?= number_format($subtotal, 2) ?></th>
     </tr>
     <?php if ($discount > 0 || $discount_perc > 0): ?>
     <tr>
-      <th colspan="5" class="right">
+      <th colspan="8" class="right">
         Descuento <?= $discount_perc > 0 ? '(' . number_format($discount_perc, 2) . '%)' : '' ?>
       </th>
       <th class="right">-$<?= number_format($discount, 2) ?></th>
     </tr>
     <?php endif; ?>
     <tr>
-      <th colspan="5" class="right">Impuesto (<?= number_format($tax_perc, 2) ?>%)</th>
+      <th colspan="8" class="right">Impuesto (<?= number_format($tax_perc, 2) ?>%)</th>
       <th class="right">$<?= number_format($tax, 2) ?></th>
     </tr>
     <tr>
-      <th colspan="5" class="right total">Total</th>
+      <th colspan="8" class="right total">Total</th>
       <th class="right total">$<?= number_format($amount, 2) ?></th>
     </tr>
   </tfoot>

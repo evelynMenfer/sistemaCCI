@@ -124,6 +124,11 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
         <th style="padding:6px; text-align:center;">Cant.</th>
         <th style="padding:6px; text-align:center;">Unidad</th>
         <th style="padding:6px;">Descripción</th>
+        <!-- 🔹 Agregadas sin quitar nada -->
+        <th style="padding:6px; text-align:center;">Marca</th>
+        <th style="padding:6px; text-align:center;">Modelo</th>
+        <th style="padding:6px; text-align:center;">Talla</th>
+        <!-- 🔹 Fin agregado -->
         <th style="padding:6px; text-align:right;">Precio</th>
         <th style="padding:6px; text-align:right;">Desc %</th>
         <th style="padding:6px; text-align:right;">Total</th>
@@ -135,6 +140,9 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
           $q  = floatval($it['quantity'] ?? 0);
           $u  = (string)($it['unit'] ?? '');
           $ds = (string)($it['description'] ?? '');
+          $ma = (string)($it['marca'] ?? '');   // 🔹 nuevo uso
+          $mo = (string)($it['modelo'] ?? '');  // 🔹 nuevo uso
+          $ta = (string)($it['talla'] ?? '');   // 🔹 nuevo uso
           $p  = floatval($it['price'] ?? 0);
           $d  = floatval($it['discount'] ?? 0);
           $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($p - ($p * $d / 100.0)) * $q);
@@ -143,13 +151,18 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
           <td style="padding:5px; text-align:center;"><?= number_format($q, 2) ?></td>
           <td style="padding:5px; text-align:center;"><?= e($u) ?></td>
           <td style="padding:5px;"><?= e($ds) ?></td>
+          <!-- 🔹 celdas nuevas -->
+          <td style="padding:5px; text-align:center;"><?= e($ma) ?></td>
+          <td style="padding:5px; text-align:center;"><?= e($mo) ?></td>
+          <td style="padding:5px; text-align:center;"><?= e($ta) ?></td>
+          <!-- 🔹 fin agregado -->
           <td style="padding:5px; text-align:right;">$<?= number_format($p, 2) ?></td>
           <td style="padding:5px; text-align:right;"><?= number_format($d, 2) ?>%</td>
           <td style="padding:5px; text-align:right;">$<?= number_format($lt, 2) ?></td>
         </tr>
         <?php endforeach; ?>
       <?php else: ?>
-        <tr><td colspan="6" style="padding:8px; text-align:center; color:#666;">No hay productos en esta cotización.</td></tr>
+        <tr><td colspan="9" style="padding:8px; text-align:center; color:#666;">No hay productos en esta cotización.</td></tr>
       <?php endif; ?>
     </tbody>
   </table>

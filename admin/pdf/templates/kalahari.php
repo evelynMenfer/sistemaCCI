@@ -72,18 +72,17 @@ if ($amount <= 0) {
     <td colspan="3"><?= htmlspecialchars($data['cliente_nombre'] ?? '') ?></td>
   </tr>
   <tr>
-  <td class="labels"><strong>ENTREGA:</strong></td>
-  <td colspan="3">
-    <?= !empty($data['fecha_entrega'])
-        ? date("d/m/Y", strtotime($data['fecha_entrega']))
-        : '—' ?>
-  </td>
-</tr>
-
+    <td class="labels"><strong>ENTREGA:</strong></td>
+    <td colspan="3">
+      <?= !empty($data['fecha_entrega'])
+          ? date("d/m/Y", strtotime($data['fecha_entrega']))
+          : '—' ?>
+    </td>
+  </tr>
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TABLA DE PRODUCTOS -->
+<!-- 🔹 TABLA DE PRODUCTOS (ahora con Talla) -->
 <!-- ======================================= -->
 <table class="productos">
   <thead>
@@ -91,6 +90,7 @@ if ($amount <= 0) {
       <th>ART.</th>
       <th>MARCA</th>
       <th>MODELO</th>
+      <th>TALLA</th>
       <th>DESCRIPCIÓN</th>
       <th>UNIDAD</th>
       <th>CANT.</th>
@@ -103,6 +103,7 @@ if ($amount <= 0) {
     <?php $i=1; foreach($items as $it): 
         $brand = htmlspecialchars($it['marca'] ?? '');
         $model = htmlspecialchars($it['modelo'] ?? '');
+        $size  = htmlspecialchars($it['talla'] ?? '');
         $desc  = nl2br(htmlspecialchars($it['description'] ?? ''));
         $unit  = htmlspecialchars($it['unit'] ?? '');
         $qty   = floatval($it['quantity'] ?? 0);
@@ -116,6 +117,7 @@ if ($amount <= 0) {
       <td><?= $i++ ?></td>
       <td><?= $brand ?></td>
       <td><?= $model ?></td>
+      <td><?= $size ?></td>
       <td class="desc"><?= $desc ?></td>
       <td><?= $unit ?></td>
       <td class="num"><?= number_format($qty, 2) ?></td>

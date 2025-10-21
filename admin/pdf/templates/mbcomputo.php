@@ -1,7 +1,8 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – MB CÓMPUTO
-// Actualizado con descuento por producto y descuento global
+// Actualizado con descuento por producto, descuento global
+// y columnas Marca / Modelo / Talla
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -68,13 +69,16 @@ if ($amount <= 0) {
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TABLA PRINCIPAL -->
+<!-- 🔹 TABLA PRINCIPAL (ahora con Marca / Modelo / Talla) -->
 <!-- ======================================= -->
 <table class="productos">
   <thead>
     <tr>
       <th>NO.</th>
-      <th>PRODUCTO / SERVICIO</th>
+      <th>MARCA</th>
+      <th>MODELO</th>
+      <th>TALLA</th>
+      <th>SKU</th>
       <th>DESCRIPCIÓN</th>
       <th>UNIDAD</th>
       <th>CANTIDAD</th>
@@ -85,18 +89,24 @@ if ($amount <= 0) {
   </thead>
   <tbody>
     <?php $i=1; foreach($items as $it): 
-        $brand = htmlspecialchars($it['brand'] ?? '');
-        $desc  = nl2br(htmlspecialchars($it['description'] ?? ''));
-        $unit  = htmlspecialchars($it['unit'] ?? '');
-        $qty   = floatval($it['quantity'] ?? 0);
-        $price = floatval($it['price'] ?? 0);
-        $disc  = floatval($it['discount'] ?? 0);
+        $marca  = htmlspecialchars($it['marca'] ?? '');
+        $modelo = htmlspecialchars($it['modelo'] ?? '');
+        $talla  = htmlspecialchars($it['talla'] ?? '');
+        $brand  = htmlspecialchars($it['name'] ?? '');
+        $desc   = nl2br(htmlspecialchars($it['description'] ?? ''));
+        $unit   = htmlspecialchars($it['unit'] ?? '');
+        $qty    = floatval($it['quantity'] ?? 0);
+        $price  = floatval($it['price'] ?? 0);
+        $disc   = floatval($it['discount'] ?? 0);
         $line_total = isset($it['line_total']) 
             ? floatval($it['line_total']) 
             : (($price - ($price * $disc / 100)) * $qty);
     ?>
     <tr>
       <td><?= $i++ ?></td>
+      <td><?= $marca ?></td>
+      <td><?= $modelo ?></td>
+      <td><?= $talla ?></td>
       <td><?= $brand ?></td>
       <td class="desc"><?= $desc ?></td>
       <td><?= $unit ?></td>

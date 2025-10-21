@@ -2,6 +2,7 @@
 // ==================================================
 // 🔹 TEMPLATE PDF DEFAULT – ORBYX TECHNOLOGIES
 // Con columna de imagen, estilo corporativo formal
+// Ahora incluye Marca, Modelo y Talla
 // ==================================================
 
 $data      = $data ?? [];
@@ -248,6 +249,9 @@ tfoot tr.total td {
     <tr>
       <th>SKU</th>
       <th>DESCRIPCIÓN</th>
+      <th>MARCA</th>
+      <th>MODELO</th>
+      <th>TALLA</th>
       <th>IMAGEN</th>
       <th>CANTIDAD</th>
       <th>P. UNITARIO</th>
@@ -257,17 +261,23 @@ tfoot tr.total td {
   </thead>
   <tbody>
   <?php foreach($items as $it): 
-    $sku   = $it['name'] ?? '';
-    $desc  = $it['description'] ?? '';
-    $qty   = floatval($it['quantity'] ?? 0);
-    $price = floatval($it['price'] ?? 0);
-    $disc  = floatval($it['discount'] ?? 0);
-    $lt    = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $disc / 100)) * $qty);
-    $foto  = $it['foto_producto'] ?? '';
+    $sku    = $it['name'] ?? '';
+    $desc   = $it['description'] ?? '';
+    $marca  = $it['marca'] ?? '';
+    $modelo = $it['modelo'] ?? '';
+    $talla  = $it['talla'] ?? '';
+    $qty    = floatval($it['quantity'] ?? 0);
+    $price  = floatval($it['price'] ?? 0);
+    $disc   = floatval($it['discount'] ?? 0);
+    $lt     = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $disc / 100)) * $qty);
+    $foto   = $it['foto_producto'] ?? '';
   ?>
     <tr>
       <td class="center"><?= $e($sku) ?></td>
       <td><?= nl2br($e($desc)) ?></td>
+      <td class="center"><?= $e($marca) ?></td>
+      <td class="center"><?= $e($modelo) ?></td>
+      <td class="center"><?= $e($talla) ?></td>
       <td class="center img-cell">
         <?php
           if (!empty($foto)) {
@@ -287,12 +297,12 @@ tfoot tr.total td {
   </tbody>
 
   <tfoot>
-    <tr><td colspan="6" class="total-label">Subtotal</td><td class="total-value">$<?= $fmt($subtotal) ?></td></tr>
+    <tr><td colspan="9" class="total-label">Subtotal</td><td class="total-value">$<?= $fmt($subtotal) ?></td></tr>
     <?php if ($discount_monto > 0): ?>
-      <tr><td colspan="6" class="total-label">Descuento (<?= $fmt($discount_perc) ?>%)</td><td class="total-value">-$<?= $fmt($discount_monto) ?></td></tr>
+      <tr><td colspan="9" class="total-label">Descuento (<?= $fmt($discount_perc) ?>%)</td><td class="total-value">-$<?= $fmt($discount_monto) ?></td></tr>
     <?php endif; ?>
-    <tr><td colspan="6" class="total-label">I.V.A. (<?= $fmt($tax_perc) ?>%)</td><td class="total-value">$<?= $fmt($tax) ?></td></tr>
-    <tr class="total"><td colspan="6" class="total-label">TOTAL</td><td class="total-value">$<?= $fmt($amount) ?></td></tr>
+    <tr><td colspan="9" class="total-label">I.V.A. (<?= $fmt($tax_perc) ?>%)</td><td class="total-value">$<?= $fmt($tax) ?></td></tr>
+    <tr class="total"><td colspan="9" class="total-label">TOTAL</td><td class="total-value">$<?= $fmt($amount) ?></td></tr>
   </tfoot>
 </table>
 

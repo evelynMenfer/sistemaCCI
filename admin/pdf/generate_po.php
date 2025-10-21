@@ -38,6 +38,7 @@ $qry = $conn->query("
         c.cperson,
         c.nota,
         c.identificador,
+        c.id AS id_company,
         cl.id AS customer_id,
         cl.name AS cliente_nombre,
         cl.email AS cliente_email,
@@ -58,83 +59,83 @@ if (!$qry || $qry->num_rows === 0) {
 $data = $qry->fetch_assoc();
 
 // ==================================================
-// 🔹 CAMPOS DE CLIENTE SEGUROS
+// 🔹 DATOS DE CLIENTE
 // ==================================================
-$cliente_nombre  = $data['cliente_nombre']  ?? '—';
-$cliente_email   = $data['cliente_email']   ?? '—';
-$cliente_contact = $data['cliente_contact'] ?? '—';
-$cliente_address = $data['cliente_address'] ?? '—';
-$cliente_rfc     = $data['cliente_rfc']     ?? '—';
+$cliente = [
+    'nombre'  => $data['cliente_nombre']  ?? '—',
+    'email'   => $data['cliente_email']   ?? '—',
+    'contact' => $data['cliente_contact'] ?? '—',
+    'address' => $data['cliente_address'] ?? '—',
+    'rfc'     => $data['cliente_rfc']     ?? '—'
+];
 
 // ==================================================
-// 🔹 CAMPOS DE EMPRESA SEGUROS
+// 🔹 DATOS DE EMPRESA
 // ==================================================
+$company_id = intval($data['id_company'] ?? 0);
 $data['cperson'] = $data['cperson'] ?? '';
 $data['address'] = $data['address'] ?? '';
 $data['contact'] = $data['contact'] ?? '';
 $data['email']   = $data['email']   ?? '';
 $data['nota']    = $data['nota']    ?? '';
 
-$company_id = intval($data['id_company'] ?? 0);
-
 // ==================================================
 // 🔹 RFC Y DATOS BANCARIOS DE EMPRESA
 // ==================================================
 $rfc = $bank = $account_no = $clabe = '';
-$extraCols = [];
-if (column_exists($conn, 'company_list', 'rfc'))          $extraCols[] = 'rfc';
-if (column_exists($conn, 'company_list', 'banco'))        $extraCols[] = 'banco';
-if (column_exists($conn, 'company_list', 'ncuenta'))      $extraCols[] = 'ncuenta';
-if (column_exists($conn, 'company_list', 'cuenta_clabe')) $extraCols[] = 'cuenta_clabe';
-
-if (!empty($extraCols) && $company_id > 0) {
-    $cols = implode(',', array_map(fn($c) => "`$c`", $extraCols));
-    $res = $conn->query("SELECT {$cols} FROM company_list WHERE id = {$company_id} LIMIT 1");
-    if ($res && $res->num_rows) {
-        $row = $res->fetch_assoc();
-        $rfc        = $row['rfc'] ?? '';
-        $bank       = $row['banco'] ?? '';
-        $account_no = $row['ncuenta'] ?? '';
-        $clabe      = $row['cuenta_clabe'] ?? '';
+if ($company_id > 0) {
+    $cols = [];
+    foreach (['rfc', 'banco', 'ncuenta', 'cuenta_clabe'] as $col) {
+        if (column_exists($conn, 'company_list', $col)) $cols[] = "`{$col}`";
+    }
+    if (!empty($cols)) {
+        $res = $conn->query("SELECT " . implode(',', $cols) . " FROM company_list WHERE id = {$company_id} LIMIT 1");
+        if ($res && $res->num_rows) {
+            $row = $res->fetch_assoc();
+            $rfc        = $row['rfc'] ?? '';
+            $bank       = $row['banco'] ?? '';
+            $account_no = $row['ncuenta'] ?? '';
+            $clabe      = $row['cuenta_clabe'] ?? '';
+        }
     }
 }
 
 // ==================================================
-// 🔹 DETECCIÓN AUTOMÁTICA DE TEMPLATE Y ESTILO
+// 🔹 TEMPLATE Y ESTILO
 // ==================================================
 $identificador = strtolower(trim($data['identificador'] ?? ''));
 $styles_dir = __DIR__ . '/styles/';
+$templates_dir = __DIR__ . '/templates/';
+
 $style_file = $styles_dir . (file_exists($styles_dir . $identificador . '.css') ? $identificador . '.css' : 'default.css');
 $style = file_get_contents($style_file);
 
-$templates_dir = __DIR__ . '/templates/';
 $template_file = $templates_dir . (file_exists($templates_dir . $identificador . '.php') ? $identificador . '.php' : 'default.php');
 
 // ==================================================
-// 🔹 CONSULTA DE ÍTEMS
+// 🔹 CONSULTA DE ÍTEMS (con marca, modelo, talla)
 // ==================================================
 $items = [];
 $subtotal = 0;
-$itemCols = "p.*, i.name, i.description, i.foto_producto";
-$hasMarca  = column_exists($conn, 'item_list', 'marca');
-$hasModelo = column_exists($conn, 'item_list', 'modelo');
-if ($hasMarca)  $itemCols .= ", i.marca";
-if ($hasModelo) $itemCols .= ", i.modelo";
 
 $qry_items = $conn->query("
-    SELECT {$itemCols}
+    SELECT 
+        p.*, 
+        i.name, 
+        i.description, 
+        i.foto_producto,
+        COALESCE(NULLIF(p.marca, ''),  i.marca)  AS marca,
+        COALESCE(NULLIF(p.modelo, ''), i.modelo) AS modelo,
+        COALESCE(NULLIF(p.talla, ''),  i.talla)  AS talla
     FROM po_items p
     INNER JOIN item_list i ON p.item_id = i.id
     WHERE p.po_id = {$id}
 ");
 
 while ($row = $qry_items->fetch_assoc()) {
-    $row['marca']  = $row['marca']  ?? '';
-    $row['modelo'] = $row['modelo'] ?? '';
-
-    $price = floatval($row['price']);
-    $discount = floatval($row['discount']);
-    $quantity = floatval($row['quantity']);
+    $price     = floatval($row['price']);
+    $discount  = floatval($row['discount']);
+    $quantity  = floatval($row['quantity']);
     $line_total = ($price - ($price * $discount / 100)) * $quantity;
     $subtotal += $line_total;
 
@@ -178,27 +179,20 @@ $data['banco']        = $bank;
 $data['ncuenta']      = $account_no;
 $data['cuenta_clabe'] = $clabe;
 
-$cliente = [
-    'nombre'  => $cliente_nombre,
-    'email'   => $cliente_email,
-    'contact' => $cliente_contact,
-    'address' => $cliente_address,
-    'rfc'     => $cliente_rfc
-];
-
 // ==================================================
-// 🔹 GENERAR HTML
+// 🔹 GENERAR HTML FINAL
 // ==================================================
 ob_start();
 include $template_file;
 $html = ob_get_clean();
 
 // ==================================================
-// 🔹 CONFIGURAR Y RENDERIZAR DOMPDF
+// 🔹 RENDERIZAR PDF CON DOMPDF
 // ==================================================
 $options = new Options();
 $options->set('isRemoteEnabled', true);
 $options->set('isHtml5ParserEnabled', true);
+
 $tempDir = __DIR__ . '/../../storage/tmp';
 if (!is_dir($tempDir)) mkdir($tempDir, 0777, true);
 $options->set('tempDir', realpath($tempDir));

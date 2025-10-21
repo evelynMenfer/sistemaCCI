@@ -2,6 +2,7 @@
 // ==================================================
 // 🔹 TEMPLATE PDF – DRAPER
 // Mismo formato original, con descuento por producto y global
+// Ahora incluye: Marca, Modelo y Talla
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -65,6 +66,11 @@ if ($amount <= 0) {
       <th style="border:1px solid #ccc; padding:6px;">No.</th>
       <th style="border:1px solid #ccc; padding:6px;">Cod.</th>
       <th style="border:1px solid #ccc; padding:6px;">Descripción</th>
+      <!-- 🔹 Agregadas nuevas columnas -->
+      <th style="border:1px solid #ccc; padding:6px;">Marca</th>
+      <th style="border:1px solid #ccc; padding:6px;">Modelo</th>
+      <th style="border:1px solid #ccc; padding:6px;">Talla</th>
+      <!-- 🔹 Fin agregado -->
       <th style="border:1px solid #ccc; padding:6px;">Cantidad</th>
       <th style="border:1px solid #ccc; padding:6px;">Unidad</th>
       <th style="border:1px solid #ccc; padding:6px;">Desc. %</th>
@@ -78,11 +84,19 @@ if ($amount <= 0) {
       $p = floatval($it['price'] ?? 0);
       $d = floatval($it['discount'] ?? 0);
       $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($p - ($p * $d / 100)) * $q);
+      $marca  = htmlspecialchars($it['marca'] ?? '');
+      $modelo = htmlspecialchars($it['modelo'] ?? '');
+      $talla  = htmlspecialchars($it['talla'] ?? '');
     ?>
     <tr>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $i++ ?></td>
       <td style="border:1px solid #ccc; padding:6px;"><?= htmlspecialchars($it['item_code'] ?? '') ?></td>
       <td style="border:1px solid #ccc; padding:6px;"><?= nl2br(htmlspecialchars($it['description'])) ?></td>
+      <!-- 🔹 Celdas nuevas -->
+      <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $marca ?></td>
+      <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $modelo ?></td>
+      <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $talla ?></td>
+      <!-- 🔹 Fin agregado -->
       <td style="border:1px solid #ccc; padding:6px; text-align:right;"><?= number_format($q, 2) ?></td>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= htmlspecialchars($it['unit']) ?></td>
       <td style="border:1px solid #ccc; padding:6px; text-align:right;"><?= number_format($d, 2) ?>%</td>

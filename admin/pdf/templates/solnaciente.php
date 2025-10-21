@@ -1,7 +1,7 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – OPERADORA COMERCIAL EL GRAN SURTIDOR DEL SOL NACIENTE S.A. DE C.V.
-// Final con cliente_cotizacion, nota dinámica, descuento con %, bordes suaves y SKU = name del ítem
+// Versión actualizada con columnas Marca / Modelo / Talla después de Descripción
 // ==================================================
 $data      = $data      ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -15,7 +15,6 @@ $remarks   = trim($data['remarks'] ?? '');
 $cliente   = trim($data['cliente_nombre'] ?? '—');
 $rfc       = trim($data['cliente_rfc'] ?? '—');
 $direccion = trim($data['cliente_address'] ?? '—');
-
 
 // 🔹 Calcular subtotal si no viene
 if ($subtotal <= 0 && !empty($items)) {
@@ -125,6 +124,9 @@ tr:nth-child(even) {
     <tr>
       <th>SKU</th>
       <th>DESCRIPCIÓN</th>
+      <th>MARCA</th>
+      <th>MODELO</th>
+      <th>TALLA</th>
       <th>UNIDAD</th>
       <th>CANTIDAD</th>
       <th>PRECIO UNITARIO</th>
@@ -134,10 +136,13 @@ tr:nth-child(even) {
   </thead>
   <tbody>
     <?php foreach($items as $it): 
-        $sku  = htmlspecialchars($it['name'] ?? '—'); // ← ahora muestra el campo name
-        $desc = nl2br(htmlspecialchars($it['description'] ?? ''));
-        $unit = htmlspecialchars($it['unit'] ?? '');
-        $qty  = floatval($it['quantity'] ?? 0);
+        $sku   = htmlspecialchars($it['name'] ?? '—');
+        $desc  = nl2br(htmlspecialchars($it['description'] ?? ''));
+        $marca = htmlspecialchars($it['marca'] ?? '');
+        $modelo = htmlspecialchars($it['modelo'] ?? '');
+        $talla  = htmlspecialchars($it['talla'] ?? '');
+        $unit  = htmlspecialchars($it['unit'] ?? '');
+        $qty   = floatval($it['quantity'] ?? 0);
         $price = floatval($it['price'] ?? 0);
         $disc  = floatval($it['discount'] ?? 0);
         $line_total = isset($it['line_total']) 
@@ -147,6 +152,9 @@ tr:nth-child(even) {
     <tr>
       <td style="text-align:center;"><?= $sku ?></td>
       <td><?= $desc ?></td>
+      <td style="text-align:center;"><?= $marca ?></td>
+      <td style="text-align:center;"><?= $modelo ?></td>
+      <td style="text-align:center;"><?= $talla ?></td>
       <td style="text-align:center;"><?= $unit ?></td>
       <td style="text-align:right;"><?= number_format($qty, 2) ?></td>
       <td style="text-align:right;">$<?= number_format($price, 2) ?></td>
@@ -197,7 +205,6 @@ tr:nth-child(even) {
     <?= nl2br(htmlspecialchars($data['nota'] ?? $nota)) ?>
   </div>
   <?php endif; ?>
-
 </div>
 
 </body>

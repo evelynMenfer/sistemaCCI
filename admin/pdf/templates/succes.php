@@ -1,6 +1,7 @@
 <?php
 // ==================================================
 // 🔹 TEMPLATE PDF – COMERCIALIZADORA SUCCES (versión final funcional)
+// 🔸 Ahora incluye columnas Marca / Modelo / Talla después de Descripción
 // ==================================================
 $data      = $data ?? [];
 $items     = isset($items) && is_array($items) ? $items : [];
@@ -46,7 +47,7 @@ if ($amount <= 0) {
     <td class="company-name" colspan="5">
       COMERCIALIZADORA SUCCES
     </td>
-    <td class="header-right" colspan="3">
+    <td class="header-right" colspan="5">
       OAXACA DE JUÁREZ, OAXACA<br>
       <span class="link">COTIZACIÓN: <?= htmlspecialchars($data['po_code'] ?? '—') ?></span>
     </td>
@@ -56,7 +57,7 @@ if ($amount <= 0) {
       <strong>Atención:</strong> <?= htmlspecialchars($data['cliente_nombre'] ?? '—') ?><br>
       <strong>e-mail:</strong> <?= htmlspecialchars($cliente_email ?: '—') ?>
     </td>
-    <td colspan="3" class="fecha-box">
+    <td colspan="5" class="fecha-box">
       <div class="fecha-title">FECHA</div>
       <div class="fecha-value"><?= !empty($data['date_exp']) ? date("d/m/Y", strtotime($data['date_exp'])) : '—' ?></div>
     </td>
@@ -71,6 +72,9 @@ if ($amount <= 0) {
     <tr>
       <th>PARTIDA</th>
       <th>DESCRIPCIÓN</th>
+      <th>MARCA</th>
+      <th>MODELO</th>
+      <th>TALLA</th>
       <th>IMAGEN</th>
       <th>UNIDAD</th>
       <th>CANTIDAD</th>
@@ -85,6 +89,9 @@ if ($amount <= 0) {
       $price = floatval($it['price'] ?? 0);
       $disc  = floatval($it['discount'] ?? 0);
       $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $disc / 100)) * $qty);
+      $marca  = htmlspecialchars($it['marca'] ?? '');
+      $modelo = htmlspecialchars($it['modelo'] ?? '');
+      $talla  = htmlspecialchars($it['talla'] ?? '');
 
       // ==================================================
       // 🔹 Imagen: compatible con rutas completas o nombres
@@ -94,7 +101,6 @@ if ($amount <= 0) {
           $imgTag = '<img src="' . $it['foto_producto_base64'] . '" style="width:65px; height:auto;">';
       } 
       elseif (!empty($it['foto_producto'])) {
-          // limpiar ruta (si viene con 'uploads/productos/' o similar)
           $filename = basename($it['foto_producto']);
           $foto_abs = realpath(__DIR__ . '/../../uploads/productos/' . $filename);
           if ($foto_abs && file_exists($foto_abs)) {
@@ -107,6 +113,9 @@ if ($amount <= 0) {
     <tr>
       <td><?= $i++ ?></td>
       <td class="desc"><?= nl2br(htmlspecialchars($it['description'] ?? '')) ?></td>
+      <td class="center"><?= $marca ?></td>
+      <td class="center"><?= $modelo ?></td>
+      <td class="center"><?= $talla ?></td>
       <td class="center"><?= $imgTag ?></td>
       <td><?= htmlspecialchars($it['unit'] ?? '') ?></td>
       <td class="num"><?= number_format($qty, 2) ?></td>
@@ -123,7 +132,7 @@ if ($amount <= 0) {
 <!-- ======================================= -->
 <table class="totals">
   <tr>
-    <td colspan="5" rowspan="7" class="payment-info">
+    <td colspan="6" rowspan="7" class="payment-info">
       <p><strong>FORMA DE PAGO:</strong> <?= htmlspecialchars($data['metodo_pago'] ?? '—') ?></p>
       <p><strong>BANCO:</strong> <?= htmlspecialchars($data['banco'] ?? '—') ?></p>
       <p><strong>NO. DE CUENTA:</strong> <?= htmlspecialchars($data['ncuenta'] ?? '—') ?></p>
