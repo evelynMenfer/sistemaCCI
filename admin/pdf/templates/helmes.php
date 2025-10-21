@@ -70,37 +70,47 @@ if ($amount <= 0) {
 </table>
 
 <!-- ======================================= -->
-<!-- 🔹 TABLA PRINCIPAL (sin símbolo %) -->
+<!-- 🔹 TABLA PRINCIPAL (con Marca y Modelo visibles) -->
 <!-- ======================================= -->
-<table class="productos">
-  <thead>
+<table class="productos" width="100%" cellspacing="0" cellpadding="4" border="1" style="border-collapse: collapse; font-size: 10pt;">
+  <thead style="background-color: #f2f2f2;">
     <tr>
-      <th>#</th>
-      <th>FECHA DE ENTREGA</th>
-      <th>DESCRIPCIÓN, MARCA Y MODELO</th>
-      <th>UNIDAD</th>
-      <th>CANTIDAD</th>
-      <th>DESC.</th>
-      <th>P.U.</th>
-      <th>IMPORTE</th>
+      <th width="5%">#</th>
+      <th width="14%">FECHA DE ENTREGA</th>
+      <th width="26%">DESCRIPCIÓN</th>
+      <th width="12%">MARCA</th>
+      <th width="12%">MODELO</th>
+      <th width="7%">UNIDAD</th>
+      <th width="7%">CANT.</th>
+      <th width="7%">DESC.</th>
+      <th width="10%">P.U.</th>
+      <th width="10%">IMPORTE</th>
     </tr>
   </thead>
   <tbody>
-    <?php $i=1; foreach($items as $it): 
-      $qty  = floatval($it['quantity'] ?? 0);
-      $price = floatval($it['price'] ?? 0);
-      $disc  = floatval($it['discount'] ?? 0);
-      $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $disc / 100)) * $qty);
+    <?php 
+    $i = 1; 
+    foreach($items as $it): 
+        $qty     = floatval($it['quantity'] ?? 0);
+        $price   = floatval($it['price'] ?? 0);
+        $disc    = floatval($it['discount'] ?? 0);
+        $lt      = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $disc / 100)) * $qty);
+        $marca   = trim($it['marca'] ?? '');
+        $modelo  = trim($it['modelo'] ?? '');
+        $unidad  = trim($it['unit'] ?? '');
+        $desc    = trim($it['description'] ?? '');
     ?>
     <tr>
-      <td><?= $i++ ?></td>
-      <td><?= htmlspecialchars($it['fecha_entrega'] ?? '') ?></td>
-      <td class="desc"><?= nl2br(htmlspecialchars($it['description'])) ?></td>
-      <td><?= htmlspecialchars($it['unit']) ?></td>
-      <td class="num"><?= number_format($qty, 2) ?></td>
-      <td class="num"><?= number_format($disc, 2) ?></td>
-      <td class="num">$<?= number_format($price, 2) ?></td>
-      <td class="num">$<?= number_format($lt, 2) ?></td>
+      <td align="center"><?= $i++ ?></td>
+      <td align="center"><?= htmlspecialchars($it['fecha_entrega'] ?? '') ?></td>
+      <td><?= nl2br(htmlspecialchars($desc)) ?></td>
+      <td align="center"><?= htmlspecialchars($marca ?: '—') ?></td>
+      <td align="center"><?= htmlspecialchars($modelo ?: '—') ?></td>
+      <td align="center"><?= htmlspecialchars($unidad ?: '—') ?></td>
+      <td align="right"><?= number_format($qty, 2) ?></td>
+      <td align="right"><?= number_format($disc, 2) ?></td>
+      <td align="right">$<?= number_format($price, 2) ?></td>
+      <td align="right">$<?= number_format($lt, 2) ?></td>
     </tr>
     <?php endforeach; ?>
   </tbody>
