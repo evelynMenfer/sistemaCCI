@@ -163,23 +163,23 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
 
   <tfoot>
     <tr>
-      <th colspan="8" class="right">Subtotal</th>
+      <th colspan="7" class="right">Subtotal</th>
       <th class="right">$<?= number_format($subtotal, 2) ?></th>
     </tr>
     <?php if ($discount > 0 || $discount_perc > 0): ?>
     <tr>
-      <th colspan="8" class="right">
+      <th colspan="7" class="right">
         Descuento <?= $discount_perc > 0 ? '(' . number_format($discount_perc, 2) . '%)' : '' ?>
       </th>
       <th class="right">-$<?= number_format($discount, 2) ?></th>
     </tr>
     <?php endif; ?>
     <tr>
-      <th colspan="8" class="right">Impuesto (<?= number_format($tax_perc, 2) ?>%)</th>
+      <th colspan="7" class="right">Impuesto (<?= number_format($tax_perc, 2) ?>%)</th>
       <th class="right">$<?= number_format($tax, 2) ?></th>
     </tr>
     <tr>
-      <th colspan="8" class="right total">Total</th>
+      <th colspan="7" class="right total">Total</th>
       <th class="right total">$<?= number_format($amount, 2) ?></th>
     </tr>
   </tfoot>

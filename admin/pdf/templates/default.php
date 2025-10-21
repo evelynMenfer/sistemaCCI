@@ -294,12 +294,12 @@ tfoot tr.total td {
   </tbody>
 
   <tfoot>
-    <tr><td colspan="9" class="total-label">Subtotal</td><td class="total-value">$<?= $fmt($subtotal) ?></td></tr>
+    <tr><td colspan="8" class="total-label">Subtotal</td><td class="total-value">$<?= $fmt($subtotal) ?></td></tr>
     <?php if ($discount_monto > 0): ?>
-      <tr><td colspan="9" class="total-label">Descuento (<?= $fmt($discount_perc) ?>%)</td><td class="total-value">-$<?= $fmt($discount_monto) ?></td></tr>
+      <tr><td colspan="8" class="total-label">Descuento (<?= $fmt($discount_perc) ?>%)</td><td class="total-value">-$<?= $fmt($discount_monto) ?></td></tr>
     <?php endif; ?>
-    <tr><td colspan="9" class="total-label">I.V.A. (<?= $fmt($tax_perc) ?>%)</td><td class="total-value">$<?= $fmt($tax) ?></td></tr>
-    <tr class="total"><td colspan="9" class="total-label">TOTAL</td><td class="total-value">$<?= $fmt($amount) ?></td></tr>
+    <tr><td colspan="8" class="total-label">I.V.A. (<?= $fmt($tax_perc) ?>%)</td><td class="total-value">$<?= $fmt($tax) ?></td></tr>
+    <tr class="total"><td colspan="8" class="total-label">TOTAL</td><td class="total-value">$<?= $fmt($amount) ?></td></tr>
   </tfoot>
 </table>
 

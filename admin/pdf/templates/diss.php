@@ -152,7 +152,6 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
           <!-- 🔹 celdas nuevas -->
           <td style="padding:5px; text-align:center;"><?= e($ma) ?></td>
           <td style="padding:5px; text-align:center;"><?= e($mo) ?></td>
-          <td style="padding:5px; text-align:center;"><?= e($ta) ?></td>
           <!-- 🔹 fin agregado -->
           <td style="padding:5px; text-align:right;">$<?= number_format($p, 2) ?></td>
           <td style="padding:5px; text-align:right;"><?= number_format($d, 2) ?>%</td>

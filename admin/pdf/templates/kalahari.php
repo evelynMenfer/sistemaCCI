@@ -115,7 +115,6 @@ if ($amount <= 0) {
       <td><?= $i++ ?></td>
       <td><?= $brand ?></td>
       <td><?= $model ?></td>
-      <td><?= $size ?></td>
       <td class="desc"><?= $desc ?></td>
       <td><?= $unit ?></td>
       <td class="num"><?= number_format($qty, 2) ?></td>
