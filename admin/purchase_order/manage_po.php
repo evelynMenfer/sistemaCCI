@@ -199,7 +199,6 @@ tfoot tr th { background:#f6f6f6; }
                 <th>Descripción</th>
                 <th>Marca</th>
                 <th>Modelo</th>
-                <th>Talla</th>
                 <th>Fecha Compra</th>
                 <th>Stock</th>
                 <th>Precio Compra</th>
@@ -227,7 +226,6 @@ tfoot tr th { background:#f6f6f6; }
             <th>Descripción</th>
             <th>Marca</th>
             <th>Modelo</th>
-            <th>Talla</th>
             <th>Precio</th>
             <th>Desc. %</th>
             <th>Total</th>
@@ -236,7 +234,7 @@ tfoot tr th { background:#f6f6f6; }
 
           <tbody>
           <?php if ($id):
-            $qi = $conn->query("SELECT p.*, i.description, i.marca, i.modelo, i.talla  FROM po_items p INNER JOIN item_list i ON p.item_id=i.id WHERE p.po_id={$id}");
+            $qi = $conn->query("SELECT p.*, i.description, i.marca, i.modelo  FROM po_items p INNER JOIN item_list i ON p.item_id=i.id WHERE p.po_id={$id}");
             while ($row=$qi->fetch_assoc()):
               $line_total = ($row['price'] - ($row['price']*$row['discount']/100)) * $row['quantity'];
           ?>
@@ -250,7 +248,6 @@ tfoot tr th { background:#f6f6f6; }
               <td class="item"><?php echo $row['description']; ?></td>
               <td><input type="text" class="form-control inline-edit" name="marca[]" value="<?php echo $row['marca'] ?? ''; ?>" readonly></td>
               <td><input type="text" class="form-control inline-edit" name="modelo[]" value="<?php echo $row['modelo'] ?? ''; ?>" readonly></td>
-              <td><input type="text" class="form-control inline-edit" name="talla[]" value="<?php echo $row['talla'] ?? ''; ?>"></td>
               <td><input type="number" step="0.01" class="form-control inline-edit price-input" name="price[]" value="<?php echo $row['price']; ?>"></td>
               <td><input type="number" step="0.01" class="form-control inline-edit discount-input" name="discount[]" value="<?php echo $row['discount']; ?>"></td>
               <td class="text-end total"><?php echo number_format($line_total,2); ?><input type="hidden" name="total[]" value="<?php echo $line_total; ?>"></td>
@@ -259,11 +256,11 @@ tfoot tr th { background:#f6f6f6; }
           </tbody>
           <tfoot>
             <tr>
-              <th colspan="9" class="text-end" style="text-align: right">Sub Total</th>
+              <th colspan="8" class="text-end" style="text-align: right">Sub Total</th>
               <th class="text-end sub-total">0.00</th>
             </tr>
             <tr>
-              <th colspan="9" class="text-end" style="text-align: right">
+              <th colspan="8" class="text-end" style="text-align: right">
                 Descuento 
                 <input style="width:60px" name="discount_perc" type="number" min="0" max="100" value="<?php echo $discount_perc ?? 0 ?>"> %
               </th>
@@ -272,14 +269,14 @@ tfoot tr th { background:#f6f6f6; }
               </th>
             </tr>
             <tr>
-              <th colspan="9" class="text-end" style="text-align: right">
+              <th colspan="8" class="text-end" style="text-align: right">
                 Impuesto 
                 <input style="width:60px" name="tax_perc" type="number" min="0" max="100" value="<?php echo $tax_perc ?? 16 ?>"> %
               </th>
               <th class="text-end tax">$<?php echo number_format($tax ?? 0,2) ?></th>
             </tr>
             <tr>
-              <th colspan="9" class="text-end" style="text-align: right">Total</th>
+              <th colspan="8" class="text-end" style="text-align: right">Total</th>
               <th class="text-end grand-total">0.00
                 <input type="hidden" name="amount" value="<?php echo $amount ?? 0 ?>">
               </th>
@@ -312,7 +309,6 @@ tfoot tr th { background:#f6f6f6; }
     <td class="item"></td>
     <td><input type="text" class="form-control inline-edit" name="marca[]" readonly></td>
     <td><input type="text" class="form-control inline-edit" name="modelo[]" readonly></td>
-    <td><input type="text" class="form-control inline-edit" name="talla[]"></td>
     <td><input type="number" step="0.01" class="form-control inline-edit price-input" name="price[]"></td>
     <td><input type="number" step="0.01" class="form-control inline-edit discount-input" name="discount[]" value="0"></td>
     <td class="text-end total">0.00<input type="hidden" name="total[]"></td>
@@ -406,7 +402,6 @@ $('#searchProduct').on('keyup', function(){
               <td>${p.descripcion ?? ''}</td>
               <td>${p.marca ?? ''}</td>
               <td>${p.modelo ?? ''}</td>
-              <td>${p.talla ?? ''}</td>
               <td class="text-center">${p.fecha_compra ?? '—'}</td>
               <td class="text-center">${p.stock ?? 0}</td>
               <td class="text-end">${parseFloat(p.precio_compra || 0).toFixed(2)}</td>
@@ -418,7 +413,6 @@ $('#searchProduct').on('keyup', function(){
                         data-name="${p.descripcion}"
                         data-marca="${p.marca || ''}"
                         data-modelo="${p.modelo || ''}"
-                        data-talla="${p.talla || ''}"
                         data-price="${p.precio_venta || 0}">
                   Agregar
                 </button>
@@ -447,7 +441,6 @@ $('#searchProduct').on('keyup', function(){
     const price = parseFloat($btn.data('price')) || 0;
     const marca = $btn.data('marca') || '';
     const modelo = $btn.data('modelo') || '';
-    const talla = $btn.data('talla') || '';
 
 
     if($('#list tbody tr[data-id="'+productID+'"]').length){
@@ -474,7 +467,6 @@ $('#searchProduct').on('keyup', function(){
       <td class="item text-start">${name}</td>
       <td><input type="text" class="form-control inline-edit" name="marca[]" value="${marca}" readonly></td>
       <td><input type="text" class="form-control inline-edit" name="modelo[]" value="${modelo}" readonly></td>
-      <td><input type="text" class="form-control inline-edit" name="talla[]" value="${talla}"></td>
       <td class="text-end">
         <input type="number" step="0.01" class="form-control inline-edit text-end price-input" name="price[]" value="${price.toFixed(2)}">
       </td>

@@ -110,7 +110,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 	</div>
 </div>
 
-		<!-- 🟦 Fila 3: Marca / Modelo / Talla / Ficha técnica -->
+		<!-- 🟦 Fila 3: Marca / Modelo / Ficha técnica -->
 <div class="row">
 	<div class="col-md-3">
 		<div class="form-group">
@@ -127,16 +127,6 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 			<input type="text" name="modelo" id="modelo" class="form-control"
 				value="<?= htmlspecialchars($modelo ?? '') ?>"
 				placeholder="Ej. XR5000, Pro Max, T-300...">
-		</div>
-	</div>
-
-	<!-- 🆕 Nuevo campo: Talla -->
-	<div class="col-md-3">
-		<div class="form-group">
-			<label for="talla">Talla</label>
-			<input type="text" name="talla" id="talla" class="form-control"
-				value="<?= htmlspecialchars($talla ?? '') ?>"
-				placeholder="Ej. S, M, L, 42, 7.5...">
 		</div>
 	</div>
 

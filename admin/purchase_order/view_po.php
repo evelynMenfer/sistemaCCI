@@ -216,7 +216,6 @@ if (!empty($logo_empresa)) {
         <th style="width:28%">Descripción</th>
         <th style="width:10%">Marca</th>
         <th style="width:10%">Modelo</th>
-        <th style="width:8%">Talla</th>
         <th style="width:12%">Precio Unitario</th>
         <th style="width:7%">Desc %</th>
         <th style="width:12%">Total</th>
@@ -231,8 +230,7 @@ if (!empty($logo_empresa)) {
             p.*,
             i.description,
             COALESCE(NULLIF(p.marca, ''),  i.marca)  AS marca,
-            COALESCE(NULLIF(p.modelo, ''), i.modelo) AS modelo,
-            COALESCE(NULLIF(p.talla, ''),  i.talla)  AS talla
+            COALESCE(NULLIF(p.modelo, ''), i.modelo) AS modelo
           FROM po_items p
           INNER JOIN item_list i ON p.item_id = i.id
           WHERE p.po_id = {$id}
@@ -248,7 +246,6 @@ if (!empty($logo_empresa)) {
           <td class="text-start"><?php echo htmlspecialchars($row['description']); ?></td>
           <td class="text-start"><?php echo htmlspecialchars($row['marca'] ?? ''); ?></td>
           <td class="text-start"><?php echo htmlspecialchars($row['modelo'] ?? ''); ?></td>
-          <td class="text-center"><?php echo htmlspecialchars($row['talla'] ?? ''); ?></td>
           <td class="text-end">$<?php echo number_format($row['price'], 2) ?></td>
           <td class="text-end"><?php echo number_format($row['discount'], 2) ?>%</td>
           <td class="text-end">$<?php echo number_format($line_total, 2) ?></td>
@@ -266,19 +263,19 @@ if (!empty($logo_empresa)) {
       ?>
       <tfoot>
         <tr>
-          <th colspan="8" class="text-end">Sub Total</th>
+          <th colspan="7" class="text-end">Sub Total</th>
           <th class="text-end">$<?php echo number_format($subtotal,2) ?></th>
         </tr>
         <tr>
-          <th colspan="8" class="text-end">Descuento (<?php echo $discount_perc ?>%)</th>
+          <th colspan="7" class="text-end">Descuento (<?php echo $discount_perc ?>%)</th>
           <th class="text-end">$<?php echo number_format($discount_total,2) ?></th>
         </tr>
         <tr>
-          <th colspan="8" class="text-end">Impuesto (<?php echo $tax_perc ?>%)</th>
+          <th colspan="7" class="text-end">Impuesto (<?php echo $tax_perc ?>%)</th>
           <th class="text-end">$<?php echo number_format($tax_total,2) ?></th>
         </tr>
         <tr class="border-top-2">
-          <th colspan="8" class="text-end">Total</th>
+          <th colspan="7" class="text-end">Total</th>
           <th class="text-end fw-bold">$<?php echo number_format($total_final,2) ?></th>
         </tr>
       </tfoot>

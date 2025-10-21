@@ -262,7 +262,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 			</div>
 		</div>
 
-		<!-- 🟦 Nueva fila: Marca, Modelo, Talla y Ficha Técnica -->
+		<!-- 🟦 Nueva fila: Marca, Modelo y Ficha Técnica -->
 <div class="section-header">Detalles Técnicos</div>
 <div class="info-row">
 	<div class="info-col">
@@ -273,10 +273,7 @@ if (isset($_GET['id']) && $_GET['id'] > 0) {
 		<span class="info-label">Modelo:</span><br>
 		<span class="info-value"><?= !empty($modelo) ? htmlspecialchars($modelo) : '—' ?></span>
 	</div>
-	<div class="info-col">
-		<span class="info-label">Talla:</span><br>
-		<span class="info-value"><?= !empty($talla) ? htmlspecialchars($talla) : '—' ?></span>
-	</div>
+	
 </div>
 
 <div class="info-row">
