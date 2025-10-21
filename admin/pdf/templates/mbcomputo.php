@@ -77,7 +77,6 @@ if ($amount <= 0) {
       <th>NO.</th>
       <th>MARCA</th>
       <th>MODELO</th>
-      <th>TALLA</th>
       <th>SKU</th>
       <th>DESCRIPCIÓN</th>
       <th>UNIDAD</th>
@@ -91,7 +90,6 @@ if ($amount <= 0) {
     <?php $i=1; foreach($items as $it): 
         $marca  = htmlspecialchars($it['marca'] ?? '');
         $modelo = htmlspecialchars($it['modelo'] ?? '');
-        $talla  = htmlspecialchars($it['talla'] ?? '');
         $brand  = htmlspecialchars($it['name'] ?? '');
         $desc   = nl2br(htmlspecialchars($it['description'] ?? ''));
         $unit   = htmlspecialchars($it['unit'] ?? '');
@@ -106,7 +104,6 @@ if ($amount <= 0) {
       <td><?= $i++ ?></td>
       <td><?= $marca ?></td>
       <td><?= $modelo ?></td>
-      <td><?= $talla ?></td>
       <td><?= $brand ?></td>
       <td class="desc"><?= $desc ?></td>
       <td><?= $unit ?></td>

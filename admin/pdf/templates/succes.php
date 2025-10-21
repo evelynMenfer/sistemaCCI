@@ -74,7 +74,6 @@ if ($amount <= 0) {
       <th>DESCRIPCIÓN</th>
       <th>MARCA</th>
       <th>MODELO</th>
-      <th>TALLA</th>
       <th>IMAGEN</th>
       <th>UNIDAD</th>
       <th>CANTIDAD</th>
@@ -91,7 +90,6 @@ if ($amount <= 0) {
       $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($price - ($price * $disc / 100)) * $qty);
       $marca  = htmlspecialchars($it['marca'] ?? '');
       $modelo = htmlspecialchars($it['modelo'] ?? '');
-      $talla  = htmlspecialchars($it['talla'] ?? '');
 
       // ==================================================
       // 🔹 Imagen: compatible con rutas completas o nombres
@@ -115,7 +113,6 @@ if ($amount <= 0) {
       <td class="desc"><?= nl2br(htmlspecialchars($it['description'] ?? '')) ?></td>
       <td class="center"><?= $marca ?></td>
       <td class="center"><?= $modelo ?></td>
-      <td class="center"><?= $talla ?></td>
       <td class="center"><?= $imgTag ?></td>
       <td><?= htmlspecialchars($it['unit'] ?? '') ?></td>
       <td class="num"><?= number_format($qty, 2) ?></td>

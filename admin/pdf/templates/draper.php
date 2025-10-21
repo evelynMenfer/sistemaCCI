@@ -69,7 +69,6 @@ if ($amount <= 0) {
       <!-- 🔹 Agregadas nuevas columnas -->
       <th style="border:1px solid #ccc; padding:6px;">Marca</th>
       <th style="border:1px solid #ccc; padding:6px;">Modelo</th>
-      <th style="border:1px solid #ccc; padding:6px;">Talla</th>
       <!-- 🔹 Fin agregado -->
       <th style="border:1px solid #ccc; padding:6px;">Cantidad</th>
       <th style="border:1px solid #ccc; padding:6px;">Unidad</th>
@@ -86,7 +85,6 @@ if ($amount <= 0) {
       $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($p - ($p * $d / 100)) * $q);
       $marca  = htmlspecialchars($it['marca'] ?? '');
       $modelo = htmlspecialchars($it['modelo'] ?? '');
-      $talla  = htmlspecialchars($it['talla'] ?? '');
     ?>
     <tr>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $i++ ?></td>
@@ -95,7 +93,6 @@ if ($amount <= 0) {
       <!-- 🔹 Celdas nuevas -->
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $marca ?></td>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $modelo ?></td>
-      <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= $talla ?></td>
       <!-- 🔹 Fin agregado -->
       <td style="border:1px solid #ccc; padding:6px; text-align:right;"><?= number_format($q, 2) ?></td>
       <td style="border:1px solid #ccc; padding:6px; text-align:center;"><?= htmlspecialchars($it['unit']) ?></td>

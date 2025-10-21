@@ -133,7 +133,6 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
       <th>Unidad</th>
       <th>Marca</th>
       <th>Modelo</th>
-      <th>Talla</th>
       <th>Descripción</th>
       <th>Precio</th>
       <th>Desc %</th>
@@ -148,14 +147,12 @@ $remarks = $remarks ?? ($data['remarks'] ?? '');
     $lt  = $hasKey($it,'line_total') ? (float)$it['line_total'] : (($p - ($p * $d / 100)) * $q);
     $marca  = htmlspecialchars($it['marca'] ?? '');
     $modelo = htmlspecialchars($it['modelo'] ?? '');
-    $talla  = htmlspecialchars($it['talla'] ?? '');
   ?>
     <tr>
       <td class="center"><?= number_format($q, 2) ?></td>
       <td class="center"><?= htmlspecialchars($it['unit'] ?? '') ?></td>
       <td class="center"><?= $marca ?></td>
       <td class="center"><?= $modelo ?></td>
-      <td class="center"><?= $talla ?></td>
       <td><?= htmlspecialchars($it['description'] ?? '') ?></td>
       <td class="right">$<?= number_format($p, 2) ?></td>
       <td class="right"><?= number_format($d, 2) ?>%</td>

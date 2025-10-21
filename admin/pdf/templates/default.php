@@ -251,7 +251,6 @@ tfoot tr.total td {
       <th>DESCRIPCIÓN</th>
       <th>MARCA</th>
       <th>MODELO</th>
-      <th>TALLA</th>
       <th>IMAGEN</th>
       <th>CANTIDAD</th>
       <th>P. UNITARIO</th>
@@ -265,7 +264,6 @@ tfoot tr.total td {
     $desc   = $it['description'] ?? '';
     $marca  = $it['marca'] ?? '';
     $modelo = $it['modelo'] ?? '';
-    $talla  = $it['talla'] ?? '';
     $qty    = floatval($it['quantity'] ?? 0);
     $price  = floatval($it['price'] ?? 0);
     $disc   = floatval($it['discount'] ?? 0);
@@ -277,7 +275,6 @@ tfoot tr.total td {
       <td><?= nl2br($e($desc)) ?></td>
       <td class="center"><?= $e($marca) ?></td>
       <td class="center"><?= $e($modelo) ?></td>
-      <td class="center"><?= $e($talla) ?></td>
       <td class="center img-cell">
         <?php
           if (!empty($foto)) {

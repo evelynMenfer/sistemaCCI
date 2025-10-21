@@ -126,7 +126,6 @@ tr:nth-child(even) {
       <th>DESCRIPCIÓN</th>
       <th>MARCA</th>
       <th>MODELO</th>
-      <th>TALLA</th>
       <th>UNIDAD</th>
       <th>CANTIDAD</th>
       <th>PRECIO UNITARIO</th>
@@ -140,7 +139,6 @@ tr:nth-child(even) {
         $desc  = nl2br(htmlspecialchars($it['description'] ?? ''));
         $marca = htmlspecialchars($it['marca'] ?? '');
         $modelo = htmlspecialchars($it['modelo'] ?? '');
-        $talla  = htmlspecialchars($it['talla'] ?? '');
         $unit  = htmlspecialchars($it['unit'] ?? '');
         $qty   = floatval($it['quantity'] ?? 0);
         $price = floatval($it['price'] ?? 0);
@@ -154,7 +152,6 @@ tr:nth-child(even) {
       <td><?= $desc ?></td>
       <td style="text-align:center;"><?= $marca ?></td>
       <td style="text-align:center;"><?= $modelo ?></td>
-      <td style="text-align:center;"><?= $talla ?></td>
       <td style="text-align:center;"><?= $unit ?></td>
       <td style="text-align:right;"><?= number_format($qty, 2) ?></td>
       <td style="text-align:right;">$<?= number_format($price, 2) ?></td>

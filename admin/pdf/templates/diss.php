@@ -127,7 +127,6 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
         <!-- 🔹 Agregadas sin quitar nada -->
         <th style="padding:6px; text-align:center;">Marca</th>
         <th style="padding:6px; text-align:center;">Modelo</th>
-        <th style="padding:6px; text-align:center;">Talla</th>
         <!-- 🔹 Fin agregado -->
         <th style="padding:6px; text-align:right;">Precio</th>
         <th style="padding:6px; text-align:right;">Desc %</th>
@@ -142,7 +141,6 @@ function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
           $ds = (string)($it['description'] ?? '');
           $ma = (string)($it['marca'] ?? '');   // 🔹 nuevo uso
           $mo = (string)($it['modelo'] ?? '');  // 🔹 nuevo uso
-          $ta = (string)($it['talla'] ?? '');   // 🔹 nuevo uso
           $p  = floatval($it['price'] ?? 0);
           $d  = floatval($it['discount'] ?? 0);
           $lt = isset($it['line_total']) ? floatval($it['line_total']) : (($p - ($p * $d / 100.0)) * $q);
